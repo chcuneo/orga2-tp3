@@ -7,7 +7,6 @@
 
 global start
 
-
 ;; Saltear seccion de datos
 jmp start
 
@@ -20,6 +19,9 @@ iniciando_mr_len equ    $ - iniciando_mr_msg
 iniciando_mp_msg db     'Iniciando kernel (Modo Protegido)...'
 iniciando_mp_len equ    $ - iniciando_mp_msg
 
+welcome_msg db     'Iniciando kernel (Modo Protegido)...'
+welcome_len equ    $ - iniciando_mp_msg
+
 ;;
 ;; Seccion de código.
 ;; -------------------------------------------------------------------------- ;;
@@ -29,6 +31,8 @@ BITS 16
 start:
     ; Deshabilitar interrupciones
     cli
+
+    xchg bx, bx
 
     ; Cambiar modo de video a 80 X 50
     mov ax, 0003h
@@ -40,20 +44,39 @@ start:
     ; Imprimir mensaje de bienvenida
     imprimir_texto_mr iniciando_mr_msg, iniciando_mr_len, 0x07, 0, 0
 
-
     ; Habilitar A20
+    call habilitar_A20
 
     ; Cargar la GDT
+    lgdt [GDT_DESC]
 
     ; Setear el bit PE del registro CR0
+    mov eax, cr0
+    or eax, 0x1
+    mov cr0, eax
 
     ; Saltar a modo protegido
+    jmp 0x8:modoprotegido
 
+BITS 32
+modoprotegido:
     ; Establecer selectores de segmentos
+    xor eax, eax
+    mov ax, 0x80
+    mov ss, ax
+    mov ds, ax
+    mov gs, ax
+    mov es, ax
+
+    mov ax, 0x140   ; Selector del segmento de video
+    mov fs, ax
 
     ; Establecer la base de la pila
+    mov ebp, 0x7D000 - 1; DECISION DE DISEÑO: Lo ponemos asi para que este en el limite del data segment
+    mov esp, 0x7D000 - 1; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
+    imprimir_texto_mr welcome_msg, welcome_len, 0x07, 0, 0
 
     ; Inicializar el juego
 
@@ -94,5 +117,7 @@ start:
     jmp $
 
 ;; -------------------------------------------------------------------------- ;;
+
+extern GDT_DESC
 
 %include "a20.asm"

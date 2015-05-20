@@ -10,8 +10,6 @@
 
 #include "defines.h"
 
-
-
 typedef struct str_gdt_descriptor {
     unsigned short  gdt_length;
     unsigned int    gdt_addr;
@@ -36,6 +34,5 @@ typedef struct str_gdt_entry {
 /* Tabla GDT */
 extern gdt_entry gdt[];
 extern gdt_descriptor GDT_DESC;
-
 
 #endif  /* !__GDT_H__ */
