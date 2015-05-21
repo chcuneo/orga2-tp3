@@ -107,7 +107,7 @@ gdt_entry gdt[GDT_COUNT] = {
         // TODO: poner bien los limites y bases
         (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
-        (unsigned char)     0x00,           /* base[23:16]  */
+        (unsigned char)     0x0A,           /* base[23:16]  */
         (unsigned char)     0x02,           /* type         */
         (unsigned char)     0x01,           /* s            */
         (unsigned char)     0x00,           /* dpl          */

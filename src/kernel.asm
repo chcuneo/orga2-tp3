@@ -71,6 +71,8 @@ BITS 32
     mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
+    xchg bx, bx
+    call screen_refresh_chota
 
     ; Inicializar el juego 
 
@@ -114,5 +116,6 @@ BITS 32
 ;; -------------------------------------------------------------------------- ;;
 
 extern GDT_DESC
+extern screen_refresh_chota
 
 %include "a20.asm"

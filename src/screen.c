@@ -49,6 +49,19 @@ void print(const char * text, uint x, uint y, unsigned short attr) {
     }
 }
 
+void printS(const char * text, uint x, uint y, unsigned short attr) {
+    int i;
+    for (i = 0; text[i] != 0; i++)
+     {
+        screen_pintar(text[i], attr, y, x);
+
+        x++;
+        if (x == VIDEO_COLS) {
+            x = 0;
+        }
+    }
+}
+
 void print_hex(uint numero, int size, uint x, uint y, unsigned short attr) {
     int i;
     char hexa[8];
@@ -88,28 +101,105 @@ uint min(uint left, uint right) {
 }
 
 void screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho) {
-    for (uint i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
-        for (uint j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+    uint i;
+    uint j;
+    for (i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
+        for (j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
             screen_pintar(c, color, i, j);
         }
     }
 }
 
 void screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho) {
-    for (uint j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+    uint j;
+
+    for (j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
         screen_pintar(c, color, fila, j);
     }
 }
 
 void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto) {
-    for (uint i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
-        screen_pintar(c, color, i, columna)
+    uint i;
+
+    for (i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
+        screen_pintar(c, color, i, columna);
     }
 }
 
-void screen_inicializar() {
-    // TODO
-    screen_pintar_rect();
+char *chota[] = {
+        "                              -    .|||||.",
+        "                                  |||||||||",
+        "                          -      ||||||  .",
+        "                              -  ||||||   >",
+        "                                ||||||| -/",
+        "                           --   ||||||'(",
+        "                        -       .'      \\",
+        "                             .-'    | | |",
+        "                            /        \\ \\ \\",
+        "              --        -  |      `---:.`.\\",
+        "             ____________._>           \\\\_\\\\____ ,--.__",
+        "  --    ,--\"\"           /    `-   .     |)_)    '\\     '\\",
+        "       /  \"             |      .-'     /          \\      '\\",
+        "     ,/                  \\           .'            '\\     |",
+        "     | \"   \"   \"          \\         /                '\\,  /",
+        "     |           \" , =_____`-.   .-'_________________,--\"\"",
+        "   - |  \"    \"    /\"/'      /\\>-' ( <",
+        "     \\  \"      \",/ /    -  ( <    |\\_)",
+        "      \\   \",\",_/,-'        |\\_)",
+        "   -- -'-;.__:-'"
+    };
+
+uint strlen(char *text) {
+    uint c = 0;
+    while (*text != 0) {
+        ++c;
+        text++;
+    }
+    return c;
+}
+
+void screen_printear_ascii(uint fila, uint columna, uint from) {
+    uint i;
+    for (i = 0; i < 20; ++i) {
+        if (fila + i > VIDEO_FILS) {
+            break;
+        }
+
+        if (from >= strlen(chota[i])) {
+            continue;
+        }
+
+        printS((chota[i] + from), columna, fila + i, 0xF);
+    }
+}
+
+void screen_refresh_chota() {
+    uint clocknegro = 0;
+    uint fila = 5;
+    uint columna = 0;
+    uint sw = -1;
+    //uint from = 60;
+
+    while (1) {
+        if (clocknegro % (50000 - 1) == 0) {
+            screen_pintar_rect(0, 0, 0, 0, 26, min(VIDEO_COLS, (columna + 60)));
+        }
+
+        if (clocknegro % 50000 == 0) {
+            screen_printear_ascii(fila + sw, columna, 0);
+
+            if (sw == -1) {
+                sw = 1;
+            } else {
+                sw = -1;
+            }
+
+            columna++;
+        }
+
+        columna %= VIDEO_COLS;
+        clocknegro++;
+    } 
 }
 
 void screen_pintar_puntajes() {
