@@ -19,9 +19,6 @@ iniciando_mr_len equ    $ - iniciando_mr_msg
 iniciando_mp_msg db     'Iniciando kernel (Modo Protegido)...'
 iniciando_mp_len equ    $ - iniciando_mp_msg
 
-welcome_msg db     'Iniciando kernel (Modo Protegido)...'
-welcome_len equ    $ - iniciando_mp_msg
-
 ;;
 ;; Seccion de código.
 ;; -------------------------------------------------------------------------- ;;
@@ -60,25 +57,22 @@ modoprotegido:
 BITS 32
     ; Establecer selectores de segmentos
     xor eax, eax
-    mov ax, 0x0048
+    mov ax, 0x48
     mov ds, ax
+    mov ss, ax
     mov es, ax
     mov gs, ax
 
     mov ax, 0x60   ; Selector del segmento de video
     mov fs, ax
 
-    mov ax, 0x0048
-    mov ss, ax
-
     ; Establecer la base de la pila
-    mov ebp, 0x7D000 - 1; DECISION DE DISEÑO: Lo ponemos asi para que este en el limite del data segment
-    mov esp, 0x7D000 - 1; TODO: Verificar que estas constantes esten bien
+    mov ebp, 0x7D000; DECISION DE DISEÑO: Lo ponemos asi para que este en el limite del data segment
+    mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
-    imprimir_texto_mr welcome_msg, welcome_len, 0x07, 0, 0
 
-    ; Inicializar el juego
+    ; Inicializar el juego 
 
     ; Inicializar pantalla
 
@@ -105,6 +99,7 @@ BITS 32
     ; Cargar tarea inicial
 
     ; Habilitar interrupciones
+    ;sti
 
     ; Saltar a la primera tarea: Idle
 

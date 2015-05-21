@@ -18,8 +18,7 @@ const char reloj[] = "|/-\\";
 #define reloj_size 4
 
 
-void screen_actualizar_reloj_global()
-{
+void screen_actualizar_reloj_global() {
     static uint reloj_global = 0;
 
     reloj_global = (reloj_global + 1) % reloj_size;
@@ -27,14 +26,12 @@ void screen_actualizar_reloj_global()
     screen_pintar(reloj[reloj_global], C_BW, 49, 79);
 }
 
-void screen_pintar(uchar c, uchar color, uint fila, uint columna)
-{
+void screen_pintar(uchar c, uchar color, uint fila, uint columna) {
     p[fila][columna].c = c;
     p[fila][columna].a = color;
 }
 
-uchar screen_valor_actual(uint fila, uint columna)
-{
+uchar screen_valor_actual(uint fila, uint columna) {
     return p[fila][columna].c;
 }
 
@@ -82,4 +79,39 @@ void print_dec(uint numero, int size, uint x, uint y, unsigned short attr) {
     }
 }
 
+uint min(uint left, uint right) {
+    if (left > right) {
+        return right;
+    }
 
+    return left;
+}
+
+void screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho) {
+    for (uint i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
+        for (uint j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+            screen_pintar(c, color, i, j);
+        }
+    }
+}
+
+void screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho) {
+    for (uint j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+        screen_pintar(c, color, fila, j);
+    }
+}
+
+void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto) {
+    for (uint i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
+        screen_pintar(c, color, i, columna)
+    }
+}
+
+void screen_inicializar() {
+    // TODO
+    screen_pintar_rect();
+}
+
+void screen_pintar_puntajes() {
+
+}
