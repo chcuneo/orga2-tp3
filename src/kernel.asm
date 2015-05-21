@@ -32,8 +32,6 @@ start:
     ; Deshabilitar interrupciones
     cli
 
-    xchg bx, bx
-
     ; Cambiar modo de video a 80 X 50
     mov ax, 0003h
     int 10h ; set mode 03h
@@ -56,20 +54,22 @@ start:
     mov cr0, eax
 
     ; Saltar a modo protegido
-    jmp 0x8:modoprotegido
+    jmp 0x40:modoprotegido
 
-BITS 32
 modoprotegido:
+BITS 32
     ; Establecer selectores de segmentos
     xor eax, eax
-    mov ax, 0x80
-    mov ss, ax
+    mov ax, 0x0048
     mov ds, ax
-    mov gs, ax
     mov es, ax
+    mov gs, ax
 
-    mov ax, 0x140   ; Selector del segmento de video
+    mov ax, 0x60   ; Selector del segmento de video
     mov fs, ax
+
+    mov ax, 0x0048
+    mov ss, ax
 
     ; Establecer la base de la pila
     mov ebp, 0x7D000 - 1; DECISION DE DISEÑO: Lo ponemos asi para que este en el limite del data segment
