@@ -126,6 +126,24 @@ void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint
     }
 }
 
+void screen_inicializar() {
+
+	// upper margin
+	screen_pintar_linea_h(0, C_BG_BLACK, 0, 0, VIDEO_COLS);
+
+	// pirate arena
+	screen_pintar_rect(0, C_BG_LIGHT_GREY, 1, 0, VIDEO_FILS - 6, VIDEO_COLS);
+
+	// pintar contenedores de score
+	screen_pintar_rect(0, C_BG_RED, VIDEO_FILS - 5, VIDEO_COLS / 2 - 6, 5, 6);
+	screen_pintar_rect(0, C_BG_BLUE, VIDEO_FILS - 5, VIDEO_COLS / 2, 5, 6);
+
+	// pintar bordes de score
+	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, 0, 5, VIDEO_COLS / 2 - 7); // left border
+	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
+
+}
+
 char *chota[] = {
         "                              -    .|||||.",
         "                                  |||||||||",
