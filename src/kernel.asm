@@ -3,6 +3,8 @@
 ; TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 ; ==============================================================================
 
+; bochs -q -rc bochsdbg
+
 %include "imprimir.mac"
 
 global start
@@ -63,6 +65,8 @@ BITS 32
     mov es, ax
     mov gs, ax
 
+    imprimir_texto_mp iniciando_mp_msg, iniciando_mp_len, 0x07, 2, 0
+
     mov ax, 0x60   ; Selector del segmento de video
     mov fs, ax
 
@@ -71,12 +75,14 @@ BITS 32
     mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
-    xchg bx, bx
-    call screen_refresh_chota
+    ; xchg bx, bx
+    ; call screen_refresh_chota
 
     ; Inicializar el juego 
 
     ; Inicializar pantalla
+    call screen_inicializar
+
 
     ; Inicializar el manejador de memoria
 
@@ -117,5 +123,6 @@ BITS 32
 
 extern GDT_DESC
 extern screen_refresh_chota
+extern screen_inicializar
 
 %include "a20.asm"
