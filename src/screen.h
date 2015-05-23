@@ -41,6 +41,7 @@ void screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint
 void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto);
 void screen_inicializar();
 void screen_pintar_puntajes();
+void clear();
 void screen_printear_ascii(uint fila, uint columna, uint from);
 
 void screen_actualizar_reloj_global();
