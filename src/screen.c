@@ -7,7 +7,7 @@ definicion de funciones del scheduler
 
 #include "screen.h"
 #include "game.h"
-
+#include "i386.h"
 
 extern jugador_t jugadorA, jugadorB;
 
@@ -49,7 +49,7 @@ void print(const char * text, uint x, uint y, unsigned short attr) {
     }
 }
 
-void printS(const char * text, uint x, uint y, unsigned short attr) {
+void print_string(const char * text, uint x, uint y, unsigned short attr) {
     int i;
     for (i = 0; text[i] != 0; i++) {
         screen_pintar(text[i], attr, x, y);
@@ -62,7 +62,7 @@ void printS(const char * text, uint x, uint y, unsigned short attr) {
     }
 }
 
-void print_hex(uint numero, int size, uint x, uint y, unsigned short attr) {
+void print_hex(uint numero, int size, uint y, uint x, unsigned short attr) {
     int i;
     char hexa[8];
     char letras[16] = "0123456789ABCDEF";
@@ -130,6 +130,82 @@ void clear() {
     screen_pintar_rect(0, 0, 0, 0, VIDEO_FILS, VIDEO_COLS);
 }
 
+void debug_screen() {
+    // container borders
+    screen_pintar_linea_h(0, C_BG_BLACK, VIDEO_FILS/2 - 17, VIDEO_COLS/2 - 15, 30);
+    screen_pintar_linea_h(0, C_BG_BLACK, VIDEO_FILS/2 + 17, VIDEO_COLS/2 - 15, 30);
+    screen_pintar_linea_v(0, C_BG_BLACK, VIDEO_FILS/2 - 17, VIDEO_COLS/2 - 15, 35);
+    screen_pintar_linea_v(0, C_BG_BLACK, VIDEO_FILS/2 - 17, VIDEO_COLS/2 + 15, 35);
+
+    // clean inner space
+    screen_pintar_rect(0, C_BG_RED, VIDEO_FILS / 2 - 16, VIDEO_COLS/2 - 14, 33, 29);
+
+    print_string("eax", VIDEO_FILS / 2 - 16 + 2, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(eax(), 8, VIDEO_FILS / 2 - 16 + 2, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("ebx", VIDEO_FILS / 2 - 16 + 4, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ebx(), 8, VIDEO_FILS / 2 - 16 + 4, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("ecx", VIDEO_FILS / 2 - 16 + 6, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ecx(), 8, VIDEO_FILS / 2 - 16 + 6, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("edx", VIDEO_FILS / 2 - 16 + 8, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(edx(), 8, VIDEO_FILS / 2 - 16 + 8, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("esi", VIDEO_FILS / 2 - 16 + 10, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(esi(), 8, VIDEO_FILS / 2 - 16 + 10, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("ebp", VIDEO_FILS / 2 - 16 + 12, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ebp(), 8, VIDEO_FILS / 2 - 16 + 12, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("esp", VIDEO_FILS / 2 - 16 + 14, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(esp(), 8, VIDEO_FILS / 2 - 16 + 14, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    // mirar nota en i386.h
+    print_string("eip", VIDEO_FILS / 2 - 16 + 16, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    // print_hex(eip(), 8, VIDEO_FILS / 2 - 16 + 16, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("cs", VIDEO_FILS / 2 - 16 + 18, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(cs(), 8, VIDEO_FILS / 2 - 16 + 18, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("ds", VIDEO_FILS / 2 - 16 + 20, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ds(), 8, VIDEO_FILS / 2 - 16 + 20, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("es", VIDEO_FILS / 2 - 16 + 22, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(es(), 8, VIDEO_FILS / 2 - 16 + 22, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("fs", VIDEO_FILS / 2 - 16 + 24, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(fs(), 8, VIDEO_FILS / 2 - 16 + 24, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("gs", VIDEO_FILS / 2 - 16 + 26, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(gs(), 8, VIDEO_FILS / 2 - 16 + 26, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("ss", VIDEO_FILS / 2 - 16 + 28, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ss(), 8, VIDEO_FILS / 2 - 16 + 28, VIDEO_COLS/2 - 14 + 5, C_FG_WHITE | C_BG_RED);
+
+    print_string("eflags", VIDEO_FILS / 2 - 16 + 30, VIDEO_COLS/2 - 14 + 1, C_FG_WHITE | C_BG_RED);
+    print_hex(ss(), 8, VIDEO_FILS / 2 - 16 + 30, VIDEO_COLS/2 - 14 + 8, C_FG_WHITE | C_BG_RED);
+
+
+    print_string("cr0", VIDEO_FILS / 2 - 16 + 2, VIDEO_COLS/2 - 14 + 15, C_FG_WHITE | C_BG_RED);
+    print_hex(rcr0(), 8, VIDEO_FILS / 2 - 16 + 2, VIDEO_COLS/2 - 14 + 20, C_FG_WHITE | C_BG_RED);
+
+    print_string("cr1", VIDEO_FILS / 2 - 16 + 4, VIDEO_COLS/2 - 14 + 15, C_FG_WHITE | C_BG_RED);
+    // print_hex(rcr1(), 8, VIDEO_FILS / 2 - 16 + 4, VIDEO_COLS/2 - 14 + 20, C_FG_WHITE | C_BG_RED);
+    // me pincha todo cuando quiero levantar el cr1...
+
+    print_string("cr2", VIDEO_FILS / 2 - 16 + 6, VIDEO_COLS/2 - 14 + 15, C_FG_WHITE | C_BG_RED);
+    print_hex(rcr2(), 8, VIDEO_FILS / 2 - 16 + 6, VIDEO_COLS/2 - 14 + 20, C_FG_WHITE | C_BG_RED);
+
+    print_string("cr3", VIDEO_FILS / 2 - 16 + 8, VIDEO_COLS/2 - 14 + 15, C_FG_WHITE | C_BG_RED);
+    print_hex(rcr3(), 8, VIDEO_FILS / 2 - 16 + 8, VIDEO_COLS/2 - 14 + 20, C_FG_WHITE | C_BG_RED);
+
+    print_string("stack", VIDEO_FILS / 2 - 16 + 18, VIDEO_COLS/2 - 14 + 15, C_FG_WHITE | C_BG_RED);
+    // ver como cargar el stack bien. esto vino de un call, nosotros queremos el stack antes del call.
+    // tendriamos que ignorar el push del EIP de la primera y segunda llamada, despues imprimir.
+
+}
+
 void screen_inicializar() {
 	// upper margin
 	screen_pintar_linea_h(0, C_BG_BLACK, 0, 0, VIDEO_COLS);
@@ -144,6 +220,7 @@ void screen_inicializar() {
 	// pintar bordes de score
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, 0, 5, VIDEO_COLS / 2 - 7); // left border
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
+
 }
 
 char *chota[] = {
@@ -189,7 +266,7 @@ void screen_printear_ascii(uint fila, uint columna, uint from) {
             continue;
         }
 
-        printS((chota[i] + from), fila + i,  columna, 0xF);
+        print_string((chota[i] + from), fila + i,  columna, 0xF);
     }
 }
 

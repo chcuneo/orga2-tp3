@@ -104,4 +104,107 @@ LS_INLINE void breakpoint(void) {
     __asm __volatile("xchg %%bx, %%bx" : :);
 }
 
+/*
+ * Registers
+ */
+
+
+LS_INLINE unsigned int eax(void) {
+    unsigned int val;
+    __asm __volatile("movl %%eax,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int ebx(void) {
+    unsigned int val;
+    __asm __volatile("movl %%ebx,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int ecx(void) {
+    unsigned int val;
+    __asm __volatile("movl %%ecx,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int edx(void) {
+    unsigned int val;
+    __asm __volatile("movl %%edx,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int esi(void) {
+    unsigned int val;
+    __asm __volatile("movl %%esi,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int edi(void) {
+    unsigned int val;
+    __asm __volatile("movl %%edi,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int ebp(void) {
+    unsigned int val;
+    __asm __volatile("movl %%ebp,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int esp(void) {
+    unsigned int val;
+    __asm __volatile("movl %%esp,%0" : "=r" (val));
+    return val;
+}
+
+// TODO! HAY QUE JUGAR CON UN CALL Y EL STACK, EL EIP
+// NO SE PUEDE ACCEDER DIRECTO.
+// LS_INLINE unsigned int eip(void) {
+//     unsigned int val;
+    // __asm __volatile("movl %%eip,%0" : "=r" (val));
+//     return val;
+// }
+
+LS_INLINE unsigned int cs(void) {
+    unsigned int val;
+    __asm __volatile("movl %%cs,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int ds(void) {
+    unsigned int val;
+    __asm __volatile("movl %%ds,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int es(void) {
+    unsigned int val;
+    __asm __volatile("movl %%es,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int fs(void) {
+    unsigned int val;
+    __asm __volatile("movl %%fs,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int gs(void) {
+    unsigned int val;
+    __asm __volatile("movl %%gs,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int ss(void) {
+    unsigned int val;
+    __asm __volatile("movl %%ss,%0" : "=r" (val));
+    return val;
+}
+
+LS_INLINE unsigned int eflags(void) {
+    unsigned int val;
+    __asm __volatile("movl %%eflags,%0" : "=r" (val));
+    return val;
+}
+
 #endif  /* !__i386_H__ */

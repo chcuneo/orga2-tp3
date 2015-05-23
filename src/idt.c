@@ -20,21 +20,6 @@ idt_descriptor IDT_DESC = {
     (unsigned int) &idt
 };
 
-/*
-    La siguiente es una macro de EJEMPLO para ayudar a armar entradas de
-    interrupciones. Para usar, descomentar y completar CORRECTAMENTE los
-    atributos y el registro de segmento. Invocarla desde idt_inicializar() de
-    la siguiene manera:
-
-    void idt_inicializar() {
-        IDT_ENTRY(0);
-        ...
-        IDT_ENTRY(19);
-
-        ...
-    }
-*/
-
 char *unrecoverableMsgs[] = {
     "Division by zero",
     "Debugger",
@@ -68,8 +53,9 @@ void unrecoverableHandler(uint exception) {
         line++;
     }
 
-    print(unrecoverableMsgs[exception], line, 0, C_FG_RED | C_BLINK);
-    // TODO: printear los registros
+    print(unrecoverableMsgs[exception], line, 1, C_FG_RED);
+    debug_screen();
+
 }
 
 #define IDT_ENTRY(numero, segselec, attrs)                                                                                        \

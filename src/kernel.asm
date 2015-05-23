@@ -65,8 +65,6 @@ BITS 32
     mov es, ax
     mov gs, ax
 
-    imprimir_texto_mp iniciando_mp_msg, iniciando_mp_len, 0x07, 2, 0
-
     mov ax, 0x60   ; Selector del segmento de video
     mov fs, ax
 
@@ -75,13 +73,13 @@ BITS 32
     mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
-    call screen_refresh_chota
+    imprimir_texto_mp iniciando_mp_msg, iniciando_mp_len, 0x07, 2, 0
+    ; call screen_refresh_chota
 
     ; Inicializar el juego 
 
     ; Inicializar pantalla
     call screen_inicializar
-
 
     ; Inicializar el manejador de memoria
 
@@ -104,6 +102,10 @@ BITS 32
     lidt [IDT_DESC]
     xchg bx, bx
 
+    ; Test IDT
+    mov eax, 0x0
+    div eax
+
     ; Configurar controlador de interrupciones
 
     ; Cargar tarea inicial
@@ -123,12 +125,11 @@ BITS 32
 ;; -------------------------------------------------------------------------- ;;
 
 extern screen_refresh_chota
-<<<<<<< HEAD
 extern GDT_DESC
 extern idt_inicializar
 extern IDT_DESC
-=======
 extern screen_inicializar
->>>>>>> 537348213fab3dd8fbd98572b0c9d5a047e7d054
+
+extern debug_screen
 
 %include "a20.asm"
