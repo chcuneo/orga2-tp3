@@ -37,27 +37,27 @@ uchar screen_valor_actual(uint fila, uint columna) {
 
 void print(const char * text, uint x, uint y, unsigned short attr) {
     int i;
-    for (i = 0; text[i] != 0; i++)
-     {
-        screen_pintar(text[i], attr, y, x);
 
-        x++;
-        if (x == VIDEO_COLS) {
-            x = 0;
-            y++;
+    for (i = 0; text[i] != 0; i++) {
+        screen_pintar(text[i], attr, x, y);
+
+        y++;
+        if (y == VIDEO_COLS) {
+            y = 0;
+            x++;
         }
     }
 }
 
 void printS(const char * text, uint x, uint y, unsigned short attr) {
     int i;
-    for (i = 0; text[i] != 0; i++)
-     {
-        screen_pintar(text[i], attr, y, x);
+    for (i = 0; text[i] != 0; i++) {
+        screen_pintar(text[i], attr, x, y);
 
-        x++;
-        if (x == VIDEO_COLS) {
-            x = 0;
+        y++;
+
+        if (y == VIDEO_COLS) {
+            y = 0;
         }
     }
 }
@@ -126,6 +126,10 @@ void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint
     }
 }
 
+void clear() {
+    screen_pintar_rect(0, 0, 0, 0, VIDEO_FILS, VIDEO_COLS);
+}
+
 char *chota[] = {
         "                              -    .|||||.",
         "                                  |||||||||",
@@ -169,7 +173,7 @@ void screen_printear_ascii(uint fila, uint columna, uint from) {
             continue;
         }
 
-        printS((chota[i] + from), columna, fila + i, 0xF);
+        printS((chota[i] + from), fila + i,  columna, 0xF);
     }
 }
 
@@ -178,14 +182,13 @@ void screen_refresh_chota() {
     uint fila = 5;
     uint columna = 0;
     uint sw = -1;
-    //uint from = 60;
 
     while (1) {
-        if (clocknegro % (50000 - 1) == 0) {
+        if (clocknegro % (5000 - 1) == 0) {
             screen_pintar_rect(0, 0, 0, 0, 26, min(VIDEO_COLS, (columna + 60)));
         }
 
-        if (clocknegro % 50000 == 0) {
+        if (clocknegro % 5000 == 0) {
             screen_printear_ascii(fila + sw, columna, 0);
 
             if (sw == -1) {
@@ -195,6 +198,10 @@ void screen_refresh_chota() {
             }
 
             columna++;
+
+            if (columna == VIDEO_COLS) {
+                //return;
+            }
         }
 
         columna %= VIDEO_COLS;

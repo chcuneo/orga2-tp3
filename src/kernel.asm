@@ -71,7 +71,6 @@ BITS 32
     mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
-    xchg bx, bx
     call screen_refresh_chota
 
     ; Inicializar el juego 
@@ -93,8 +92,11 @@ BITS 32
     ; Inicializar el scheduler
 
     ; Inicializar la IDT
+    call idt_inicializar
 
     ; Cargar IDT
+    lidt [IDT_DESC]
+    xchg bx, bx
 
     ; Configurar controlador de interrupciones
 
@@ -102,7 +104,6 @@ BITS 32
 
     ; Habilitar interrupciones
     ;sti
-
     ; Saltar a la primera tarea: Idle
 
     ; Ciclar infinitamente (por si algo sale mal...)
@@ -115,7 +116,9 @@ BITS 32
 
 ;; -------------------------------------------------------------------------- ;;
 
-extern GDT_DESC
 extern screen_refresh_chota
+extern GDT_DESC
+extern idt_inicializar
+extern IDT_DESC
 
 %include "a20.asm"
