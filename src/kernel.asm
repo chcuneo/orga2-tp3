@@ -82,6 +82,10 @@ BITS 32
     ; Inicializar pantalla
     call screen_inicializar
 
+    ; Test
+    xchg bx, bx
+    call print_state
+    xchg bx, bx
 
     ; Inicializar el manejador de memoria
 
@@ -103,7 +107,7 @@ BITS 32
     ; Cargar IDT
     lidt [IDT_DESC]
     xchg bx, bx
-
+    
     ; Configurar controlador de interrupciones
 
     ; Cargar tarea inicial
@@ -123,12 +127,10 @@ BITS 32
 ;; -------------------------------------------------------------------------- ;;
 
 extern screen_refresh_chota
-<<<<<<< HEAD
 extern GDT_DESC
 extern idt_inicializar
 extern IDT_DESC
-=======
 extern screen_inicializar
->>>>>>> 537348213fab3dd8fbd98572b0c9d5a047e7d054
+extern print_state
 
 %include "a20.asm"

@@ -104,4 +104,121 @@ LS_INLINE void breakpoint(void) {
     __asm __volatile("xchg %%bx, %%bx" : :);
 }
 
+//Registers
+
+LS_INLINE unsigned int reax(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%eax,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int rebx(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%ebx,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int recx(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%ecx,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int redx(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%edx,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int resi(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%esi,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int redi(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%edi,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int rebp(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%ebp,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int resp(void) {
+    unsigned int ret;
+    __asm __volatile("movl %%esp,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short rcs(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%cs,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short rds(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%ds,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short res(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%es,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short rfs(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%fs,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short rgs(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%gs,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned short rss(void) {
+    unsigned short ret;
+    __asm __volatile("movl %%ss,%0" : "=r" (ret) : );
+    return ret;
+}
+
+LS_INLINE unsigned int reflags(void) {
+    unsigned int ret;
+    __asm __volatile("pushf" : : );
+    __asm __volatile("pop %0": "=r" (ret) : );
+    return ret;
+}
+
+// LS_INLINE unsigned int rcr0(void) {
+//     unsigned int ret;
+//     __asm __volatile("movl %%cr0,%0" : "=r" (ret) : );
+//     return ret;
+// }
+
+// LS_INLINE unsigned int rcr2(void) {
+//     unsigned int ret;
+//     __asm __volatile("movl %%cr2,%0" : "=r" (ret) : );
+//     return ret;
+// }
+
+// LS_INLINE unsigned int rcr3(void) {
+//     unsigned int ret;
+//     __asm __volatile("movl %%cr3,%0" : "=r" (ret) : );
+//     return ret;
+// }
+
+// LS_INLINE unsigned int rcr4(void) {
+//     unsigned int ret;
+//     __asm __volatile("movl %%cr4,%0" : "=r" (ret) : );
+//     return ret;
+// }
+
 #endif  /* !__i386_H__ */

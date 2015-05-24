@@ -28,6 +28,7 @@ extern unrecoverableHandler
 global _isr%1
 
 _isr%1:
+    call print_state
     mov eax, %1
     push eax
     call unrecoverableHandler

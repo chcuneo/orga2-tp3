@@ -17,6 +17,7 @@
 
 #include "colors.h"
 #include "defines.h"
+#include "i386.h"
 /* Estructura de para acceder a memoria de video */
 typedef struct ca_s {
     unsigned char c;
@@ -43,6 +44,7 @@ void screen_inicializar();
 void screen_pintar_puntajes();
 void clear();
 void screen_printear_ascii(uint fila, uint columna, uint from);
+void print_state();
 
 void screen_actualizar_reloj_global();
 void screen_actualizar_reloj_pirata (jugador_t *j, pirata_t *pirata);

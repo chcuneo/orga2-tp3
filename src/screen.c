@@ -216,7 +216,7 @@ void screen_refresh_chota() {
             columna++;
 
             if (columna == VIDEO_COLS) {
-                //return;
+                return;
             }
         }
 
@@ -227,4 +227,105 @@ void screen_refresh_chota() {
 
 void screen_pintar_puntajes() {
 
+}
+
+//TODO:
+//- Aprender a calcular realmente 0x000000a4, yo lo saque de la instruccion post ensamblado.
+//- EFLAGS es vulnerable al "sub" del stack frame, nose si va a haber que mandarlo por el stack.
+//- Pasar numeros a algo mas lindo
+void print_state(){
+    // Explicacion:
+    // Las instrucciones que se realizan por gcc luego de realizar "call print_state" desde asm son:
+    //     push ebp
+    //     mov ebp, esp
+    //     sub esp, 0x000000a4
+    //
+    // Entonces hago el reverso para obtener esp, ebp y eip.
+    // Luego dejo todo como debe estar y sigo
+    //
+    // eax lo guardo primero ya que las llamadas a asm desde c lo pisan, porque el output lo mandan por eax.
+    __asm __volatile("nop" :: );
+    unsigned int eaxR = reax();
+    unsigned int eflagsR = reflags();
+    unsigned int eipR;
+    unsigned int espR;
+    unsigned int ebpR;
+
+    __asm __volatile("add %0, %%esp" : : "i" (0x000000a8));
+    __asm __volatile("pop %0" : "=r" (ebpR): );
+    __asm __volatile("pop %0": "=r" (eipR) : );
+    __asm __volatile("mov %%esp, %0" : "=r" (espR): );
+    __asm __volatile("push %0": : "r" (eipR) );
+    __asm __volatile("push %0": : "r" (ebpR) );
+    __asm __volatile("sub %0, %%esp" : : "i" (0x000000a8));
+
+    eipR -= 5;    // Tamaño de la operacion: "call print_state". La direccion de ret es la siguiente a "call print_state"
+
+    unsigned int ebxR = rebx();
+    unsigned int ecxR = recx();
+    unsigned int edxR = redx();
+    unsigned int esiR = resi();
+    unsigned int ediR = redi();
+    unsigned int csR = rcs();
+    unsigned int dsR = rds();
+    unsigned int esR = res();
+    unsigned int fsR = rfs();
+    unsigned int gsR = rgs();
+    unsigned int ssR = rss();
+    unsigned int cr0R = rcr0();
+    unsigned int cr2R = rcr2();
+    unsigned int cr3R = rcr3();
+    unsigned int cr4R = rcr4();
+
+    screen_pintar_linea_h(' ', 0x00, 6, 25, 30);
+    screen_pintar_linea_v(' ', 0x00, 7, 25, 34);
+    screen_pintar_linea_h(' ', 0x00, 41, 25, 30);
+    screen_pintar_linea_v(' ', 0x00, 7, 54, 34);
+    screen_pintar_linea_h(' ', 0x44, 7, 26, 28);
+    screen_pintar_rect(' ', 0x70, 8, 26, 33, 28);
+
+    unsigned short attrData = 0x7F;
+    unsigned short attrLabels = 0x70;
+    print("eax", 9, 27, attrLabels);
+    print_hex(eaxR, 8, 31, 9, attrData);
+    print("ebx", 11, 27, attrLabels); 
+    print_hex(ebxR, 8, 31, 11, attrData);
+    print("ecx", 13, 27, attrLabels); 
+    print_hex(ecxR, 8, 31, 13, attrData);
+    print("edx", 15, 27, attrLabels); 
+    print_hex(edxR, 8, 31, 15, attrData);
+    print("esi", 17, 27, attrLabels); 
+    print_hex(esiR, 8, 31, 17, attrData);
+    print("edi", 19, 27, attrLabels); 
+    print_hex(ediR, 8, 31, 19, attrData);
+    print("ebp", 21, 27, attrLabels); 
+    print_hex(ebpR, 8, 31, 21, attrData);
+    print("esp", 23, 27, attrLabels); 
+    print_hex(espR, 8, 31, 23, attrData);
+
+    print("eip", 25, 27, attrLabels); 
+    print_hex(eipR, 8, 31, 25, attrData);
+    print("cs", 27, 28, attrLabels); 
+    print_hex(csR, 4, 31, 27, attrData);
+    print("ds", 29, 28, attrLabels); 
+    print_hex(dsR, 4, 31, 29, attrData);
+    print("es", 31, 28, attrLabels); 
+    print_hex(esR, 4, 31, 31, attrData);
+    print("fs", 33, 28, attrLabels); 
+    print_hex(fsR, 4, 31, 33, attrData);
+    print("gs", 35, 28, attrLabels); 
+    print_hex(gsR, 4, 31, 35, attrData);
+    print("ss", 37, 28, attrLabels); 
+    print_hex(ssR, 4, 31, 37, attrData);
+    print("eflags", 39, 28, attrLabels); 
+    print_hex(eflagsR, 8, 34, 39, attrData); 
+
+    print("cr0", 9, 41, attrLabels); 
+    print_hex(cr0R, 8, 45, 9, attrData);
+    print("cr2", 11, 41, attrLabels);  
+    print_hex(cr2R, 8, 45, 11, attrData);
+    print("cr3", 13, 41, attrLabels);  
+    print_hex(cr3R, 8, 45, 13, attrData);
+    print("cr4", 15, 41, attrLabels);  
+    print_hex(cr4R, 8, 45, 15, attrData);
 }
