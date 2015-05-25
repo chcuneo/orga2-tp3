@@ -17,8 +17,9 @@ extern fin_intr_pic1
 ;; Sched
 extern sched_tick
 extern sched_tarea_actual
-extern unrecoverableHandler
 
+extern unrecoverableHandler
+extern print_state
 
 ;;
 ;; Definición de MACROS

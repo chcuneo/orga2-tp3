@@ -84,7 +84,7 @@ BITS 32
 
     ; Test
     xchg bx, bx
-    call print_state
+    print_regs
     xchg bx, bx
 
     ; Inicializar el manejador de memoria

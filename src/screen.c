@@ -246,7 +246,7 @@ void print_state(){
     // eax lo guardo primero ya que las llamadas a asm desde c lo pisan, porque el output lo mandan por eax.
     __asm __volatile("nop" :: );
     unsigned int eaxR = reax();
-    unsigned int eflagsR = reflags();
+    unsigned int eflagsR;
     unsigned int eipR;
     unsigned int espR;
     unsigned int ebpR;
@@ -254,12 +254,15 @@ void print_state(){
     __asm __volatile("add %0, %%esp" : : "i" (0x000000a8));
     __asm __volatile("pop %0" : "=r" (ebpR): );
     __asm __volatile("pop %0": "=r" (eipR) : );
+    __asm __volatile("pop %0": "=r" (eflagsR) : );
     __asm __volatile("mov %%esp, %0" : "=r" (espR): );
+    __asm __volatile("push %0": : "r" (eflagsR) );
     __asm __volatile("push %0": : "r" (eipR) );
     __asm __volatile("push %0": : "r" (ebpR) );
     __asm __volatile("sub %0, %%esp" : : "i" (0x000000a8));
 
-    eipR -= 5;    // Tamaño de la operacion: "call print_state". La direccion de ret es la siguiente a "call print_state"
+    eipR -= 1;      // Tamaño de la operacion: "pushf".
+    eipR -= 5;      // Tamaño de la operacion: "call print_state". 
 
     unsigned int ebxR = rebx();
     unsigned int ecxR = recx();
@@ -277,55 +280,63 @@ void print_state(){
     unsigned int cr3R = rcr3();
     unsigned int cr4R = rcr4();
 
-    screen_pintar_linea_h(' ', 0x00, 6, 25, 30);
-    screen_pintar_linea_v(' ', 0x00, 7, 25, 34);
-    screen_pintar_linea_h(' ', 0x00, 41, 25, 30);
-    screen_pintar_linea_v(' ', 0x00, 7, 54, 34);
-    screen_pintar_linea_h(' ', 0x44, 7, 26, 28);
-    screen_pintar_rect(' ', 0x70, 8, 26, 33, 28);
-
+    unsigned int fila = ((VIDEO_FILS - 33) / 2) - 1;
+    unsigned int col = ((VIDEO_COLS - 28) / 2) - 1;
     unsigned short attrData = 0x7F;
     unsigned short attrLabels = 0x70;
-    print("eax", 9, 27, attrLabels);
-    print_hex(eaxR, 8, 31, 9, attrData);
-    print("ebx", 11, 27, attrLabels); 
-    print_hex(ebxR, 8, 31, 11, attrData);
-    print("ecx", 13, 27, attrLabels); 
-    print_hex(ecxR, 8, 31, 13, attrData);
-    print("edx", 15, 27, attrLabels); 
-    print_hex(edxR, 8, 31, 15, attrData);
-    print("esi", 17, 27, attrLabels); 
-    print_hex(esiR, 8, 31, 17, attrData);
-    print("edi", 19, 27, attrLabels); 
-    print_hex(ediR, 8, 31, 19, attrData);
-    print("ebp", 21, 27, attrLabels); 
-    print_hex(ebpR, 8, 31, 21, attrData);
-    print("esp", 23, 27, attrLabels); 
-    print_hex(espR, 8, 31, 23, attrData);
 
-    print("eip", 25, 27, attrLabels); 
-    print_hex(eipR, 8, 31, 25, attrData);
-    print("cs", 27, 28, attrLabels); 
-    print_hex(csR, 4, 31, 27, attrData);
-    print("ds", 29, 28, attrLabels); 
-    print_hex(dsR, 4, 31, 29, attrData);
-    print("es", 31, 28, attrLabels); 
-    print_hex(esR, 4, 31, 31, attrData);
-    print("fs", 33, 28, attrLabels); 
-    print_hex(fsR, 4, 31, 33, attrData);
-    print("gs", 35, 28, attrLabels); 
-    print_hex(gsR, 4, 31, 35, attrData);
-    print("ss", 37, 28, attrLabels); 
-    print_hex(ssR, 4, 31, 37, attrData);
-    print("eflags", 39, 28, attrLabels); 
-    print_hex(eflagsR, 8, 34, 39, attrData); 
+    screen_pintar_linea_h(' ', 0x00, fila + 0, col + 0, 30);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 0, 34);
+    screen_pintar_linea_h(' ', 0x00, fila + 35, col + 0, 30);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 29, 34);
+    screen_pintar_linea_h(' ', 0x44, fila + 1, col + 1, 28);
+    screen_pintar_rect(' ', 0x70, fila + 2, col + 1, 33, 28);
 
-    print("cr0", 9, 41, attrLabels); 
-    print_hex(cr0R, 8, 45, 9, attrData);
-    print("cr2", 11, 41, attrLabels);  
-    print_hex(cr2R, 8, 45, 11, attrData);
-    print("cr3", 13, 41, attrLabels);  
-    print_hex(cr3R, 8, 45, 13, attrData);
-    print("cr4", 15, 41, attrLabels);  
-    print_hex(cr4R, 8, 45, 15, attrData);
+    print("eax", fila + 3, col + 2, attrLabels);
+    print_hex(eaxR, 8, col + 6, fila + 3, attrData);
+    print("ebx", fila + 5, col + 2, attrLabels); 
+    print_hex(ebxR, 8, col + 6, fila + 5, attrData);
+    print("ecx", fila + 7, col + 2, attrLabels); 
+    print_hex(ecxR, 8, col + 6, fila + 7, attrData);
+    print("edx", fila + 9, col + 2, attrLabels); 
+    print_hex(edxR, 8, col + 6, fila + 9, attrData);
+    print("esi", fila + 11, col + 2, attrLabels); 
+    print_hex(esiR, 8, col + 6, fila + 11, attrData);
+    print("edi", fila + 13, col + 2, attrLabels); 
+    print_hex(ediR, 8, col + 6, fila + 13, attrData);
+    print("ebp", fila + 15, col + 2, attrLabels); 
+    print_hex(ebpR, 8, col + 6, fila + 15, attrData);
+    print("esp", fila + 17, col + 2, attrLabels); 
+    print_hex(espR, 8, col + 6, fila + 17, attrData);
+
+    print("eip", fila + 19, col + 2, attrLabels); 
+    print_hex(eipR, 8, col + 6, fila + 19, attrData);
+    print("cs", fila + 21, col + 3, attrLabels); 
+    print_hex(csR, 4, col + 6, fila + 21, attrData);
+    print("ds", fila + 23, col + 3, attrLabels); 
+    print_hex(dsR, 4, col + 6, fila + 23, attrData);
+    print("es", fila + 25, col + 3, attrLabels); 
+    print_hex(esR, 4, col + 6, fila + 25, attrData);
+    print("fs", fila + 27, col + 3, attrLabels); 
+    print_hex(fsR, 4, col + 6, fila + 27, attrData);
+    print("gs", fila + 29, col + 3, attrLabels); 
+    print_hex(gsR, 4, col + 6, fila + 29, attrData);
+    print("ss", fila + 31, col + 3, attrLabels); 
+    print_hex(ssR, 4, col + 6, fila + 31, attrData);
+    print("eflags", fila + 33, col + 3, attrLabels); 
+    print_hex(eflagsR, 8, col + 9, fila + 33, attrData); 
+
+    print("cr0", fila + 3, col + 16, attrLabels); 
+    print_hex(cr0R, 8, col + 20, fila + 3, attrData);
+    print("cr2", fila + 5, col + 16, attrLabels);  
+    print_hex(cr2R, 8, col + 20, fila + 5, attrData);
+    print("cr3", fila + 7, col + 16, attrLabels);  
+    print_hex(cr3R, 8, col + 20, fila + 7, attrData);
+    print("cr4", fila + 9, col + 16, attrLabels);  
+    print_hex(cr4R, 8, col + 20, fila + 9, attrData);
+
+    //Restauro registros no protegidos por convencion
+    __asm __volatile("mov %0,%%ecx" : : "r" (ecxR));
+    __asm __volatile("mov %0,%%edx" : : "r" (edxR));
+    __asm __volatile("mov %0,%%eax" : : "r" (eaxR)); 
 }

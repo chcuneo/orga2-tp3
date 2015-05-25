@@ -140,4 +140,10 @@
     popa
 %endmacro
 
+%macro print_regs 0
+    pushf
+    call print_state
+    popf
+%endmacro
+
 %endif  ;; !__IMPRIMIR_MAC__ ;;
