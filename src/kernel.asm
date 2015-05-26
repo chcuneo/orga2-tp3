@@ -82,18 +82,18 @@ BITS 32
     ; Inicializar pantalla
     call screen_inicializar
 
-    ; Test
-    ; xchg bx, bx
-    ; print_regs
-    ; xchg bx, bx
+    xchg bx, bx
 
-    ; Inicializar el manejador de memoria
+    ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3
+    call mmu_inicializar
 
-    ; Inicializar el directorio de paginas
-
-    ; Cargar directorio de paginas
-
+    xchg bx, bx
     ; Habilitar paginacion
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+
+    xchg bx, bx
 
     ; Inicializar tss
 
@@ -128,6 +128,7 @@ BITS 32
 
 ;; -------------------------------------------------------------------------- ;;
 
+extern mmu_inicializar
 extern screen_refresh_logo
 extern GDT_DESC
 extern idt_inicializar
