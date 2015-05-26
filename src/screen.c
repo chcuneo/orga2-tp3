@@ -146,27 +146,30 @@ void screen_inicializar() {
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
 }
 
-char *chota[] = {
-        "                              -    .|||||.",
-        "                                  |||||||||",
-        "                          -      ||||||  .",
-        "                              -  ||||||   >",
-        "                                ||||||| -/",
-        "                           --   ||||||'(",
-        "                        -       .'      \\",
-        "                             .-'    | | |",
-        "                            /        \\ \\ \\",
-        "              --        -  |      `---:.`.\\",
-        "             ____________._>           \\\\_\\\\____ ,--.__",
-        "  --    ,--\"\"           /    `-   .     |)_)    '\\     '\\",
-        "       /  \"             |      .-'     /          \\      '\\",
-        "     ,/                  \\           .'            '\\     |",
-        "     | \"   \"   \"          \\         /                '\\,  /",
-        "     |           \" , =_____`-.   .-'_________________,--\"\"",
-        "   - |  \"    \"    /\"/'      /\\>-' ( <",
-        "     \\  \"      \",/ /    -  ( <    |\\_)",
-        "      \\   \",\",_/,-'        |\\_)",
-        "   -- -'-;.__:-'"
+// gdt_entry gdt[GDT_COUNT] = {
+//     [GDT_IDX_NULL_DESC] = (gdt_entry) {
+
+char *logo[] = {
+    [17] = "     \\  \"      \",/ /    -  ( <    |\\_)",
+    [10] = "             ____________._>           \\\\_\\\\____ ,--.__",
+    [2] = "                          -      ||||||  .",
+    [14] = "     | \"   \"   \"          \\         /                '\\,  /",
+    [19] = "   -- -'-;.__:-'",
+    [8] = "                            /        \\ \\ \\",
+    [12] = "       /  \"             |      .-'     /          \\      '\\",
+    [6] = "                        -       .'      \\",
+    [7] = "                             .-'    | | |",
+    [4] = "                                ||||||| -/",
+    [15] = "     |           \" , =_____`-.   .-'_________________,--\"\"",
+    [3] = "                              -  ||||||   >",
+    [1] = "                                  |||||||||",
+    [18] = "      \\   \",\",_/,-'        |\\_)",
+    [0] = "                              -    .|||||.",
+    [16] = "   - |  \"    \"    /\"/'      /\\>-' ( <",
+    [9] = "              --        -  |      `---:.`.\\",
+    [11] = "  --    ,--\"\"           /    `-   .     |)_)    '\\     '\\",
+    [13] = "     ,/                  \\           .'            '\\     |",
+    [5] = "                           --   ||||||'("
     };
 
 uint strlen(char *text) {
@@ -185,34 +188,32 @@ void screen_printear_ascii(uint fila, uint columna, uint from) {
             break;
         }
 
-        if (from >= strlen(chota[i])) {
+        if (from >= strlen(logo[i])) {
             continue;
         }
 
-        printS((chota[i] + from), fila + i,  columna, 0xF);
+        printS((logo[i] + from), fila + i,  columna, 0xF);
     }
 }
 
-void screen_refresh_chota() {
+void screen_refresh_logo() {
     uint clocknegro = 0;
     uint fila = 5;
     uint columna = 0;
-    uint sw = -1;
+    int onda = -3;
+    _Bool sw = 1;
+    uint timec = 5000;
 
     while (1) {
-        if (clocknegro % (5000 - 1) == 0) {
-            screen_pintar_rect(0, 0, 0, 0, 26, min(VIDEO_COLS, (columna + 60)));
+        if (clocknegro % (timec - 1) == 0) {
+            screen_pintar_rect(0, 0, 0, 0, 27, min(VIDEO_COLS, (columna + 60)));
         }
 
-        if (clocknegro % 5000 == 0) {
-            screen_printear_ascii(fila + sw, columna, 0);
+        if (clocknegro % timec == 0) {
+            screen_printear_ascii(fila + (onda/2), columna, 0);
 
-            if (sw == -1) {
-                sw = 1;
-            } else {
-                sw = -1;
-            }
-
+            if (sw) { onda++; } else { onda--; }
+            if (onda == 3 || onda == -3) sw = !sw;
             columna++;
 
             if (columna == VIDEO_COLS) {
@@ -244,7 +245,6 @@ void print_state(){
     // Luego dejo todo como debe estar y sigo
     //
     // eax lo guardo primero ya que las llamadas a asm desde c lo pisan, porque el output lo mandan por eax.
-    __asm __volatile("nop" :: );
     unsigned int eaxR = reax();
     unsigned int eflagsR;
     unsigned int eipR;

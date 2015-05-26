@@ -20,6 +20,7 @@ extern sched_tarea_actual
 
 extern unrecoverableHandler
 extern print_state
+extern clear
 
 ;;
 ;; Definición de MACROS
@@ -29,7 +30,18 @@ extern print_state
 global _isr%1
 
 _isr%1:
-    call print_state
+	push ecx
+	push eax
+	push edx
+	call clear
+	pop edx
+	pop eax
+	pop ecx
+
+	;;Checkear esto
+	add esp, 12
+	print_regs
+    
     mov eax, %1
     push eax
     call unrecoverableHandler

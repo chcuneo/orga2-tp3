@@ -63,7 +63,7 @@ void unrecoverableHandler(uint exception) {
     int line = 0;
 
     if (exception != 8) {
-        clear();
+        // clear();
     } else {
         line++;
     }

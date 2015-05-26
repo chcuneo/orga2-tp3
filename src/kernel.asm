@@ -75,7 +75,7 @@ BITS 32
     mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
 
     ; Imprimir mensaje de bienvenida
-    call screen_refresh_chota
+    call screen_refresh_logo
 
     ; Inicializar el juego 
 
@@ -83,9 +83,9 @@ BITS 32
     call screen_inicializar
 
     ; Test
-    xchg bx, bx
-    print_regs
-    xchg bx, bx
+    ; xchg bx, bx
+    ; print_regs
+    ; xchg bx, bx
 
     ; Inicializar el manejador de memoria
 
@@ -107,7 +107,9 @@ BITS 32
     ; Cargar IDT
     lidt [IDT_DESC]
     xchg bx, bx
-    
+    mov bx, 0x00
+    div bx
+
     ; Configurar controlador de interrupciones
 
     ; Cargar tarea inicial
@@ -126,7 +128,7 @@ BITS 32
 
 ;; -------------------------------------------------------------------------- ;;
 
-extern screen_refresh_chota
+extern screen_refresh_logo
 extern GDT_DESC
 extern idt_inicializar
 extern IDT_DESC
