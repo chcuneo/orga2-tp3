@@ -82,18 +82,16 @@ BITS 32
     ; Inicializar pantalla
     call screen_inicializar
 
-    xchg bx, bx
-
     ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3
-    call mmu_inicializar
+    call mmu_inicializar_dir_kernel
 
-    xchg bx, bx
     ; Habilitar paginacion
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
 
-    xchg bx, bx
+    ; Mapeamos las paginas a memoria
+    call mmu_inicializar
 
     ; Inicializar tss
 
@@ -106,7 +104,7 @@ BITS 32
 
     ; Cargar IDT
     lidt [IDT_DESC]
-    xchg bx, bx
+
     mov bx, 0x00
     div bx
 
@@ -128,12 +126,13 @@ BITS 32
 
 ;; -------------------------------------------------------------------------- ;;
 
-extern mmu_inicializar
+extern mmu_inicializar_dir_kernel
 extern screen_refresh_logo
 extern GDT_DESC
 extern idt_inicializar
 extern IDT_DESC
 extern screen_inicializar
 extern print_state
+extern mmu_inicializar
 
 %include "a20.asm"

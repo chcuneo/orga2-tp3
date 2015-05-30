@@ -104,7 +104,6 @@ gdt_entry gdt[GDT_COUNT] = {
     // DECISION DE DISEÑO: 
     // Data segment para protección 0
     [GDT_IDX_VIDEO_DESC] = (gdt_entry) {
-        // TODO: poner bien los limites y bases
         (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
         (unsigned char)     0x0A,           /* base[23:16]  */
