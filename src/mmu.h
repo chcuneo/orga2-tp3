@@ -11,12 +11,12 @@
 #include "defines.h"
 #include "game.h"
 
-			/**
-			Aca guardamos solo los primeros 12 bits del address fisico de la tabla de paginas.
-			Los siguientes 12 bits son obtenidos del address lineal que obtengamos en el acceso
-			a memoria, y eso nos da el descriptor de pagina, que termina de determinarnos la
-			direccion fisica.
-			 */
+/**
+Aca guardamos solo los primeros 12 bits del address fisico de la tabla de paginas.
+Los siguientes 12 bits son obtenidos del address lineal que obtengamos en el acceso
+a memoria, y eso nos da el descriptor de pagina, que termina de determinarnos la
+direccion fisica.
+ */
 typedef struct _page_entry {
 	uchar p:1;
 	uchar rw:1;
@@ -34,5 +34,7 @@ typedef struct _page_entry {
 void mmu_inicializar_dir_kernel();
 void mmu_inicializar();
 
+int mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, uchar userSupervisor);
+int munmap(uint directoryBase, uint virtualAddress);
 
 #endif	/* !__MMU_H__ */

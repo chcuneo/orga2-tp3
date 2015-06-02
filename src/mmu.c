@@ -6,6 +6,7 @@
 */
 
 #include "defines.h"
+#include "game.h"
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
@@ -22,11 +23,18 @@
 /* -------------------------------------------------------------------------- */
 
 
+#define DIRECTORY_TABLE_PHYS 0x...
+
 /**
  * All of our functions will operate depending on where the table directory
  * is located. This is intimately related to the task that is currently running.
  * The cr3 register will hold the page directory address.
  */
+
+/**
+ *
+ */
+uint pageTableLastAddress;
 
 /**
  * Creates a page table at the specified page directory with some given attributes.
@@ -219,7 +227,7 @@ int delete_page(
  * create it.
  *
  * As of the current implementation, whenever we create a new page table, we
- * just place it in linear order beginning from the address MAPA_BASE_TABLA
+ * just place it in linear order beginning from the address MAPA_BASE_TABLA              //Aca seria desde la direccion pasada por paramtre
  * begins. Whenever we map a new page table, we just put it next to the
  * last defined page table.
  */
@@ -242,9 +250,13 @@ int mmap(
 	int output = create_page_table(
 		directoryBase,
 		directoryEntry,
-		0x0, // TODO
+		pageTableLastAddress,
 		readWrite,
 		userSupervisor);
+
+	if (output == E_OK) {
+		pageTableLastAddress -= 4096;
+	}
 
 	// Creamos la pagina que mapea como queremos
 	output = create_page(
@@ -285,27 +297,48 @@ int munmap(
 	}
 }
 
+#define KERNEL_DIR_TABLE  0x27000
+#define KERNEL_PAGE0	  0x28000
+
 #define CODIGO_BASE       0X400000
+#define MAPA_BASE_FISICA  0x500000
 #define MAPA_BASE_VIRTUAL 0x800000
 
-
-#define MAPA_BASE_FISICA  0x27000
-#define MAPA_BASE_PAGE0	  0x28000
 void mmu_inicializar_dir_kernel() {
-	create_page_table(MAPA_BASE_FISICA, 0, MAPA_BASE_PAGE0, 1, 1);
+	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 1);
 
 	uint offset = 0;
 	long long x;
 
 	// x/1024wx 0x28000
 	for (x = 0; x < 1024; ++x) {
-		create_page(MAPA_BASE_FISICA, 0, x, offset, 1, 1);
+		create_page(KERNEL_DIR_TABLE, 0, x, offset, 1, 1);
 		offset += PAGE_SIZE;
 	}
 
-	lcr3((uint)MAPA_BASE_FISICA);
+	lcr3((unsigned int)KERNEL_DIR_TABLE);
+}
+
+void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBase) {
+	// Armamos el identity mapping
+	uint offset = 0;
+	long long x;
+
+	for (x = 0; x < 1024; ++x) {
+		// La memoria del kernel la ponemos como user y en read
+		mmap(offset, offset, directoryBase, 0, 1);
+		offset += PAGE_SIZE;
+	}
+
+	mmap(CODIGO_BASE, pirateCodeBase, directoryBase, 1, 0);
+
+	for (x = 0; x < MAPA_ANCHO; ++x) {
+		for (y = 0; y < MAPA_ALTO; ++y) {
+			mmap();
+		}
+	}
 }
 
 void mmu_inicializar() {
-
+	pageTableLastAddress = DIRECTORY_TABLE_PHYS - 4096;
 }
