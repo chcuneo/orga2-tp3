@@ -206,7 +206,7 @@ int delete_page(
  * create it.
  *
  * As of the current implementation, whenever we create a new page table, we
- * just place it in linear order beginning from the address MAPA_BASE_TABLA
+ * just place it in linear order beginning from the address MAPA_BASE_TABLA              //Aca seria desde la direccion pasada por paramtre
  * begins. Whenever we map a new page table, we just put it next to the
  * last defined page table.
  */
@@ -270,25 +270,26 @@ int munmap(
 	}
 }
 
-#define CODIGO_BASE       0X40000
-#define MAPA_BASE_VIRTUAL 0x80000
+#define KERNEL_DIR_TABLE  0x27000
+#define KERNEL_PAGE0	  0x28000
 
+#define CODIGO_BASE       0X400000
+#define MAPA_BASE_FISICA  0x500000
+#define MAPA_BASE_VIRTUAL 0x800000
 
-#define MAPA_BASE_FISICA  0x27000
-#define MAPA_BASE_PAGE0	  0x28000
 void mmu_inicializar_dir_kernel() {
-	create_page_table(MAPA_BASE_FISICA, 0, MAPA_BASE_PAGE0, 1, 1);
+	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 1);
 
 	unsigned int offset = 0;
 	long long x;
 
 	// x/1024wx 0x28000
 	for (x = 0; x < 1024; ++x) {
-		create_page(MAPA_BASE_FISICA, 0, x, offset, 1, 1);
+		create_page(KERNEL_DIR_TABLE, 0, x, offset, 1, 1);
 		offset += 4096;
 	}
 
-	lcr3((unsigned int)MAPA_BASE_FISICA);
+	lcr3((unsigned int)KERNEL_DIR_TABLE);
 }
 
 void mmu_inicializar() {

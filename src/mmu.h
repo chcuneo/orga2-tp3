@@ -34,5 +34,14 @@ typedef struct _page_entry {
 void mmu_inicializar_dir_kernel();
 void mmu_inicializar();
 
+int mmap(
+	unsigned int virtualAddress,
+	unsigned int physicalAddress,
+	unsigned int directoryBase,
+	unsigned char readWrite,
+	unsigned char userSupervisor);
+int munmap(
+	unsigned int directoryBase,
+	unsigned int virtualAddress);
 
 #endif	/* !__MMU_H__ */
