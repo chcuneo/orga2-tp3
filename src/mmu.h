@@ -18,17 +18,17 @@
 			direccion fisica.
 			 */
 typedef struct _page_entry {
-	unsigned char p:1;
-	unsigned char rw:1;
-	unsigned char us:1;
-	unsigned char pwt:1;
-	unsigned char pcd:1;
-	unsigned char a:1;
-	unsigned char d:1;
-	unsigned char pat:1;
-	unsigned char g:1;
-	unsigned char ignored:3;
-	unsigned int offset:20;
+	uchar p:1;
+	uchar rw:1;
+	uchar us:1;
+	uchar pwt:1;
+	uchar pcd:1;
+	uchar a:1;
+	uchar d:1;
+	uchar pat:1;
+	uchar g:1;
+	uchar ignored:3;
+	uint offset:20;
 } __attribute__((__packed__)) page_entry;
 
 void mmu_inicializar_dir_kernel();

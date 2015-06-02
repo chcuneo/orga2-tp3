@@ -5,12 +5,12 @@
   definicion de funciones del manejador de memoria
 */
 
+#include "defines.h"
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
 /* Atributos paginas */
-/* -------------------------------------------------------------------------- */
-
+// /* -------------------------------------------------------------------------- */
 
 /* Direcciones fisicas de codigos */
 /* -------------------------------------------------------------------------- */
@@ -37,11 +37,11 @@
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_PRESENT, E_OK
  */
 int create_page_table(
-	unsigned int directoryBase,
-	unsigned int directoryEntry,
-	unsigned int physicalAddress,
-	unsigned char readWrite,
-	unsigned char userSupervisor) {
+	uint directoryBase,
+	uint directoryEntry,
+	uint physicalAddress,
+	uchar readWrite,
+	uchar userSupervisor) {
 
 	if (directoryEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
@@ -54,18 +54,21 @@ int create_page_table(
 	}
 
 	pageDirectory[directoryEntry] = (page_entry) {
-			(unsigned char) 0x1,
-			(unsigned char) readWrite,
-			(unsigned char) userSupervisor,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned int) physicalAddress >> 12
+			(uchar) 0x1,
+			(uchar) readWrite,
+			(uchar) userSupervisor,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uint) physicalAddress >> 12
 		};
+
+	// Limpiamos la cache del procesador
+	tlbflush();
 
 	return E_OK;
 }
@@ -78,8 +81,8 @@ int create_page_table(
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_OK
  */
 int delete_page_table(
-	unsigned int directoryBase,
-	unsigned int directoryEntry) {
+	uint directoryBase,
+	uint directoryEntry) {
 
 	if (directoryEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
@@ -91,7 +94,7 @@ int delete_page_table(
 		return E_PAGE_TABLE_MISSING;
 	}
 
-	unsigned int physicalAddress = pageDirectory[directoryEntry].offset << 12;
+	uint physicalAddress = pageDirectory[directoryEntry].offset << 12;
 	pageDirectory[directoryEntry].p = 0;
 
 	page_entry *pageTable = (page_entry *)physicalAddress;
@@ -101,6 +104,9 @@ int delete_page_table(
 	for (i = 0; i < 1024; ++i) {
 		pageTable[i].p = 0;
 	}
+
+	// Limpiamos la cache del procesador
+	tlbflush();
 
 	return E_OK;
 }
@@ -118,12 +124,12 @@ int delete_page_table(
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_PAGE_PRESENT, E_OK
  */
 int create_page(
-	unsigned int directoryBase,
-	unsigned int directoryEntry,
-	unsigned int tableEntry,
-	unsigned int physicalAddress,
-	unsigned char readWrite,
-	unsigned char userSupervisor) {
+	uint directoryBase,
+	uint directoryEntry,
+	uint tableEntry,
+	uint physicalAddress,
+	uchar readWrite,
+	uchar userSupervisor) {
 
 	if (directoryEntry >= 1024 || tableEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
@@ -135,7 +141,7 @@ int create_page(
 		return E_PAGE_TABLE_MISSING;
 	}
 
-	unsigned int pageTableAddress = pageDirectory[directoryEntry].offset << 12;
+	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
 	page_entry *pageTable = (page_entry *)pageTableAddress;
 
 	if (pageTable[tableEntry].p == 1) {
@@ -149,18 +155,21 @@ int create_page(
 			a memoria, y eso nos da el descriptor de pagina, que termina de determinarnos la
 			direccion fisica.
 			 */
-			(unsigned char) 0x1,
-			(unsigned char) readWrite,
-			(unsigned char) userSupervisor,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned char) 0x0,
-			(unsigned int) physicalAddress >> 12
+			(uchar) 0x1,
+			(uchar) readWrite,
+			(uchar) userSupervisor,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uchar) 0x0,
+			(uint) physicalAddress >> 12
 		};
+
+	// Limpiamos la cache del procesador
+	tlbflush();
 
 	return E_OK;
 }
@@ -175,9 +184,9 @@ int create_page(
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_PAGE_MISSING, E_OK
  */
 int delete_page(
-	unsigned int directoryBase,
-	unsigned int directoryEntry,
-	unsigned int tableEntry) {
+	uint directoryBase,
+	uint directoryEntry,
+	uint tableEntry) {
 
 	if (directoryEntry >= 1024 || tableEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
@@ -189,7 +198,7 @@ int delete_page(
 		return E_PAGE_TABLE_MISSING;
 	}
 
-	unsigned int pageTableAddress = pageDirectory[directoryEntry].offset << 12;
+	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
 	page_entry *pageTable = (page_entry *)pageTableAddress;
 
 	if (pageTable[tableEntry].p == 0) {
@@ -197,6 +206,10 @@ int delete_page(
 	}
 
 	pageTable[tableEntry].p = 0;
+
+	// Limpiamos la cache del procesador
+	tlbflush();
+
 	return E_OK;
 }
 
@@ -212,18 +225,18 @@ int delete_page(
  */
 
 int mmap(
-	unsigned int virtualAddress,
-	unsigned int physicalAddress,
-	unsigned int directoryBase,
-	unsigned char readWrite,
-	unsigned char userSupervisor) {
+	uint virtualAddress,
+	uint physicalAddress,
+	uint directoryBase,
+	uchar readWrite,
+	uchar userSupervisor) {
 
 	// Obtenemos las partes relevantes del address virtual
-	unsigned int directoryEntry = virtualAddress >> 22;
-	unsigned int tableEntry = (virtualAddress >> 12) & 0x3FF;
+	uint directoryEntry = virtualAddress >> 22;
+	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
-	// Alineamos el address fisico a 4KB
-	physicalAddress = (physicalAddress / 4096) * 4096;
+	// Alineamos el address fisico al tamano de pagina
+	physicalAddress = (physicalAddress / PAGE_SIZE) * PAGE_SIZE;
 
 	// Creamos (o no, si ya existe) la page table que vamos a necesitar
 	int output = create_page_table(
@@ -257,21 +270,23 @@ int mmap(
  * @ret E_INVALID_ADDRESS, E_OK
  */
 int munmap(
-	unsigned int directoryBase,
-	unsigned int virtualAddress) {
+	uint directoryBase,
+	uint virtualAddress) {
 
-	unsigned int directoryEntry = virtualAddress >> 22;
-	unsigned int tableEntry = (virtualAddress >> 12) & 0x3FF;
+	uint directoryEntry = virtualAddress >> 22;
+	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
-	if (delete_page(directoryBase, directoryEntry, tableEntry) != E_OK) {
+	int output = delete_page(directoryBase, directoryEntry, tableEntry);
+
+	if (output != E_OK) {
 		return E_INVALID_ADDRESS;
 	} else {
 		return E_OK;
 	}
 }
 
-#define CODIGO_BASE       0X40000
-#define MAPA_BASE_VIRTUAL 0x80000
+#define CODIGO_BASE       0X400000
+#define MAPA_BASE_VIRTUAL 0x800000
 
 
 #define MAPA_BASE_FISICA  0x27000
@@ -279,16 +294,16 @@ int munmap(
 void mmu_inicializar_dir_kernel() {
 	create_page_table(MAPA_BASE_FISICA, 0, MAPA_BASE_PAGE0, 1, 1);
 
-	unsigned int offset = 0;
+	uint offset = 0;
 	long long x;
 
 	// x/1024wx 0x28000
 	for (x = 0; x < 1024; ++x) {
 		create_page(MAPA_BASE_FISICA, 0, x, offset, 1, 1);
-		offset += 4096;
+		offset += PAGE_SIZE;
 	}
 
-	lcr3((unsigned int)MAPA_BASE_FISICA);
+	lcr3((uint)MAPA_BASE_FISICA);
 }
 
 void mmu_inicializar() {
