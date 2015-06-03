@@ -104,16 +104,16 @@ BITS 32
 
     ; Cargar IDT
     lidt [IDT_DESC]
-
-    mov bx, 0x00
-    div bx
+    ; mov bx, 0x00
+    ; div bx
 
     ; Configurar controlador de interrupciones
-
+    call resetear_pic
+    call habilitar_pic
     ; Cargar tarea inicial
 
     ; Habilitar interrupciones
-    ;sti
+    sti
     ; Saltar a la primera tarea: Idle
 
     ; Ciclar infinitamente (por si algo sale mal...)
@@ -134,5 +134,7 @@ extern IDT_DESC
 extern screen_inicializar
 extern print_state
 extern mmu_inicializar
+extern resetear_pic
+extern habilitar_pic
 
 %include "a20.asm"

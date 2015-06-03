@@ -48,6 +48,8 @@ extern void _isr17();
 extern void _isr18();
 extern void _isr19();
 extern void _isr20();
+extern void _isr32();
+extern void _isr33();
 
 void idt_inicializar();
 

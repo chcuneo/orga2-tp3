@@ -82,10 +82,31 @@ ISR 20
 ;;
 ;; Rutina de atención del RELOJ
 ;; -------------------------------------------------------------------------- ;;
+extern screen_actualizar_reloj_global
+extern fin_intr_pic1
+global _isr32
 
+_isr32:
+	pushad
+	call fin_intr_pic1
+	call screen_actualizar_reloj_global
+	popad
+iret
 ;;
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
+
+global _isr33
+
+_isr33:
+	inc ebx
+	pushad
+	in al, 0x60
+	call fin_intr_pic1
+	print_regs
+	popad
+iret
+
 
 ;;
 ;; Rutinas de atención de las SYSCALLS

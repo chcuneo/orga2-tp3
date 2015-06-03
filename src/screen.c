@@ -13,14 +13,13 @@ extern jugador_t jugadorA, jugadorB;
 
 
 static ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO;
+static uint reloj_global = 0;
 
 const char reloj[] = "|/-\\";
 #define reloj_size 4
 
 
 void screen_actualizar_reloj_global() {
-    static uint reloj_global = 0;
-
     reloj_global = (reloj_global + 1) % reloj_size;
 
     screen_pintar(reloj[reloj_global], C_BW, 49, 79);
