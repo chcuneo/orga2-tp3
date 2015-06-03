@@ -10,6 +10,7 @@
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
+#include "screen.h" // TODO: borrar
 /* Atributos paginas */
 // /* -------------------------------------------------------------------------- */
 
@@ -21,9 +22,6 @@
 
 /* Direcciones fisicas de directorios y tablas de paginas del KERNEL */
 /* -------------------------------------------------------------------------- */
-
-
-#define DIRECTORY_TABLE_PHYS 0x...
 
 /**
  * All of our functions will operate depending on where the table directory
@@ -39,7 +37,7 @@ uint pageTableLastAddress;
 /**
  * Creates a page table at the specified page directory with some given attributes.
  *
- * @param directoryBase page directory address
+ * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @param physicalAddress in-memory location of the page table, 4K aligned
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_PRESENT, E_OK
@@ -84,7 +82,7 @@ int create_page_table(
 /**
  * Deletes any given page table.
  *
- * @param directoryBase page directory address
+ * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_OK
  */
@@ -123,7 +121,7 @@ int delete_page_table(
  * Creates a page at a given page directory and table, with some specified
  * attributes.
  *
- * @param directoryBase page directory address
+ * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @param tableEntry page index within the page table
  * @param physicalAddress in-memory location of the page table, 4K aligned
@@ -186,7 +184,7 @@ int create_page(
 /**
  * Deletes the specified page.
  *
- * @param directoryBase page directory address
+ * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @param tableEntry page index within the page table
  * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_PAGE_MISSING, E_OK
@@ -227,7 +225,7 @@ int delete_page(
  * create it.
  *
  * As of the current implementation, whenever we create a new page table, we
- * just place it in linear order beginning from the address MAPA_BASE_TABLA              //Aca seria desde la direccion pasada por paramtre
+ * just place it in linear order beginning from the address MAPA_BASE_TABLA
  * begins. Whenever we map a new page table, we just put it next to the
  * last defined page table.
  */
@@ -277,7 +275,7 @@ int mmap(
 /**
  * Unmaps the page corresponding to a virtual address
  *
- * @param directoryBase page directory address
+ * @param directoryBase page directory address, 4K aligned
  * @param virtualAddress address to remove from pagination
  * @ret E_INVALID_ADDRESS, E_OK
  */
@@ -300,10 +298,6 @@ int munmap(
 #define KERNEL_DIR_TABLE  0x27000
 #define KERNEL_PAGE0	  0x28000
 
-#define CODIGO_BASE       0X400000
-#define MAPA_BASE_FISICA  0x500000
-#define MAPA_BASE_VIRTUAL 0x800000
-
 void mmu_inicializar_dir_kernel() {
 	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 1);
 
@@ -316,10 +310,20 @@ void mmu_inicializar_dir_kernel() {
 		offset += PAGE_SIZE;
 	}
 
-	lcr3((unsigned int)KERNEL_DIR_TABLE);
+	lcr3((uint)KERNEL_DIR_TABLE);
 }
 
-void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBase) {
+#define CODIGO_BASE       0x400000
+#define MAPA_BASE_FISICA  0x500000
+#define MAPA_BASE_VIRTUAL 0x800000
+
+/**
+ * @param directoryBase page directory address, 4K aligned
+ * @param pirateCodeBaseSrc virtual address of the pirate code
+ * @param pirateCodeBaseDst physical address to map the address CODIGO_BASE to
+ */
+void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst) {
+	// TODO: mapear las partes del mapa ya descubiertas
 	// Armamos el identity mapping
 	uint offset = 0;
 	long long x;
@@ -330,14 +334,30 @@ void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBase) {
 		offset += PAGE_SIZE;
 	}
 
-	mmap(CODIGO_BASE, pirateCodeBase, directoryBase, 1, 0);
+	// Mapeamos el codigo del pirata
+	mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 0);
 
-	for (x = 0; x < MAPA_ANCHO; ++x) {
-		for (y = 0; y < MAPA_ALTO; ++y) {
-			mmap();
-		}
+	// Cargamos el cr3 nuevo y backupeamos el nuestro
+	offset = rcr3();
+	lcr3(directoryBase);
+
+	// Copiamos el codigo del pirata
+	int y;
+	int *src = (int *)pirateCodeBaseSrc;
+	int *dst = (int *)CODIGO_BASE;
+
+	for (y = 0; y < 1024; ++y) {
+		*dst = *src;
+		++src;
+		++dst;
 	}
+
+	// Volvemos al cr3 anterior
+	lcr3(offset);
 }
+
+#define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
+#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - 16 * PAGE_SIZE)
 
 void mmu_inicializar() {
 	pageTableLastAddress = DIRECTORY_TABLE_PHYS - 4096;
