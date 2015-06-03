@@ -6,11 +6,9 @@
 */
 
 #include "defines.h"
-#include "game.h"
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
-#include "screen.h" // TODO: borrar
 /* Atributos paginas */
 // /* -------------------------------------------------------------------------- */
 
@@ -74,7 +72,7 @@ int create_page_table(
 		};
 
 	// Limpiamos la cache del procesador
-	tlbflush();
+	tlbflush(); // TODO: ver en que casos especificos
 
 	return E_OK;
 }

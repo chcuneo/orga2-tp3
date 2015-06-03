@@ -45,4 +45,15 @@ void unrecoverableHandler(uint exception) {
     print(unrecoverableMsgs[exception], line, 0, C_FG_RED | C_BLINK);
 }
 
-#endif  /* !__ISR_H__ */
+uchar kbdMap[] = {};
+
+void isr_keyboard(uchar scanCode) {
+    if (scanCode & 0x80) {
+        // Release
+    } else {
+        // Press
+        screen_pintar(scanCode, C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
+    }
+}
+
+#endif  

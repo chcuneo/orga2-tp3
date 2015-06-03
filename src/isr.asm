@@ -11,20 +11,18 @@ BITS 32
 sched_tarea_offset:     dd 0x00
 sched_tarea_selector:   dw 0x00
 
-;; PIC
-extern fin_intr_pic1
-
 ;; Sched
 extern sched_tick
 extern sched_tarea_actual
 
-extern unrecoverableHandler
-extern print_state
-extern clear
-
 ;;
 ;; Definición de MACROS
 ;; -------------------------------------------------------------------------- ;;
+
+;; ISR
+extern unrecoverableHandler
+extern print_state
+extern clear
 
 %macro ISR 1
 global _isr%1
@@ -96,14 +94,16 @@ iret
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
 
+extern isr_keyboard
 global _isr33
 
 _isr33:
-	inc ebx
 	pushad
 	in al, 0x60
+	push eax
+	call isr_keyboard
 	call fin_intr_pic1
-	print_regs
+	pop eax
 	popad
 iret
 
