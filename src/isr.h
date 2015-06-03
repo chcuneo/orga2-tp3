@@ -10,6 +10,7 @@
 
 #include "colors.h"
 #include "screen.h"
+#include "keyboardcodes.h"
 
 char *unrecoverableMsgs[] = {
     "Division by zero",
@@ -48,11 +49,16 @@ void unrecoverableHandler(uint exception) {
 uchar kbdMap[] = {};
 
 void isr_keyboard(uchar scanCode) {
-    if (scanCode & 0x80) {
-        // Release
-    } else {
-        // Press
-        screen_pintar(scanCode, C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
+    //Cada caso puede ser una tecla definida en el keyboardcodes.h
+    switch (scanCode) {
+        case KBC_F_P:
+            screen_pintar('F', C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
+            break;
+        case KBC_H_R:
+            screen_pintar('H', C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
+            break;
+        default:
+            break;
     }
 }
 

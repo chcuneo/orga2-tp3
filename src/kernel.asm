@@ -104,8 +104,6 @@ BITS 32
 
     ; Cargar IDT
     lidt [IDT_DESC]
-    ; mov bx, 0x00
-    ; div bx
 
     ; Configurar controlador de interrupciones
     call resetear_pic
