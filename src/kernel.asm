@@ -94,6 +94,9 @@ BITS 32
     call mmu_inicializar
 
     ; Inicializar tss
+    call gdt_tsd_inicializar
+    lgdt [GDT_DESC]
+    call tss_inicializar
 
     ; Inicializar tss de la tarea Idle
 
@@ -134,5 +137,7 @@ extern print_state
 extern mmu_inicializar
 extern resetear_pic
 extern habilitar_pic
+extern gdt_tsd_inicializar
+extern tss_inicializar
 
 %include "a20.asm"

@@ -55,6 +55,7 @@ typedef struct str_tss {
     unsigned short  iomap;
 } __attribute__((__packed__, aligned (8))) tss;
 
+void gdt_tsd_inicializar();
 void tss_inicializar();
 
 #endif  /* !__TSS_H__ */

@@ -293,9 +293,6 @@ int munmap(
 	}
 }
 
-#define KERNEL_DIR_TABLE  0x27000
-#define KERNEL_PAGE0	  0x28000
-
 void mmu_inicializar_dir_kernel() {
 	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 1);
 
@@ -310,10 +307,6 @@ void mmu_inicializar_dir_kernel() {
 
 	lcr3((uint)KERNEL_DIR_TABLE);
 }
-
-#define CODIGO_BASE       0x400000
-#define MAPA_BASE_FISICA  0x500000
-#define MAPA_BASE_VIRTUAL 0x800000
 
 /**
  * @param directoryBase page directory address, 4K aligned
@@ -353,9 +346,6 @@ void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint
 	// Volvemos al cr3 anterior
 	lcr3(offset);
 }
-
-#define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
-#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - 16 * PAGE_SIZE)
 
 void mmu_inicializar() {
 	pageTableLastAddress = DIRECTORY_TABLE_PHYS - 4096;

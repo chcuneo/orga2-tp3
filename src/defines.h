@@ -39,6 +39,8 @@ typedef unsigned int   uint;
 #define GDT_IDX_CODE3_DESC			10
 #define GDT_IDX_DATA3_DESC			11
 #define GDT_IDX_VIDEO_DESC			12
+#define GDT_IDX_TASKB_DESC			13
+#define GDT_IDX_TASKI_DESC			14
 
 /* Offsets en la gdt */
 /* -------------------------------------------------------------------------- */
@@ -50,6 +52,14 @@ typedef unsigned int   uint;
 #define GDT_OFF_VIDEO_DESC			(GDT_IDX_VIDEO_DESC		<< 3)
 /* Selectores de segmentos */
 /* -------------------------------------------------------------------------- */
+
+#define KERNEL_DIR_TABLE  0x27000
+#define KERNEL_PAGE0	  0x28000
+#define CODIGO_BASE       0x400000
+#define MAPA_BASE_FISICA  0x500000
+#define MAPA_BASE_VIRTUAL 0x800000
+#define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
+#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - 16 * PAGE_SIZE)
 
 void* error();
 
