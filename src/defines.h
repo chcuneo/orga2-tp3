@@ -60,6 +60,8 @@ typedef unsigned int   uint;
 #define MAPA_BASE_VIRTUAL 0x800000
 #define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
 #define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - 16 * PAGE_SIZE)
+#define DIRECTORY_TABLE_ENTRY_SIZE 0x00001000
+#define PAGE_TABLE_SIZE 0x00001000
 
 void* error();
 

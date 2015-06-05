@@ -8,12 +8,6 @@
 #ifndef __TSS_H__
 #define __TSS_H__
 
-#include "defines.h"
-#include "i386.h"
-#include "gdt.h"
-#include "game.h"
-
-
 typedef struct str_tss {
     unsigned short  ptl;
     unsigned short  unused0;

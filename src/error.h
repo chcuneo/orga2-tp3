@@ -8,5 +8,6 @@
 #define E_PAGE_MISSING -1340
 #define E_INVALID_ADDRESS -1341
 #define E_OUT_OF_BOUNDS -1342
+#define E_ADDRESS_NOT_ALIGNED -1343
 
 #endif

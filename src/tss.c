@@ -5,8 +5,9 @@
   definicion de estructuras para administrar tareas
 */
 
+#include "defines.h"
 #include "tss.h"
-#include "mmu.h"
+#include "game.h"
 
 
 tss tss_inicial;
@@ -32,7 +33,7 @@ void gdt_tsd_inicializar() {
 				(uchar)     0x09,           /* type         */
 				(uchar)     0x00,           /* s            */
 				(uchar)     0x01,           /* dpl          */
-				(uchar)     0x00,           /* p            */
+				(uchar)     0x01,           /* p            */
 				(uchar)     0x00,           /* limit[16:19] */
 				(uchar)     0x00,           /* avl          */
 				(uchar)     0x00,           /* l            */
@@ -48,10 +49,11 @@ void tss_inicializar() {
 	tss *tssDirectory = (tss *)TSS_ARRAY_PHYS;
 
 	for (task = 0; task < 16; ++task) {
-		uint address = TSS_STACKS_PHYS + PAGE_SIZE * (task + 1);
 		tssDirectory[task].cs = GDT_OFF_CODE3_DESC;
 		tssDirectory[task].ds = GDT_OFF_DATA3_DESC;
 		tssDirectory[task].ss = GDT_OFF_DATA3_DESC;
-		tssDirectory[task].esp0 = address;
+		tssDirectory[task].cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * task);
+		tssDirectory[task].esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + 1);
+		// TODO: terminar
 	}
 }

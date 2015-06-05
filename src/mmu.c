@@ -47,11 +47,15 @@ int create_page_table(
 	uchar readWrite,
 	uchar userSupervisor) {
 
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	if (directoryEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(4096))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 1) {
 		return E_PAGE_TABLE_PRESENT;
@@ -88,11 +92,15 @@ int delete_page_table(
 	uint directoryBase,
 	uint directoryEntry) {
 
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	if (directoryEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(4096))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -135,11 +143,15 @@ int create_page(
 	uchar readWrite,
 	uchar userSupervisor) {
 
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	if (directoryEntry >= 1024 || tableEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(4096))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -192,11 +204,15 @@ int delete_page(
 	uint directoryEntry,
 	uint tableEntry) {
 
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	if (directoryEntry >= 1024 || tableEntry >= 1024) {
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(4096))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -235,12 +251,16 @@ int mmap(
 	uchar readWrite,
 	uchar userSupervisor) {
 
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	// Obtenemos las partes relevantes del address virtual
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
 	// Alineamos el address fisico al tamano de pagina
-	physicalAddress = (physicalAddress / PAGE_SIZE) * PAGE_SIZE;
+	physicalAddress = ALIGN(physicalAddress)
 
 	// Creamos (o no, si ya existe) la page table que vamos a necesitar
 	int output = create_page_table(
@@ -251,7 +271,7 @@ int mmap(
 		userSupervisor);
 
 	if (output == E_OK) {
-		pageTableLastAddress -= 4096;
+		pageTableLastAddress -= PAGE_TABLE_SIZE;
 	}
 
 	// Creamos la pagina que mapea como queremos
@@ -280,6 +300,10 @@ int mmap(
 int munmap(
 	uint directoryBase,
 	uint virtualAddress) {
+
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
 
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
@@ -314,6 +338,10 @@ void mmu_inicializar_dir_kernel() {
  * @param pirateCodeBaseDst physical address to map the address CODIGO_BASE to
  */
 void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst) {
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
 	// TODO: mapear las partes del mapa ya descubiertas
 	// Armamos el identity mapping
 	uint offset = 0;
@@ -348,5 +376,5 @@ void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint
 }
 
 void mmu_inicializar() {
-	pageTableLastAddress = DIRECTORY_TABLE_PHYS - 4096;
+	pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 }
