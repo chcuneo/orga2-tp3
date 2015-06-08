@@ -250,7 +250,7 @@ void print_state(){
     unsigned int espR;
     unsigned int ebpR;
 
-    __asm __volatile("add %0, %%esp" : : "i" (0x000000a8));
+    __asm __volatile("add %0, %%esp" : : "i" (0x000000ec));
     __asm __volatile("pop %0" : "=r" (ebpR): );
     __asm __volatile("pop %0": "=r" (eipR) : );
     __asm __volatile("pop %0": "=r" (eflagsR) : );
@@ -258,7 +258,7 @@ void print_state(){
     __asm __volatile("push %0": : "r" (eflagsR) );
     __asm __volatile("push %0": : "r" (eipR) );
     __asm __volatile("push %0": : "r" (ebpR) );
-    __asm __volatile("sub %0, %%esp" : : "i" (0x000000a8));
+    __asm __volatile("sub %0, %%esp" : : "i" (0x000000ec));
 
     eipR -= 1;      // Tamaño de la operacion: "pushf".
     eipR -= 5;      // Tamaño de la operacion: "call print_state". 
@@ -278,6 +278,15 @@ void print_state(){
     unsigned int cr2R = rcr2();
     unsigned int cr3R = rcr3();
     unsigned int cr4R = rcr4();
+
+    unsigned int espTemp = espR;
+    unsigned int stackArr[11];
+    int x;
+    for (x = 0; espTemp < ebpR && x < 12; x++){
+        __asm __volatile("mov (%0), %%eax" : : "r" (espTemp));
+        __asm __volatile("mov %%eax, %0" : "=r" (stackArr[x]) :);
+        espTemp += 4;
+    }
 
     unsigned int fila = ((VIDEO_FILS - 33) / 2) - 1;
     unsigned int col = ((VIDEO_COLS - 28) / 2) - 1;
@@ -333,6 +342,13 @@ void print_state(){
     print_hex(cr3R, 8, col + 20, fila + 7, attrData);
     print("cr4", fila + 9, col + 16, attrLabels);  
     print_hex(cr4R, 8, col + 20, fila + 9, attrData);
+
+    print("stack", fila + 20, col + 16, attrLabels); 
+    int stackElementsRow = fila + 21;
+    int i;
+    for (i = 0; i < x; i++){
+        print_hex(stackArr[i], 8, col + 16, stackElementsRow + i, attrData);
+    }
 
     //Restauro registros no protegidos por convencion
     __asm __volatile("mov %0,%%ecx" : : "r" (ecxR));

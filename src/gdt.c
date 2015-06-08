@@ -113,7 +113,7 @@ gdt_entry gdt[GDT_COUNT] = {
         (uchar)     0x01,           /* db           */
         (uchar)     0x01,           /* g            */
         (uchar)     0x0A,           /* base[31:24]  */
-    }
+    },
 
     /**
      * Aca comienzan las 18 tareas que soportamos
@@ -122,7 +122,7 @@ gdt_entry gdt[GDT_COUNT] = {
     // Tarea inicial
     [GDT_IDX_TASKB_DESC] = (gdt_entry) {
         (ushort)    0x0067,         /* limit[0:15]  */
-        (ushort)    0x0000 0x100000 ,         /* base[0:15]   */
+        (ushort)    0x0000,         /* base[0:15]   */
         (uchar)     0x00,           /* base[23:16]  */
         (uchar)     0x0B,           /* type         */
         (uchar)     0x00,           /* s            */
@@ -134,7 +134,7 @@ gdt_entry gdt[GDT_COUNT] = {
         (uchar)     0x00,           /* db           */
         (uchar)     0x00,           /* g            */
         (uchar)     0x10,           /* base[31:24]  */
-    }
+    },
 
     // Tarea idle
     [GDT_IDX_TASKI_DESC] = (gdt_entry) {

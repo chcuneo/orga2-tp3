@@ -260,7 +260,7 @@ int mmap(
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
 	// Alineamos el address fisico al tamano de pagina
-	physicalAddress = ALIGN(physicalAddress)
+	physicalAddress = ALIGN(physicalAddress);
 
 	// Creamos (o no, si ya existe) la page table que vamos a necesitar
 	int output = create_page_table(
@@ -337,7 +337,7 @@ void mmu_inicializar_dir_kernel() {
  * @param pirateCodeBaseSrc virtual address of the pirate code
  * @param pirateCodeBaseDst physical address to map the address CODIGO_BASE to
  */
-void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst) {
+int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst) {
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
 	}
@@ -373,6 +373,7 @@ void mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint
 
 	// Volvemos al cr3 anterior
 	lcr3(offset);
+	return E_OK;
 }
 
 void mmu_inicializar() {
