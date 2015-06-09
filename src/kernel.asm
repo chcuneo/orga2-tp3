@@ -96,8 +96,6 @@ BITS 32
     ; Inicializar tss
     call tss_inicializar
     lgdt [GDT_DESC]
-    ; Inicializar tss de la tarea Idle
-
 
     ; Inicializar el scheduler
 
@@ -112,11 +110,15 @@ BITS 32
     call habilitar_pic
 
     ; Cargar tarea inicial
+    mov ax, 0xD ; Esto tiene que corresponderse con GDT_IDX_TASKB_DESC
+    ltr ax
 
+    xchg bx, bx
     ; Habilitar interrupciones
     sti
 
     ; Saltar a la primera tarea: Idle
+    jmp 0xE:0xF3D3F450 ; El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
 
     ; Ciclar infinitamente (por si algo sale mal...)
     mov eax, 0xFFFF

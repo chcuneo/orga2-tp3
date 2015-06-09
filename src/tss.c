@@ -11,6 +11,9 @@
 #include "error.h"
 #include "gdt.h"
 
+#include "screen.h"
+#include "i386.h"
+
 tss tss_idle = (tss) {
 	.ptl = 0x0,
 	.unused0 = 0x0,
@@ -100,7 +103,7 @@ tss tss_jugadorB[MAX_CANT_PIRATAS_VIVOS];
 uint lastUninitializedGDTEntry;
 
 int tss_gdt_inicializar(uint tssAddress) {
-	if (lastUninitializedGDTEntry >= 256) {
+	if (lastUninitializedGDTEntry >= GDT_COUNT) {
 		return E_GDT_LIMIT_REACHED;
 	}
 
@@ -176,14 +179,13 @@ int tss_inicializar() {
 
 	lastUninitializedGDTEntry = GDT_IDX_TASKI_DESC + 1;
 
-	uint code = tss_gdt_inicializar_bache((uint)&tss_jugadorA, MAX_CANT_PIRATAS_VIVOS);
+	uint code = tss_gdt_inicializar_bache((uint) &tss_jugadorA, MAX_CANT_PIRATAS_VIVOS);
 
 	if (code != E_OK) {
 		return code;
 	}
 
-
-	code = tss_gdt_inicializar_bache((uint)&tss_jugadorB, MAX_CANT_PIRATAS_VIVOS);
+	code = tss_gdt_inicializar_bache((uint) &tss_jugadorB, MAX_CANT_PIRATAS_VIVOS);
 
 	if (code != E_OK) {
 		return code;
