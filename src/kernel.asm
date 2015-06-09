@@ -77,7 +77,7 @@ BITS 32
     ; Imprimir mensaje de bienvenida
     call screen_refresh_logo
 
-    ; Inicializar el juego 
+    ; Inicializar el juego
 
     ; Inicializar pantalla
     call screen_inicializar
@@ -94,12 +94,10 @@ BITS 32
     call mmu_inicializar
 
     ; Inicializar tss
-    call gdt_tsd_inicializar
-    lgdt [GDT_DESC]
     call tss_inicializar
-
+    lgdt [GDT_DESC]
     ; Inicializar tss de la tarea Idle
-    
+
 
     ; Inicializar el scheduler
 
@@ -117,7 +115,7 @@ BITS 32
 
     ; Habilitar interrupciones
     sti
-    
+
     ; Saltar a la primera tarea: Idle
 
     ; Ciclar infinitamente (por si algo sale mal...)
