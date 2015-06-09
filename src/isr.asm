@@ -39,7 +39,7 @@ _isr%1:
 	;;Checkear esto
 	add esp, 12
 	print_regs
-    
+
     mov eax, %1
     push eax
     call unrecoverableHandler
@@ -86,8 +86,9 @@ global _isr32
 
 _isr32:
 	pushad
-	call fin_intr_pic1
 	call screen_actualizar_reloj_global
+
+	call fin_intr_pic1
 	popad
 iret
 ;;
@@ -100,16 +101,31 @@ global _isr33
 _isr33:
 	pushad
 	in al, 0x60
+
 	push eax
 	call isr_keyboard
-	call fin_intr_pic1
 	pop eax
+
+	call fin_intr_pic1
 	popad
 iret
-
 
 ;;
 ;; Rutinas de atención de las SYSCALLS
 ;; -------------------------------------------------------------------------- ;;
 
+extern isr_syscall
+global _isr46
 
+_isr46:
+	pushad
+
+	push eax
+	push ecx
+	call isr_syscall
+	pop ecx
+	pop eax
+
+	call fin_intr_pic1
+	popad
+iret

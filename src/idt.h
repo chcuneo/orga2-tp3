@@ -27,6 +27,8 @@ typedef struct str_idt_entry_fld {
 extern idt_entry idt[];
 extern idt_descriptor IDT_DESC;
 
+// No importa que estas ISR tomen parámetros, son sólo para tener el address
+// disponible en tiempo de linkeo
 extern void _isr0();
 extern void _isr1();
 extern void _isr2();
@@ -50,6 +52,7 @@ extern void _isr19();
 extern void _isr20();
 extern void _isr32();
 extern void _isr33();
+extern void _isr46();
 
 void idt_inicializar();
 

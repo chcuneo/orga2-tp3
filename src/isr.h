@@ -9,7 +9,9 @@
 #define __ISR_H__
 
 #include "colors.h"
+#include "game.h"
 #include "screen.h"
+#include "error.h"
 #include "keyboardcodes.h"
 
 char *unrecoverableMsgs[] = {
@@ -62,4 +64,28 @@ void isr_keyboard(uchar scanCode) {
     }
 }
 
-#endif  
+int isr_syscall(uint operation, uint param) {
+    uint ret = 0;
+
+    // ID es el índice del pirata basado en 0
+    uint id = (rtr() >> 3) - (GDT_IDX_TASKI_DESC + 1);
+
+    switch (operation) {
+        case 0x1:
+            ret = game_syscall_pirata_mover(id, param);
+            break;
+        case 0x2:
+            ret = game_syscall_cavar(id);
+            break;
+        case 0x3:
+            ret = game_syscall_pirata_posicion(id, param);
+            break;
+        default:
+            ret = E_UNKNOWN_OPERATION;
+            break;
+    }
+
+    return ret;
+}
+
+#endif

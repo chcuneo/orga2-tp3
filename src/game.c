@@ -145,26 +145,20 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f)
 }
 
 
-uint game_syscall_pirata_mover(uint id, direccion dir)
+int game_syscall_pirata_mover(uint id, direccion dir)
 {
     // ~ completar
     return 0;
 }
 
-uint game_syscall_cavar(uint id)
+int game_syscall_cavar(uint id)
 {
     // ~ completar ~
 
 	return 0;
 }
 
-uint game_syscall_pirata_posicion(uint id, int idx)
-{
-    // ~ completar ~
-    return 0;
-}
-
-uint game_syscall_manejar(uint syscall, uint param1)
+int game_syscall_pirata_posicion(uint id, int idx)
 {
     // ~ completar ~
     return 0;
