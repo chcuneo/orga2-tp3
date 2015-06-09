@@ -113,47 +113,9 @@ gdt_entry gdt[GDT_COUNT] = {
         (uchar)     0x01,           /* db           */
         (uchar)     0x01,           /* g            */
         (uchar)     0x0A,           /* base[31:24]  */
-    },
-
-    /**
-     * Aca comienzan las 18 tareas que soportamos
-     */
-
-    // Tarea inicial
-    [GDT_IDX_TASKB_DESC] = (gdt_entry) {
-        (ushort)    0x0067,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x0B,           /* type         */
-        (uchar)     0x00,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x00,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x00,           /* db           */
-        (uchar)     0x00,           /* g            */
-        (uchar)     0x10,           /* base[31:24]  */
-    },
-
-    // Tarea idle
-    [GDT_IDX_TASKI_DESC] = (gdt_entry) {
-        (ushort)    0x0067,         /* limit[0:15]  */
-        (ushort)    0x0068,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x09,           /* type         */
-        (uchar)     0x00,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x00,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x00,           /* db           */
-        (uchar)     0x00,           /* g            */
-        (uchar)     0x10,           /* base[31:24]  */
     }
 
-    // Desde el indice 15 a 32 (incluido) estan reservados para la tss
+    // Desde el indice GDT_IDX_VIDEO_DESC + 1 en adelante esta todo reservado para tasks
 };
 
 gdt_descriptor GDT_DESC = {

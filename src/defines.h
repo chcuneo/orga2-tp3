@@ -39,6 +39,7 @@ typedef unsigned int   uint;
 #define GDT_IDX_CODE3_DESC			10
 #define GDT_IDX_DATA3_DESC			11
 #define GDT_IDX_VIDEO_DESC			12
+
 #define GDT_IDX_TASKB_DESC			13
 #define GDT_IDX_TASKI_DESC			14
 

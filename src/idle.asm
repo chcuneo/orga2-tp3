@@ -8,6 +8,8 @@ BITS 32
 
 %include "imprimir.mac"
 
+; ES CRUCIAL QUE ESTA TAREA NO USE LA PILA!!
+; COMPARTE EL EBP CON EL KERNEL, PERO EL ESP NO SE ACTUALIZA
 idle:
     .loopear:
         inc dword [numero]

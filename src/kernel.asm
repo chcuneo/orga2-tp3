@@ -71,8 +71,8 @@ BITS 32
     mov fs, ax
 
     ; Establecer la base de la pila
-    mov ebp, 0x7D000; DECISION DE DISEÑO: Lo ponemos asi para que este en el limite del data segment
-    mov esp, 0x7D000; TODO: Verificar que estas constantes esten bien
+    mov ebp, 0x26000; 0x7D000 TODO: preguntar
+    mov esp, 0x26000; 0x7D000
 
     ; Imprimir mensaje de bienvenida
     call screen_refresh_logo
@@ -99,6 +99,7 @@ BITS 32
     call tss_inicializar
 
     ; Inicializar tss de la tarea Idle
+    
 
     ; Inicializar el scheduler
 
@@ -111,10 +112,12 @@ BITS 32
     ; Configurar controlador de interrupciones
     call resetear_pic
     call habilitar_pic
+
     ; Cargar tarea inicial
 
     ; Habilitar interrupciones
     sti
+    
     ; Saltar a la primera tarea: Idle
 
     ; Ciclar infinitamente (por si algo sale mal...)
