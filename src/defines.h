@@ -51,6 +51,7 @@ typedef unsigned int   uint;
 #define GDT_OFF_CODE3_DESC			(GDT_IDX_CODE3_DESC 	<< 3)
 #define GDT_OFF_DATA3_DESC			(GDT_IDX_DATA3_DESC		<< 3)
 #define GDT_OFF_VIDEO_DESC			(GDT_IDX_VIDEO_DESC		<< 3)
+#define GDT_OFF_TASKB_DESC          (GDT_IDX_TASKB_DESC     << 3)
 /* Selectores de segmentos */
 /* -------------------------------------------------------------------------- */
 

@@ -71,8 +71,8 @@ BITS 32
     mov fs, ax
 
     ; Establecer la base de la pila
-    mov ebp, 0x26000; 0x7D000 TODO: preguntar
-    mov esp, 0x26000; 0x7D000
+    mov ebp, 0x27000; 0x7D000 TODO: preguntar
+    mov esp, 0x27000; 0x7D000
 
     ; Imprimir mensaje de bienvenida
     call screen_refresh_logo
@@ -110,15 +110,13 @@ BITS 32
     call habilitar_pic
 
     ; Cargar tarea inicial
-    mov ax, 0xD ; Esto tiene que corresponderse con GDT_IDX_TASKB_DESC
-    ltr ax
+    call tss_inicializar_tasking
 
-    xchg bx, bx
     ; Habilitar interrupciones
     sti
 
     ; Saltar a la primera tarea: Idle
-    jmp 0xE:0xF3D3F450 ; El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
+    jmp 0x70:0xF3D3F450 ; El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
 
     ; Ciclar infinitamente (por si algo sale mal...)
     mov eax, 0xFFFF
@@ -140,7 +138,8 @@ extern print_state
 extern mmu_inicializar
 extern resetear_pic
 extern habilitar_pic
-extern gdt_tsd_inicializar
 extern tss_inicializar
+extern tss_inicializar_tasking
+extern print_regs
 
 %include "a20.asm"

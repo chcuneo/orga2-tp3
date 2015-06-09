@@ -17,24 +17,24 @@
 tss tss_idle = (tss) {
 	.ptl = 0x0,
 	.unused0 = 0x0,
-	.esp0 = 0x0,
+	.esp0 = 0x0,   // TODO: preguntar bien a que poner las pilas
 	.ss0 = GDT_OFF_DATA0_DESC,
 	.unused1 = 0x0,
 	.esp1 = 0x0,
 	.ss1 = 0x0,
 	.unused2 = 0x0,
-	.esp2 = 0x0, // TODO: preguntar bien a que poner las pilas
+	.esp2 = 0x0,
 	.ss2 = 0x0,
 	.unused3 = 0x0,
 	.cr3 = KERNEL_DIR_TABLE,
 	.eip = 0x16000, // TODO: mover a un define
-	.eflags = 0x0,
+	.eflags = 0x202,
 	.eax = 0x0,
 	.ecx = 0x0,
 	.edx = 0x0,
 	.ebx = 0x0,
-	.esp = 0x0,
-	.ebp = 0x0,
+	.esp = 0x27000, // TODO: mover a un define
+	.ebp = 0x27000,
 	.esi = 0x0,
 	.edi = 0x0,
 	.es = 0x0,
@@ -94,7 +94,7 @@ tss tss_inicial = (tss) {
 	.ldt = 0x0,
 	.unused10 = 0x0,
 	.dtrap = 0x0,
-	.iomap = 0xFFFF
+	.iomap = 0x0
 };
 
 tss tss_jugadorA[MAX_CANT_PIRATAS_VIVOS];
@@ -148,7 +148,7 @@ int tss_inicializar() {
 		(ushort)    0x0067,         /* limit[0:15]  */
 		(ushort)    ((uint) &tss_inicial) & (0x0000FFFF),         /* base[0:15]   */
 		(uchar)     (((uint) &tss_inicial) & (0x00FF0000)) >> 16, /* base[23:16]  */
-		(uchar)     0x0B,           /* type         */
+		(uchar)     0x09,           /* type         */
 		(uchar)     0x00,           /* s            */
 		(uchar)     0x00,           /* dpl          */
 		(uchar)     0x01,           /* p            */
@@ -205,20 +205,22 @@ int tss_inicializar() {
 			.esp1 = 0x0,
 			.ss1 = 0x0,
 			.unused2 = 0x0,
-			.esp2 = 0x0, // TODO: preguntar bien a que poner las pilas
+			.esp2 = 0x0,
 			.ss2 = 0x0,
 			.unused3 = 0x0,
 			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * task),
 			// La direccion del codigo virtual siempre es ahi
 			.eip = 0x400000,
-			.eflags = 0x0,
+			// TODO: Explicar esta constante
+			.eflags = 0x202,
 			.eax = 0x0,
 			.ecx = 0x0,
 			.edx = 0x0,
 			.ebx = 0x0,
 			// La pila la ponemos inicialmente en el final de la pagina reservada para el codigo
-			.esp = 0x4FFFFF,
-			.ebp = 0x4FFFFF,
+			// El 12 contempla que nos pasen 3 parametros.
+			.esp = 0x401000 - 12,
+			.ebp = 0x401000 - 12,
 			.esi = 0x0,
 			.edi = 0x0,
 			.es = 0x0,
@@ -243,4 +245,8 @@ int tss_inicializar() {
 	}
 
 	return E_OK;
+}
+
+void tss_inicializar_tasking() {
+	ltr(GDT_OFF_TASKB_DESC);
 }
