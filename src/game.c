@@ -22,6 +22,8 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 
 #define BOTINES_CANTIDAD 8
 
+
+
 uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
                                         {30,  3, 50}, {30, 38, 50}, {15, 21, 100}, {45, 21, 100} ,
                                         {49,  3, 50}, {49, 38, 50}, {64, 21, 100}, {34, 21, 100}
@@ -93,8 +95,8 @@ void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 }
 
 
-void game_inicializar()
-{
+void game_inicializar(){
+	
 }
 
 void game_jugador_inicializar_mapa(jugador_t *jug)
@@ -131,8 +133,10 @@ pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo)
 }
 
 
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y)
-{
+void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y){
+	if (index < 8){
+
+	}
 }
 
 void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y)
@@ -198,7 +202,15 @@ void game_terminar_si_es_hora()
 #define KB_shiftA   0x2a // 0xaa
 #define KB_shiftB   0x36 // 0xb6
 
-
-void game_atender_teclado(unsigned char tecla)
-{
+void game_atender_teclado(unsigned char tecla){
+	switch (tecla){
+		case KB_shiftA:
+			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, POS_INIT_A_X, POS_INIT_A_Y);
+			break;
+		case KB_shiftB:
+			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, POS_INIT_B_X, POS_INIT_B_Y);
+			break;
+		default:
+			break;
+	}
 }
