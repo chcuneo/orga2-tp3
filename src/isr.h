@@ -48,19 +48,14 @@ void unrecoverableHandler(uint exception) {
     print(unrecoverableMsgs[exception], line, 0, C_FG_RED | C_BLINK);
 }
 
-uchar kbdMap[] = {};
-
 void isr_keyboard(uchar scanCode) {
-    //Cada caso puede ser una tecla definida en el keyboardcodes.h
-    switch (scanCode) {
-        case KBC_F_P:
-            screen_pintar('F', C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
-            break;
-        case KBC_H_R:
-            screen_pintar('H', C_FG_WHITE | C_BG_RED, 0, VIDEO_COLS - 1);
-            break;
-        default:
-            break;
+    if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P){
+        game_atender_teclado(scanCode);
+    } else{
+        switch (scanCode) {
+            default:
+                break;
+        }
     }
 }
 
