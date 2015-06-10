@@ -22,8 +22,8 @@ typedef unsigned int   uint;
 
 /* Constantes basicas */
 /* -------------------------------------------------------------------------- */
-#define PAGE_SIZE               0x00001000
-#define TASK_SIZE               4096
+#define PAGE_SIZE               0x1000
+#define TASK_SIZE               0x1000
 
 #define BOOTSECTOR              0x00001000 /* direccion fisica de comienzo del bootsector (copiado) */
 #define KERNEL                  0x00001200 /* direccion fisica de comienzo del kernel */
@@ -57,13 +57,38 @@ typedef unsigned int   uint;
 
 #define KERNEL_DIR_TABLE  0x27000
 #define KERNEL_PAGE0	  0x28000
+
+/**
+ * Virtual address containing a page of code for every task we create.
+ */
 #define CODIGO_BASE       0x400000
-#define MAPA_BASE_FISICA  0x500000
+
+/**
+ * Virtual address containing the base address of the game map for every task
+ * we create. This should work as a pointer to a matrix of pages.
+ */
 #define MAPA_BASE_VIRTUAL 0x800000
+
+#define MAPA_BASE_FISICA  0x500000
+
 #define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
-#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - 16 * PAGE_SIZE)
-#define DIRECTORY_TABLE_ENTRY_SIZE 0x00001000
-#define PAGE_TABLE_SIZE 0x00001000
+
+#define MAX_CANT_PIRATAS_VIVOS           8
+
+/**
+ * Address where we locate the directory tables
+ */
+#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - MAX_CANT_PIRATAS_VIVOS * 2 * PAGE_SIZE)
+
+/**
+ * Number of page tables within a directory table
+ */
+#define DIRECTORY_TABLE_ENTRY_SIZE 0x1000
+
+ /**
+  * Number of pages within a page table
+  */
+#define PAGE_TABLE_SIZE 0x1000
 
 void* error();
 

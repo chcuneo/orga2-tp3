@@ -11,8 +11,6 @@
 
 typedef enum direccion_e { ARR = 0x4, ABA = 0x7, DER = 0xA, IZQ = 0xD} direccion;
 
-#define MAX_CANT_PIRATAS_VIVOS           8
-
 #define JUGADOR_A                         0
 #define JUGADOR_B                         1
 
@@ -27,7 +25,7 @@ struct jugador_t;
 
 typedef struct pirata_t
 {
-    uint exists;
+    uchar exists:1;
     uint index;
     struct jugador_t *jugador;
     uint coord_x;
@@ -46,6 +44,7 @@ typedef struct jugador_t
     char map[BIT_SIZE(MAPA_ALTO, MAPA_ANCHO)];
     uint miners;
     uint explorers;
+    uint score;
     // coordenadas puerto, posiciones exploradas, mineros pendientes, etc
 } jugador_t;
 
@@ -76,6 +75,7 @@ int game_syscall_pirata_mover(uint id, direccion key);
 int game_syscall_cavar(uint id);
 void game_tick(uint id_pirata);
 void game_terminar_si_es_hora();
+void game_terminar();
 void game_atender_teclado(unsigned char tecla);
 
 

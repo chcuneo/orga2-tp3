@@ -28,11 +28,6 @@
  */
 
 /**
- *
- */
-uint pageTableLastAddress;
-
-/**
  * Creates a page table at the specified page directory with some given attributes.
  *
  * @param directoryBase page directory address, 4K aligned
@@ -76,7 +71,7 @@ int create_page_table(
 		};
 
 	// Limpiamos la cache del procesador
-	tlbflush(); // TODO: ver en que casos especificos
+	tlbflush();
 
 	return E_OK;
 }
@@ -250,6 +245,7 @@ int mmap(
 	uint directoryBase,
 	uchar readWrite,
 	uchar userSupervisor) {
+	static uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
@@ -377,5 +373,4 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 }
 
 void mmu_inicializar() {
-	pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 }

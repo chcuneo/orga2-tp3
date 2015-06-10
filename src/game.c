@@ -8,6 +8,7 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 #include "mmu.h"
 #include "tss.h"
 #include "screen.h"
+#include "error.h"
 
 #include <stdarg.h>
 
@@ -112,18 +113,24 @@ void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 
 
 void game_inicializar() {
-
+	game_jugador_inicializar(&jugadorA);
+	game_jugador_inicializar(&jugadorB);
 }
 
 void game_jugador_inicializar_mapa(jugador_t *jug) {
+	int bitmapSize = MAPA_ANCHO * MAPA_ALTO / 8;
+	int x;
+
+	for (x = 0; x < bitmapSize; ++x) {
+		jug->map[x] = 0;
+	}
 }
 
 void game_jugador_inicializar(jugador_t *j) {
-	static int index = 0;
-
-	j->index = index++;
-    // ~ completar ~
-
+	j->score = 0;
+	j->miners = 0;
+	j->explorers = 0;
+	game_jugador_inicializar_mapa(j);
 }
 
 void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
@@ -156,8 +163,7 @@ void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y
 }
 
 
-void game_explorar_posicion(jugador_t *jugador, int c, int f)
-{
+void game_explorar_posicion(jugador_t *jugador, int c, int f){
 }
 
 
@@ -167,37 +173,98 @@ int game_syscall_pirata_mover(uint id, direccion dir)
     return 0;
 }
 
-int game_syscall_cavar(uint id)
-{
-    // ~ completar ~
+int game_syscall_cavar(uint pirateId) {
+    static uint treasuresLeft = BOTINES_CANTIDAD;
+    pirata_t *p = id_pirata2pirata(pirateId);
 
-	return 0;
+    if (p == NULL) {
+        return E_NON_EXISTANT_PIRATE;
+    } else {
+        uint i;
+
+        for (i = 0; i < BOTINES_CANTIDAD; ++i) {
+            if (botines[i][0] == p->coord_x && botines[i][1] == p->coord_y) {
+                if (botines[i][2] > 0) {
+                    game_jugador_anotar_punto(p->jugador);
+                    botines[i][2]--;
+                } else {
+                    // TODO: revisar que usar esta funcion este bien
+                    game_pirata_exploto(pirateId);
+                    --treasuresLeft;
+                }
+
+                break;
+            }
+        }
+    }
+
+    if (treasuresLeft == 0) {
+        // TODO: asegurarse que esto ande
+        game_terminar();
+    }
+
+	return E_OK;
 }
 
-int game_syscall_pirata_posicion(uint id, int idx)
-{
-    // ~ completar ~
-    return 0;
+int game_syscall_pirata_posicion(uint pirate_id, int param) {
+    pirata_t *p = id_pirata2pirata(pirate_id);
+    int code;
+
+    if (p == NULL) {
+        code = E_NON_EXISTANT_PIRATE;
+    } else {
+        if (param == -1) {
+            code = (p->coord_y << 8) | p->coord_x;
+        } else {
+            if (param < MAX_CANT_PIRATAS_VIVOS) {
+                pirata_t *q = &(p->jugador->piratas[param]);
+
+                if (q->exists) {
+                    code = (q->coord_y << 8) | q->coord_x;
+                } else {
+                    code = E_NON_EXISTANT_PIRATE;
+                }
+            } else {
+                code = E_NON_EXISTANT_PIRATE;
+            }
+        }
+    }
+
+    return code;
 }
 
 void game_pirata_exploto(uint id)
 {
 }
 
-pirata_t* game_pirata_en_posicion(uint x, uint y)
-{
+pirata_t* game_pirata_en_posicion(uint x, uint y) {
+	int i;
+
+	for (i = 0; i < 8; i++){
+		if (jugadorA.piratas[i].coord_x == x && jugadorA.piratas[i].coord_y == y){
+			return &(jugadorA.piratas[i]);
+		}
+	}
+
+	for (i = 0; i < 8; i++){
+		if (jugadorB.piratas[i].coord_x == x && jugadorB.piratas[i].coord_y == y){
+			return &(jugadorB.piratas[i]);
+		}
+	}
+
 	return NULL;
 }
 
 
-void game_jugador_anotar_punto(jugador_t *j)
-{
+void game_jugador_anotar_punto(jugador_t *j) {
+	j->score++;
 }
 
+void game_terminar() {
 
+}
 
-void game_terminar_si_es_hora()
-{
+void game_terminar_si_es_hora() {
 }
 
 
@@ -217,10 +284,10 @@ void game_terminar_si_es_hora()
 void game_atender_teclado(unsigned char tecla){
 	switch (tecla){
 		case KB_shiftA:
-			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, POS_INIT_A_X, POS_INIT_A_Y);
+			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, jugadorA.port_coord_x, jugadorA.port_coord_y);
 			break;
 		case KB_shiftB:
-			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, POS_INIT_B_X, POS_INIT_B_Y);
+			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, jugadorB.port_coord_x, jugadorB.port_coord_y);
 			break;
 		default:
 			break;

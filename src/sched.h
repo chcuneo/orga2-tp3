@@ -10,6 +10,4 @@
 
 #include "game.h"
 
-int scheduler_initialize();
-
 #endif	/* !__SCHED_H__ */

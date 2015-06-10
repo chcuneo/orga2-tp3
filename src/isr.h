@@ -8,7 +8,7 @@
 #ifndef __ISR_H__
 #define __ISR_H__
 
-#include "colors.h"
+#include "defines.h"
 #include "game.h"
 #include "screen.h"
 #include "error.h"
