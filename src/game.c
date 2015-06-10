@@ -86,6 +86,13 @@ void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	SET_BIT(j->map[charInBMArray], offsetInChar, val);  //TODO: que machee con el define de juli
 }
 
+char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
+	uint pos = game_xy2lineal(x,y);
+	uint charInBMArray = pos / 8;
+	uint offsetInChar = pos % 8;
+	GET_BIT(j->map[charInBMArray], offsetInChar);  //TODO: que machee con el define de juli
+}
+
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
 void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 {
@@ -133,6 +140,12 @@ void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id
 	pirata->index = index;
 	pirata->jugador = j;
 	pirata->id = id;
+	int i;
+
+	//Esto se puede mover a mmu.c
+	for (i = 0; i < MAPA_ALTO * MAPA_ANCHO){
+		if 
+	}
 }
 
 void game_tick(uint id_pirata)
@@ -180,6 +193,7 @@ void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y
 
 
 void game_explorar_posicion(jugador_t *jugador, int c, int f){
+
 }
 
 
