@@ -45,6 +45,7 @@ typedef struct jugador_t
     char map[880];		// (80*44) / 4
     uint miners;
     uint explorers;
+    uint score;
     // coordenadas puerto, posiciones exploradas, mineros pendientes, etc
 } jugador_t;
 

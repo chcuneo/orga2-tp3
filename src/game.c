@@ -49,7 +49,7 @@ uint game_posicion_valida(int x, int y) {
 
 pirata_t* id_pirata2pirata(uint id_pirata)
 {
-    // ~ completar ~
+
 	return NULL;
 }
 
@@ -96,20 +96,24 @@ void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 
 
 void game_inicializar(){
-	
+	game_jugador_inicializar(&jugadorA);
+	game_jugador_inicializar(&jugadorB);
 }
 
-void game_jugador_inicializar_mapa(jugador_t *jug)
-{
+void game_jugador_inicializar_mapa(jugador_t *jug){
+	int bitmapSize = MAPA_ANCHO * MAPA_ALTO / 8;
+	int x;
+	for (x = 0; x < bitmapSize){
+		j->map[x] = 0;
+	}
 }
 
 void game_jugador_inicializar(jugador_t *j)
 {
-	static int index = 0;
-
-	j->index = index++;
-    // ~ completar ~
-
+	j->score = 0;
+	j->miners = 0;
+	j->explorers = 0;
+	game_jugador_inicializar_mapa(j);
 }
 
 void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id)
@@ -144,8 +148,7 @@ void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y
 }
 
 
-void game_explorar_posicion(jugador_t *jugador, int c, int f)
-{
+void game_explorar_posicion(jugador_t *jugador, int c, int f){
 }
 
 
@@ -158,7 +161,6 @@ int game_syscall_pirata_mover(uint id, direccion dir)
 int game_syscall_cavar(uint id)
 {
     // ~ completar ~
-
 	return 0;
 }
 
@@ -174,12 +176,23 @@ void game_pirata_exploto(uint id)
 
 pirata_t* game_pirata_en_posicion(uint x, uint y)
 {
+	int i;
+	for (i = 0; i < 8; i++){
+		if (jugadorA.piratas[i].coord_x = x && jugadorA.piratas[i].coord_y = y){
+			return &(jugadorA.piratas[i]);
+		}
+	}
+	for (i = 0; i < 8; i++){
+		if (jugadorB.piratas[i].coord_x = x && jugadorB.piratas[i].coord_y = y){
+			return &(jugadorB.piratas[i]);
+		}
+	}
 	return NULL;
 }
 
 
-void game_jugador_anotar_punto(jugador_t *j)
-{
+void game_jugador_anotar_punto(jugador_t *j){
+	j->score++;
 }
 
 
@@ -205,10 +218,10 @@ void game_terminar_si_es_hora()
 void game_atender_teclado(unsigned char tecla){
 	switch (tecla){
 		case KB_shiftA:
-			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, POS_INIT_A_X, POS_INIT_A_Y);
+			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, jugadorA.port_coord_x, jugadorA.port_coord_y);
 			break;
 		case KB_shiftB:
-			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, POS_INIT_B_X, POS_INIT_B_Y);
+			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, jugadorB.port_coord_x, jugadorB.port_coord_y);
 			break;
 		default:
 			break;
