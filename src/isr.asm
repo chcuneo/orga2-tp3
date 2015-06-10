@@ -82,13 +82,15 @@ ISR 20
 ;; -------------------------------------------------------------------------- ;;
 extern screen_actualizar_reloj_global
 extern fin_intr_pic1
+extern scheduler_tick
 global _isr32
 
 _isr32:
 	pushad
-	call screen_actualizar_reloj_global
-
 	call fin_intr_pic1
+
+	call scheduler_tick
+	call screen_actualizar_reloj_global
 	popad
 iret
 ;;
@@ -100,13 +102,14 @@ global _isr33
 
 _isr33:
 	pushad
+	call fin_intr_pic1
+
 	in al, 0x60
 
 	push eax
 	call isr_keyboard
 	pop eax
 
-	call fin_intr_pic1
 	popad
 iret
 
@@ -115,10 +118,12 @@ iret
 ;; -------------------------------------------------------------------------- ;;
 
 extern isr_syscall
+extern idle
 global _isr46
 
 _isr46:
 	pushad
+	call fin_intr_pic1
 
 	push eax
 	push ecx
@@ -126,6 +131,7 @@ _isr46:
 	pop ecx
 	pop eax
 
-	call fin_intr_pic1
 	popad
+
+	call idle
 iret

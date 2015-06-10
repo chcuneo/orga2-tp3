@@ -30,7 +30,7 @@ char *unrecoverableMsgs[] = {
     "Stack Fault",
     "General protection fault",
     "Page fault",
-    "reserved",
+    "Reserved",
     "Math Fault",
     "Alignment Check",
     "Machine Check",

@@ -191,11 +191,11 @@ int tss_inicializar() {
 		return code;
 	}
 
-	#define TSS_ARRAY_PHYS 0x100000
-	#define TSS_STACKS_PHYS (TSS_ARRAY_PHYS + 0x68 * 17)
+	#define TSS_STACKS_PHYS (0x100000 + 0x68 * 17)
 	uint task;
 
-	for (task = 0; task < 8; ++task) {
+	// TODO: verificar todo esta mierda
+	for (task = 0; task < MAX_CANT_PIRATAS_VIVOS; ++task) {
 		tss_jugadorA[task] = (tss) {
 			.ptl = 0x0,
 			.unused0 = 0x0,
@@ -241,7 +241,50 @@ int tss_inicializar() {
 			.iomap = 0xFFFF
 		};
 
-		// TODO: terminar. Replicar para jugadorB
+		tss_jugadorB[task] = (tss) {
+			.ptl = 0x0,
+			.unused0 = 0x0,
+			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + MAX_CANT_PIRATAS_VIVOS + 1), // TODO: y donde esta la ebp0?
+			.ss0 = GDT_OFF_DATA0_DESC, // TODO: verificar
+			.unused1 = 0x0,
+			.esp1 = 0x0,
+			.ss1 = 0x0,
+			.unused2 = 0x0,
+			.esp2 = 0x0,
+			.ss2 = 0x0,
+			.unused3 = 0x0,
+			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * (task + MAX_CANT_PIRATAS_VIVOS)),
+			// La direccion del codigo virtual siempre es ahi
+			.eip = 0x400000,
+			// TODO: Explicar esta constante
+			.eflags = 0x202,
+			.eax = 0x0,
+			.ecx = 0x0,
+			.edx = 0x0,
+			.ebx = 0x0,
+			// La pila la ponemos inicialmente en el final de la pagina reservada para el codigo
+			// El 12 contempla que nos pasen 3 parametros.
+			.esp = 0x401000 - 12,
+			.ebp = 0x401000 - 12,
+			.esi = 0x0,
+			.edi = 0x0,
+			.es = 0x0,
+			.unused4 = 0x0,
+			.cs = GDT_OFF_CODE3_DESC,
+			.unused5 = 0x0,
+			.ss = GDT_OFF_DATA3_DESC,
+			.unused6 = 0x0,
+			.ds = GDT_OFF_DATA3_DESC,
+			.unused7 = 0x0,
+			.fs = 0x0,
+			.unused8 = 0x0,
+			.gs = 0x0,
+			.unused9 = 0x0,
+			.ldt = 0x0,
+			.unused10 = 0x0,
+			.dtrap = 0x0,
+			.iomap = 0xFFFF
+		};
 	}
 
 	return E_OK;
