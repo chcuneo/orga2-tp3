@@ -42,6 +42,7 @@ typedef unsigned int   uint;
 
 #define GDT_IDX_TASKB_DESC			13
 #define GDT_IDX_TASKI_DESC			14
+#define GDT_IDX_START_TSKS			15
 
 /* Offsets en la gdt */
 /* -------------------------------------------------------------------------- */

@@ -33,6 +33,7 @@ typedef struct _page_entry {
 
 void mmu_inicializar_dir_kernel();
 void mmu_inicializar();
+int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst);
 
 int mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, uchar userSupervisor);
 int munmap(uint directoryBase, uint virtualAddress);
