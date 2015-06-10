@@ -11,6 +11,8 @@
 
 typedef enum direccion_e { ARR = 0x4, ABA = 0x7, DER = 0xA, IZQ = 0xD} direccion;
 
+#define MAX_CANT_PIRATAS_VIVOS           8
+
 #define JUGADOR_A                         0
 #define JUGADOR_B                         1
 
@@ -26,26 +28,26 @@ struct jugador_t;
 typedef struct pirata_t
 {
     uchar exists:1;
-    uint index;
+    uint index;                     //Indice en array interno (numero de 0 a 8)
+    uint id;                        //Id unica: representa el indice general en el array de TSDs y Directorios de Paginacion
     struct jugador_t *jugador;
-    uint coord_x;
+    uint coord_x;                   //Coordenadas Actuales
     uint coord_y;
-    char type;
+    char type;                      //Tipo: explorador o minero
     char clock;
     // id unica, posicion, tipo, reloj
 } pirata_t;
 
 typedef struct jugador_t
 {
-    uint index;
+    uint index;                     //Indice del jugador: A es el 0 y B el 1 en este caso
     pirata_t piratas[MAX_CANT_PIRATAS_VIVOS];
     uint port_coord_x;
     uint port_coord_y;
-    char map[BIT_SIZE(MAPA_ALTO, MAPA_ANCHO)];
-    uint miners;
-    uint explorers;
+    char map[880];      // (80*44) / 4
+    uint miners;                    //Cantidad de mineros
+    uint explorers;                 //Cantidad de exploradores
     uint score;
-    // coordenadas puerto, posiciones exploradas, mineros pendientes, etc
 } jugador_t;
 
 extern jugador_t jugadorA, jugadorB;
@@ -60,7 +62,7 @@ void game_pirata_erigir(pirata_t *pirata, jugador_t *j, uint tipo);
 void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y);
 void game_pirata_exploto(uint id);
 
-void game_jugador_inicializar(jugador_t *j);
+void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
 void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y);
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo);
 void game_jugador_anotar_punto(jugador_t *j);

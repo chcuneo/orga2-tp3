@@ -9,8 +9,8 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 #include "tss.h"
 #include "screen.h"
 #include "error.h"
-
-#include <stdarg.h>
+#include "gdt.h"
+#include "defines.h"
 
 
 #define POS_INIT_A_X                      1
@@ -97,6 +97,13 @@ uint game_valor_tesoro(uint x, uint y) {
 	return 0;
 }
 
+void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
+	uint pos = game_xy2lineal(x,y);
+	uint charInBMArray = pos / 8;
+	uint offsetInChar = pos % 8;
+	SET_BIT(j->map[charInBMArray], offsetInChar, val);  //TODO: que machee con el define de juli
+}
+
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
 void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y) {
 	int next = 0;
@@ -111,10 +118,9 @@ void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 	}
 }
 
-
-void game_inicializar() {
-	game_jugador_inicializar(&jugadorA);
-	game_jugador_inicializar(&jugadorB);
+void game_inicializar(){
+	game_jugador_inicializar(&jugadorA, 0, POS_INIT_A_X, POS_INIT_A_Y);
+	game_jugador_inicializar(&jugadorB, 1, POS_INIT_B_X, POS_INIT_B_Y);
 }
 
 void game_jugador_inicializar_mapa(jugador_t *jug) {
@@ -124,16 +130,25 @@ void game_jugador_inicializar_mapa(jugador_t *jug) {
 	for (x = 0; x < bitmapSize; ++x) {
 		jug->map[x] = 0;
 	}
+
+	game_jugador_setBitMapPos(jug, jug->port_coord_x, jug->port_coord_y, 1);
 }
 
-void game_jugador_inicializar(jugador_t *j) {
+void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
 	j->score = 0;
 	j->miners = 0;
 	j->explorers = 0;
+	j->port_coord_x = x;
+	j->port_coord_y = y;
+	j->index = idx;
 	game_jugador_inicializar_mapa(j);
 }
 
 void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
+	pirata->exists = 0;
+	pirata->index = index;
+	pirata->jugador = j;
+	pirata->id = id;
 }
 
 void game_tick(uint id_pirata)
@@ -146,15 +161,31 @@ void game_pirata_relanzar(pirata_t *pirata, jugador_t *j, uint tipo) {
 
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo)
 {
-    // ~ completar ~
-
+	int i;
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++){
+		if (j->piratas[i].exists == 0){
+			game_pirata_inicializar(&(j->piratas[i]), j, i, j->index * MAX_CANT_PIRATAS_VIVOS + i);
+			if (tipo == EXPLORADOR) { j->explorers++; } else { j->miners++; }
+			return &(j->piratas[i]);
+		}
+	}
 	return NULL;
 }
 
 
 void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y){
-	if (index < 8){
+	pirata_t *pirate = game_jugador_erigir_pirata(j, tipo);
+	if (pirate){
+		pirate->coord_x = x;
+		pirate->coord_y = y;
 
+		uint taskaddrs = 0x0; //TODO: Setear bien la direccion del task
+
+		mmu_inicializar_dir_pirata(DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE, taskaddrs, MAPA_BASE_VIRTUAL + game_xy2lineal(x,y) * PAGE_SIZE);
+		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;	//TODO: ver si esto se hace o no
+		//TODO: inicializar mapa? o lo hacemos automatico sobre todoso los tasks una vez que descubrimos una nueva posicion?
+
+		pirate->exists = 1;
 	}
 }
 
@@ -240,13 +271,13 @@ void game_pirata_exploto(uint id)
 pirata_t* game_pirata_en_posicion(uint x, uint y) {
 	int i;
 
-	for (i = 0; i < 8; i++){
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++){
 		if (jugadorA.piratas[i].coord_x == x && jugadorA.piratas[i].coord_y == y){
 			return &(jugadorA.piratas[i]);
 		}
 	}
 
-	for (i = 0; i < 8; i++){
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++) {
 		if (jugadorB.piratas[i].coord_x == x && jugadorB.piratas[i].coord_y == y){
 			return &(jugadorB.piratas[i]);
 		}
