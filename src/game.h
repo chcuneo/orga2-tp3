@@ -27,13 +27,14 @@ struct jugador_t;
 
 typedef struct pirata_t
 {
+    uchar exists:1;
     uint index;                     //Indice en array interno (numero de 0 a 8)
     uint id;                        //Id unica: representa el indice general en el array de TSDs y Directorios de Paginacion
     struct jugador_t *jugador;
     uint coord_x;                   //Coordenadas Actuales
     uint coord_y;
     char type;                      //Tipo: explorador o minero
-    char clock; 
+    char clock;
     // id unica, posicion, tipo, reloj
 } pirata_t;
 
@@ -43,7 +44,7 @@ typedef struct jugador_t
     pirata_t piratas[MAX_CANT_PIRATAS_VIVOS];
     uint port_coord_x;
     uint port_coord_y;
-    char map[880];		// (80*44) / 4
+    char map[880];      // (80*44) / 4
     uint miners;                    //Cantidad de mineros
     uint explorers;                 //Cantidad de exploradores
     uint score;
@@ -76,6 +77,7 @@ int game_syscall_pirata_mover(uint id, direccion key);
 int game_syscall_cavar(uint id);
 void game_tick(uint id_pirata);
 void game_terminar_si_es_hora();
+void game_terminar();
 void game_atender_teclado(unsigned char tecla);
 
 

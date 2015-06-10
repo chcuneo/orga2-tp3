@@ -67,12 +67,13 @@ BITS 32
 
     imprimir_texto_mp iniciando_mp_msg, iniciando_mp_len, 0x07, 2, 0
 
-    mov ax, 0x60   ; Selector del segmento de video
+    ; Selector del segmento de video
+    mov ax, 0x60
     mov fs, ax
 
     ; Establecer la base de la pila
-    mov ebp, 0x27000; 0x7D000 TODO: preguntar
-    mov esp, 0x27000; 0x7D000
+    mov ebp, 0x27000
+    mov esp, 0x27000
 
     ; Imprimir mensaje de bienvenida
     call screen_refresh_logo
@@ -98,6 +99,7 @@ BITS 32
     lgdt [GDT_DESC]
 
     ; Inicializar el scheduler
+    call scheduler_initialize
 
     ; Inicializar la IDT
     call idt_inicializar
@@ -116,13 +118,14 @@ BITS 32
     sti
 
     ; Saltar a la primera tarea: Idle
-    jmp 0x70:0xF3D3F450 ; El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
+    ; NOTE: El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
+    jmp 0x70:0xF3D3F450
 
     ; Ciclar infinitamente (por si algo sale mal...)
-    mov eax, 0xFFFF
-    mov ebx, 0xFFFF
-    mov ecx, 0xFFFF
-    mov edx, 0xFFFF
+    mov eax, 0xF3D3
+    mov ebx, 0xF450
+    mov ecx, 0xD34D
+    mov edx, 0xBEEF
     jmp $
     jmp $
 
@@ -140,6 +143,6 @@ extern resetear_pic
 extern habilitar_pic
 extern tss_inicializar
 extern tss_inicializar_tasking
-extern print_regs
+extern scheduler_initialize
 
 %include "a20.asm"

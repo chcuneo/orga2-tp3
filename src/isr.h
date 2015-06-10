@@ -8,7 +8,7 @@
 #ifndef __ISR_H__
 #define __ISR_H__
 
-#include "colors.h"
+#include "defines.h"
 #include "game.h"
 #include "screen.h"
 #include "error.h"
@@ -30,7 +30,7 @@ char *unrecoverableMsgs[] = {
     "Stack Fault",
     "General protection fault",
     "Page fault",
-    "reserved",
+    "Reserved",
     "Math Fault",
     "Alignment Check",
     "Machine Check",

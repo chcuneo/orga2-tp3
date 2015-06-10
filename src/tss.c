@@ -55,7 +55,6 @@ tss tss_idle = (tss) {
 	.iomap = 0xFFFF
 };
 
-// TODO: verificar
 tss tss_inicial = (tss) {
 	.ptl = 0x0,
 	.unused0 = 0x0,
@@ -100,30 +99,31 @@ tss tss_inicial = (tss) {
 tss tss_jugadorA[MAX_CANT_PIRATAS_VIVOS];
 tss tss_jugadorB[MAX_CANT_PIRATAS_VIVOS];
 
-uint lastUninitializedGDTEntry;
+// TODO: ver el tema de inicializar p en 0 o 1
+int tss_gdt_inicializar(uint tssBaseAddress) {
+	static uint lastUninitializedGDTEntry = GDT_IDX_TASKI_DESC + 1;
 
-int tss_gdt_inicializar(uint tssAddress) {
 	if (lastUninitializedGDTEntry >= GDT_COUNT) {
 		return E_GDT_LIMIT_REACHED;
 	}
 
 	gdt[lastUninitializedGDTEntry] = (gdt_entry) {
 		(ushort)    0x0067,         /* limit[0:15]  */
-		(ushort)    tssAddress & (0x0000FFFF),         /* base[0:15]   */
-		(uchar)     (tssAddress & (0x00FF0000)) >> 16, /* base[23:16]  */
+		(ushort)    tssBaseAddress & (0x0000FFFF),         /* base[0:15]   */
+		(uchar)     (tssBaseAddress & (0x00FF0000)) >> 16, /* base[23:16]  */
 		(uchar)     0x09,           /* type         */
 		(uchar)     0x00,           /* s            */
 		(uchar)     0x01,           /* dpl          */
-		(uchar)     0x01,           /* p            */
+		(uchar)     0x01,			/* p            */
 		(uchar)     0x00,           /* limit[16:19] */
 		(uchar)     0x00,           /* avl          */
 		(uchar)     0x00,           /* l            */
 		(uchar)     0x00,           /* db           */
 		(uchar)     0x00,           /* g            */
-		(uchar)     (tssAddress & (0xFF000000)) >> 24, /* base[31:24]  */
+		(uchar)     (tssBaseAddress & (0xFF000000)) >> 24, /* base[31:24]  */
 	};
 
-	lastUninitializedGDTEntry++;
+	++lastUninitializedGDTEntry;
 
 	return E_OK;
 }
@@ -177,8 +177,6 @@ int tss_inicializar() {
 		(uchar)     (((uint) &tss_idle) & (0xFF000000)) >> 24, /* base[31:24]  */
 	};
 
-	lastUninitializedGDTEntry = GDT_IDX_TASKI_DESC + 1;
-
 	uint code = tss_gdt_inicializar_bache((uint) &tss_jugadorA, MAX_CANT_PIRATAS_VIVOS);
 
 	if (code != E_OK) {
@@ -191,16 +189,17 @@ int tss_inicializar() {
 		return code;
 	}
 
-	#define TSS_ARRAY_PHYS 0x100000
-	#define TSS_STACKS_PHYS (TSS_ARRAY_PHYS + 0x68 * 17)
+	#define TSS_STACKS_PHYS (0x100000 + 0x68 * (MAX_CANT_PIRATAS_VIVOS * 2 + 1))
 	uint task;
 
-	for (task = 0; task < 8; ++task) {
+	for (task = 0; task < MAX_CANT_PIRATAS_VIVOS; ++task) {
 		tss_jugadorA[task] = (tss) {
 			.ptl = 0x0,
 			.unused0 = 0x0,
-			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + 1), // TODO: y donde esta la ebp0?
-			.ss0 = GDT_OFF_DATA0_DESC, // TODO: verificar
+			// Place where ebp and esp will be in case we need to switch to level
+			// 0. See the MMU files for reference about why this is this way
+			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + 1),
+			.ss0 = GDT_OFF_DATA0_DESC,
 			.unused1 = 0x0,
 			.esp1 = 0x0,
 			.ss1 = 0x0,
@@ -208,17 +207,60 @@ int tss_inicializar() {
 			.esp2 = 0x0,
 			.ss2 = 0x0,
 			.unused3 = 0x0,
+			// See the MMU files for reference about why this is this way
 			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * task),
-			// La direccion del codigo virtual siempre es ahi
 			.eip = 0x400000,
-			// TODO: Explicar esta constante
+			// We have to enable interrupts within these tasks
 			.eflags = 0x202,
 			.eax = 0x0,
 			.ecx = 0x0,
 			.edx = 0x0,
 			.ebx = 0x0,
-			// La pila la ponemos inicialmente en el final de la pagina reservada para el codigo
-			// El 12 contempla que nos pasen 3 parametros.
+			// The stack is supposed to be at the end of the code page. The -12
+			// is there because the task is supposed to be given 3 parameters
+			// when its called.
+			.esp = 0x401000 - 12,
+			.ebp = 0x401000 - 12,
+			.esi = 0x0,
+			.edi = 0x0,
+			.es = 0x0,
+			.unused4 = 0x0,
+			.cs = GDT_OFF_CODE3_DESC,
+			.unused5 = 0x0,
+			.ss = GDT_OFF_DATA3_DESC,
+			.unused6 = 0x0,
+			.ds = GDT_OFF_DATA3_DESC,
+			.unused7 = 0x0,
+			.fs = 0x0,
+			.unused8 = 0x0,
+			.gs = 0x0,
+			.unused9 = 0x0,
+			.ldt = 0x0,
+			.unused10 = 0x0,
+			.dtrap = 0x0,
+			// This is this way just to simplify the code
+			.iomap = 0xFFFF
+		};
+
+		tss_jugadorB[task] = (tss) {
+			.ptl = 0x0,
+			.unused0 = 0x0,
+			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + MAX_CANT_PIRATAS_VIVOS + 1),
+			.ss0 = GDT_OFF_DATA0_DESC,
+			.unused1 = 0x0,
+			.esp1 = 0x0,
+			.ss1 = 0x0,
+			.unused2 = 0x0,
+			.esp2 = 0x0,
+			.ss2 = 0x0,
+			.unused3 = 0x0,
+			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * (task + MAX_CANT_PIRATAS_VIVOS)),
+			.eip = 0x400000,
+			.eflags = 0x202,
+			.eax = 0x0,
+			.ecx = 0x0,
+			.edx = 0x0,
+			.ebx = 0x0,
 			.esp = 0x401000 - 12,
 			.ebp = 0x401000 - 12,
 			.esi = 0x0,
@@ -240,8 +282,6 @@ int tss_inicializar() {
 			.dtrap = 0x0,
 			.iomap = 0xFFFF
 		};
-
-		// TODO: terminar. Replicar para jugadorB
 	}
 
 	return E_OK;
