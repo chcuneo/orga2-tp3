@@ -173,10 +173,6 @@ void game_tick(uint id_pirata)
 void game_pirata_relanzar(pirata_t *pirata, jugador_t *j, uint tipo) {
 }
 
-void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
-	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 0); //TODO: chequear atributos
-}
-
 void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
 	pirata->index = index;
 	pirata->jugador = j;
@@ -221,16 +217,28 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y)
 {
 }
+void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
+	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 0); //TODO: chequear atributos
+}
 
+void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y){
+	int p;
+	for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
+		if (j->piratas[p].exists) game_pirata_paginarPosMapa(&(j->piratas[p]), x, y);
+	}
+}
 
 void game_explorar_posicion(jugador_t *jugador, int c, int f){
-	int x, y, p;
-	for (x = c - 1; x <= c + 1; x++){
-		for (y = f - 1; y <= f + 1; y++){
+	int x, y;
+	int xstart = max(0,c-1);
+	int ystart = max(0,f-1);
+	int xend = min(MAPA_ANCHO-1, c+1);
+	int yend = min(MAPA_ALTO-1, f+1);
+	for (x = xstart; x <= xend; x++){
+		for (y = ystart; y <= yend; y++){
+			//TODO: ver si este if entero deberia ir dentro de game_jugador_paginarPosMapa_piratasExistentes
 			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
-				for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
-					if (jugador->piratas[p].exists) game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
-				}
+				game_jugador_paginarPosMapa_piratasExistentes(jugador, x, y);
 				game_jugador_setBitMapPos(jugador, x, y, 1);
 			}
 		}

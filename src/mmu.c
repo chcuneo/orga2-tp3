@@ -338,7 +338,6 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 		return E_ADDRESS_NOT_ALIGNED;
 	}
 
-	// TODO: mapear las partes del mapa ya descubiertas
 	// Armamos el identity mapping
 	uint offset = 0;
 	long long x;
@@ -370,6 +369,22 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 	// Volvemos al cr3 anterior
 	lcr3(offset);
 	return E_OK;
+}
+
+void mmu_move_codepage(uint src, uint dst, pirata_t *p){
+	// Copiamos el codigo del pirata
+	int y;
+	int *src = (int *)src;
+	int *dst = (int *)dst;
+
+	for (y = 0; y < 1024; ++y) {
+		*dst = *src;
+		*src = 0;
+		++src;
+		++dst;
+	}
+	munmap( GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
+	mmap(CODIGO_BASE, dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
 }
 
 void mmu_inicializar() {

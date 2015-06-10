@@ -64,6 +64,7 @@ void game_pirata_exploto(uint id);
 void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val);
 char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y);
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y);
+void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y);
 uint game_xy2addressPhys(int x, int y);
 uint game_xy2addressVirt(int x, int y);
 uint game_posicion_valida(int x, int y);
