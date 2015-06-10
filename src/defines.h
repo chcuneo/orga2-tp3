@@ -69,5 +69,11 @@ void* error();
 
 #define ASSERT(x) while(!(x)) {};
 
+#define BIT_ISSET(x, i) (x & (1 << i))
+#define BIT_SET(x, i) (x | (1 << i))
+#define BIT_UNSET(x, i) (x & !(1 << i))
+#define BIT_FLIP(x, i) (x ^ (1 << i))
+
+#define BIT_SIZE(h, w) (h * w / 8)
 
 #endif  /* !__DEFINES_H__ */

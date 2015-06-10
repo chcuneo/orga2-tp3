@@ -33,8 +33,7 @@ jugador_t jugadorA;
 jugador_t jugadorB;
 
 
-void* error()
-{
+void* error() {
 	__asm__ ("int3");
 	return 0;
 }
@@ -47,16 +46,34 @@ uint game_posicion_valida(int x, int y) {
 	return (x >= 0 && y >= 0 && x < MAPA_ANCHO && y < MAPA_ALTO);
 }
 
-pirata_t* id_pirata2pirata(uint id_pirata)
-{
-    // ~ completar ~
-	return NULL;
+pirata_t* id_pirata2pirata(uint pirate_id) {
+    if (pirate_id < (MAX_CANT_PIRATAS_VIVOS << 1)) {
+        uint player = pirate_id / MAX_CANT_PIRATAS_VIVOS;
+        uint pirate = pirate_id - player*MAX_CANT_PIRATAS_VIVOS;
+        jugador_t *p;
+
+        switch (player) {
+            case 0:
+                p = &jugadorA;
+                break;
+            case 1:
+                p = &jugadorB;
+                break;
+            default:
+                p = NULL;
+                break;
+        }
+
+        if (p != NULL && p->piratas[pirate].exists) {
+            return &(p->piratas[pirate]);
+        }
+    }
+
+    return NULL;
 }
 
-uint game_dir2xy(direccion dir, int *x, int *y)
-{
-	switch (dir)
-	{
+uint game_dir2xy(direccion dir, int *x, int *y) {
+	switch (dir) {
 		case IZQ: *x = -1; *y =  0; break;
 		case DER: *x =  1; *y =  0; break;
 		case ABA: *x =  0; *y =  1; break;
@@ -67,26 +84,25 @@ uint game_dir2xy(direccion dir, int *x, int *y)
 	return 0;
 }
 
-uint game_valor_tesoro(uint x, uint y)
-{
+uint game_valor_tesoro(uint x, uint y) {
 	int i;
-	for (i = 0; i < BOTINES_CANTIDAD; i++)
-	{
-		if (botines[i][0] == x && botines[i][1] == y)
+
+	for (i = 0; i < BOTINES_CANTIDAD; i++) {
+		if (botines[i][0] == x && botines[i][1] == y) {
 			return botines[i][2];
+        }
 	}
+
 	return 0;
 }
 
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
-void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
-{
+void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y) {
 	int next = 0;
 	int i, j;
-	for (i = -1; i <= 1; i++)
-	{
-		for (j = -1; j <= 1; j++)
-		{
+
+	for (i = -1; i <= 1; i++) {
+		for (j = -1; j <= 1; j++) {
 			vistas_x[next] = x + j;
 			vistas_y[next] = y + i;
 			next++;
@@ -95,16 +111,14 @@ void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y)
 }
 
 
-void game_inicializar(){
-	
+void game_inicializar() {
+
 }
 
-void game_jugador_inicializar_mapa(jugador_t *jug)
-{
+void game_jugador_inicializar_mapa(jugador_t *jug) {
 }
 
-void game_jugador_inicializar(jugador_t *j)
-{
+void game_jugador_inicializar(jugador_t *j) {
 	static int index = 0;
 
 	j->index = index++;
@@ -112,8 +126,7 @@ void game_jugador_inicializar(jugador_t *j)
 
 }
 
-void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id)
-{
+void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
 }
 
 void game_tick(uint id_pirata)
@@ -121,8 +134,7 @@ void game_tick(uint id_pirata)
 }
 
 
-void game_pirata_relanzar(pirata_t *pirata, jugador_t *j, uint tipo)
-{
+void game_pirata_relanzar(pirata_t *pirata, jugador_t *j, uint tipo) {
 }
 
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo)
