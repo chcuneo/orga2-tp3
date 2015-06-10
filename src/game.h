@@ -44,7 +44,7 @@ typedef struct jugador_t
     pirata_t piratas[MAX_CANT_PIRATAS_VIVOS];
     uint port_coord_x;
     uint port_coord_y;
-    char map[880];      // (80*44) / 4
+    char map[BIT_SIZE(MAPA_ALTO, MAPA_ANCHO)];
     uint miners;                    //Cantidad de mineros
     uint explorers;                 //Cantidad de exploradores
     uint score;
@@ -61,9 +61,15 @@ void game_pirata_inicializar(pirata_t *pirata, jugador_t *jugador, uint index, u
 void game_pirata_erigir(pirata_t *pirata, jugador_t *j, uint tipo);
 void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y);
 void game_pirata_exploto(uint id);
+void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val);
+char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y);
+void game_pirata_paginarPosMapa (pirata_t *p, int x, int y);
+uint game_xy2addressPhys(int x, int y);
+uint game_xy2addressVirt(int x, int y);
+uint game_posicion_valida(int x, int y);
 
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y);
+void game_jugador_lanzar_pirata(jugador_t *j, uint tipo);
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo);
 void game_jugador_anotar_punto(jugador_t *j);
 void game_explorar_posicion(jugador_t *jugador, int x, int y);

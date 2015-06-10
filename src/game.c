@@ -85,6 +85,14 @@ uint game_dir2xy(direccion dir, int *x, int *y) {
 	return 0;
 }
 
+uint game_xy2addressVirt(int x, int y){
+	return MAPA_BASE_VIRTUAL + (((x * MAPA_ANCHO) + y) * 0x1000);
+}
+
+uint game_xy2addressPhys(int x, int y){
+	return MAPA_BASE_FISICA + (((x * MAPA_ANCHO) + y) * 0x1000);
+}
+
 uint game_valor_tesoro(uint x, uint y) {
 	int i;
 
@@ -97,18 +105,23 @@ uint game_valor_tesoro(uint x, uint y) {
 	return 0;
 }
 
+
 void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
-	SET_BIT(j->map[charInBMArray], offsetInChar, val);  //TODO: que machee con el define de juli
+	if (val == 1){
+		j->map[charInBMArray] = BIT_SET(j->map[charInBMArray], offsetInChar);
+	} else {
+		j->map[charInBMArray] = BIT_UNSET(j->map[charInBMArray], offsetInChar);
+	}
 }
 
 char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
-	GET_BIT(j->map[charInBMArray], offsetInChar);  //TODO: que machee con el define de juli
+	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
 }
 
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
@@ -137,8 +150,7 @@ void game_jugador_inicializar_mapa(jugador_t *jug) {
 	for (x = 0; x < bitmapSize; ++x) {
 		jug->map[x] = 0;
 	}
-
-	game_jugador_setBitMapPos(jug, jug->port_coord_x, jug->port_coord_y, 1);
+	game_explorar_posicion(jug, jug->port_coord_x, jug->port_coord_y);
 }
 
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
@@ -148,20 +160,9 @@ void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
 	j->port_coord_x = x;
 	j->port_coord_y = y;
 	j->index = idx;
-	game_jugador_inicializar_mapa(j);
-}
-
-void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
-	pirata->exists = 0;
-	pirata->index = index;
-	pirata->jugador = j;
-	pirata->id = id;
 	int i;
-
-	//Esto se puede mover a mmu.c
-	for (i = 0; i < MAPA_ALTO * MAPA_ANCHO){
-		if 
-	}
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++) j->piratas[i].exists = 0;
+	game_jugador_inicializar_mapa(j);
 }
 
 void game_tick(uint id_pirata)
@@ -172,8 +173,27 @@ void game_tick(uint id_pirata)
 void game_pirata_relanzar(pirata_t *pirata, jugador_t *j, uint tipo) {
 }
 
-pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo)
-{
+void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
+	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 0); //TODO: chequear atributos
+}
+
+void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
+	pirata->index = index;
+	pirata->jugador = j;
+	pirata->id = id;
+	pirata->coord_x = j->port_coord_x;
+	pirata->coord_y = j->port_coord_y;
+	
+	//Esto se puede mover a mmu.c, pero creo que deberia quedar aca, mi corazon dice que aqui pertenece
+	int x, y;
+	for (x = 0; x < MAPA_ALTO; x++){
+		for (y = 0; y < MAPA_ANCHO; y++){
+			if (game_jugador_getBitMapPos(j, x, y)) game_pirata_paginarPosMapa(pirata, x, y);
+		}
+	}
+}
+
+pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo){
 	int i;
 	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++){
 		if (j->piratas[i].exists == 0){
@@ -186,17 +206,13 @@ pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo)
 }
 
 
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, int x, int y){
+void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 	pirata_t *pirate = game_jugador_erigir_pirata(j, tipo);
 	if (pirate){
-		pirate->coord_x = x;
-		pirate->coord_y = y;
-
 		uint taskaddrs = 0x0; //TODO: Setear bien la direccion del task
 
-		mmu_inicializar_dir_pirata(DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE, taskaddrs, MAPA_BASE_VIRTUAL + game_xy2lineal(x,y) * PAGE_SIZE);
+		mmu_inicializar_dir_pirata(DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE, taskaddrs, game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
 		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;	//TODO: ver si esto se hace o no
-		//TODO: inicializar mapa? o lo hacemos automatico sobre todoso los tasks una vez que descubrimos una nueva posicion?
 
 		pirate->exists = 1;
 	}
@@ -208,13 +224,31 @@ void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y
 
 
 void game_explorar_posicion(jugador_t *jugador, int c, int f){
-
+	int x, y, p;
+	for (x = c - 1; x <= c + 1; x++){
+		for (y = f - 1; y <= f + 1; y++){
+			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
+				for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
+					if (jugador->piratas[p].exists) game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
+				}
+				game_jugador_setBitMapPos(jugador, x, y, 1);
+			}
+		}
+	}
 }
 
-
+//TODO: mmu_move_codepage: Mueve el codigo en la memoria fisica, despagina el codigo viejo y pagina el nuevo
 int game_syscall_pirata_mover(uint id, direccion dir)
 {
-    // ~ completar
+	int x, y;
+	game_dir2xy(dir, &x, &y);
+	pirata_t * pirate;
+	if (id < MAX_CANT_PIRATAS_VIVOS) { pirate = &(jugadorA.piratas[id]); } else { pirate = &(jugadorB.piratas[id - MAX_CANT_PIRATAS_VIVOS]); }
+	int xdst = pirate->coord_x + x, ydst = pirate->coord_y + y;
+	if (game_posicion_valida(xdst, ydst)){
+		mmu_move_codepage(game_xy2addressPhys(pirate->coord_x, pirate->coord_y), game_xy2addressPhys(xdst, ydst), id);
+		game_explorar_posicion(pirate->jugador, xdst, ydst);
+	}
     return 0;
 }
 
@@ -329,10 +363,10 @@ void game_terminar_si_es_hora() {
 void game_atender_teclado(unsigned char tecla){
 	switch (tecla){
 		case KB_shiftA:
-			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR, jugadorA.port_coord_x, jugadorA.port_coord_y);
+			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR);
 			break;
 		case KB_shiftB:
-			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR, jugadorB.port_coord_x, jugadorB.port_coord_y);
+			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR);
 			break;
 		default:
 			break;
