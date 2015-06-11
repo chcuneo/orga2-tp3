@@ -325,6 +325,15 @@ void mmu_inicializar_dir_kernel() {
 		offset += PAGE_SIZE;
 	}
 
+	for (x = 0; x < MAPA_ANCHO; ++x) {
+		uint y;
+		
+		for (y = 0; y < MAPA_ALTO; ++y) {
+			uint offset = MAPA_BASE_FISICA + ((x * MAPA_ANCHO + y) * PAGE_SIZE);
+			mmap(offset, offset, KERNEL_DIR_TABLE, 1, 1);
+		}
+	}
+
 	lcr3((uint)KERNEL_DIR_TABLE);
 }
 
@@ -383,7 +392,8 @@ void mmu_move_codepage(uint src, uint dst, pirata_t *p){
 		++src;
 		++dst;
 	}
-	munmap( GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
+
+	munmap(GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
 	mmap(CODIGO_BASE, dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
 }
 

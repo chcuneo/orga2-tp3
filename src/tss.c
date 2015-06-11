@@ -17,7 +17,7 @@
 tss tss_idle = (tss) {
 	.ptl = 0x0,
 	.unused0 = 0x0,
-	.esp0 = 0x0,   // TODO: preguntar bien a que poner las pilas
+	.esp0 = 0x27000,
 	.ss0 = GDT_OFF_DATA0_DESC,
 	.unused1 = 0x0,
 	.esp1 = 0x0,

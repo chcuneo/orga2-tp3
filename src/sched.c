@@ -136,7 +136,7 @@ int scheduler_tick() {
         // within the gdt.
         current = current << 3;
         // Now, all we have to do is jmp!
-
+        __asm __volatile("jmp %0, $0xF3D3F450" :: "r" (current));
     }
 
     return E_OK;
