@@ -9,6 +9,7 @@
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
+#include "screen.h"
 /* Atributos paginas */
 // /* -------------------------------------------------------------------------- */
 
@@ -246,7 +247,8 @@ int mmap(
 	uchar readWrite,
 	uchar userSupervisor) {
 	static uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
-
+    print_hex((int)&pageTableLastAddress, 4, 1, 1, 0x7F);
+    breakpoint();
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
 	}
@@ -371,11 +373,11 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 	return E_OK;
 }
 
-void mmu_move_codepage(uint src, uint dst, pirata_t *p){
+void mmu_move_codepage(uint srcp, uint dstp, pirata_t *p){
 	// Copiamos el codigo del pirata
 	int y;
-	int *src = (int *)src;
-	int *dst = (int *)dst;
+	int *src = (int *)srcp;
+	int *dst = (int *)dstp;
 
 	for (y = 0; y < 1024; ++y) {
 		*dst = *src;
@@ -384,7 +386,7 @@ void mmu_move_codepage(uint src, uint dst, pirata_t *p){
 		++dst;
 	}
 	munmap( GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
-	mmap(CODIGO_BASE, dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
+	mmap(CODIGO_BASE, (int)dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
 }
 
 void mmu_inicializar() {

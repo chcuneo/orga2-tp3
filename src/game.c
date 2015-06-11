@@ -165,8 +165,7 @@ void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
 	game_jugador_inicializar_mapa(j);
 }
 
-void game_tick(uint id_pirata)
-{
+void game_tick(uint id_pirata){
 }
 
 
@@ -217,6 +216,7 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y)
 {
 }
+
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
 	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 0); //TODO: chequear atributos
 }
@@ -230,10 +230,16 @@ void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y){
 
 void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	int x, y;
-	int xstart = max(0,c-1);
-	int ystart = max(0,f-1);
-	int xend = min(MAPA_ANCHO-1, c+1);
-	int yend = min(MAPA_ALTO-1, f+1);
+	int xstart;
+	if (0 > c-1) { xstart = 0; } else { xstart = c-1; }
+	int ystart;
+	if (0 > f-1) { ystart = 0; } else { ystart = f-1; }
+	
+	int xend;
+	if (MAPA_ANCHO - 1 < c+1) { xend = MAPA_ANCHO - 1; } else { xend = c+1; }
+	int yend;
+	if (MAPA_ALTO - 1 < f+1) { yend = MAPA_ALTO - 1; } else { ystart = f+1; }
+
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
 			//TODO: ver si este if entero deberia ir dentro de game_jugador_paginarPosMapa_piratasExistentes
@@ -245,7 +251,6 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	}
 }
 
-//TODO: mmu_move_codepage: Mueve el codigo en la memoria fisica, despagina el codigo viejo y pagina el nuevo
 int game_syscall_pirata_mover(uint id, direccion dir)
 {
 	int x, y;
@@ -254,7 +259,7 @@ int game_syscall_pirata_mover(uint id, direccion dir)
 	if (id < MAX_CANT_PIRATAS_VIVOS) { pirate = &(jugadorA.piratas[id]); } else { pirate = &(jugadorB.piratas[id - MAX_CANT_PIRATAS_VIVOS]); }
 	int xdst = pirate->coord_x + x, ydst = pirate->coord_y + y;
 	if (game_posicion_valida(xdst, ydst)){
-		mmu_move_codepage(game_xy2addressPhys(pirate->coord_x, pirate->coord_y), game_xy2addressPhys(xdst, ydst), id);
+		mmu_move_codepage(game_xy2addressPhys(pirate->coord_x, pirate->coord_y), game_xy2addressPhys(xdst, ydst), pirate);
 		game_explorar_posicion(pirate->jugador, xdst, ydst);
 	}
     return 0;
