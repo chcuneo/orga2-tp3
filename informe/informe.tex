@@ -1,0 +1,143 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[paper=a4paper, hmargin=1.5cm, bottom=1.5cm, top=3.5cm]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{listings}
+
+
+\usepackage{booktabs}
+\usepackage[table,xcdraw]{xcolor} % for setting colors
+\usepackage{ifthen}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{wrapfig}
+
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{tikz}
+\usepackage[framemethod=tikz]{mdframed}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{subfig}
+\usepackage{float}
+
+\usepackage{listings}
+\usepackage[]{algorithm2e}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+% set the default code style
+\lstset{
+    frame=tb, % draw a frame at the top and bottom of the code block
+    tabsize=4, % tab space width
+    showstringspaces=false, % don't mark spaces in strings
+    %numbers=left, % display line numbers on the left
+    commentstyle=\color{green}, % comment color
+    keywordstyle=\color{blue}, % keyword color
+    stringstyle=\color{red} % string color
+}
+
+\title{Organización del Computador II \\ TP3}
+
+\newcommand{\order}[1]{$\mathcal{O}(#1)$}
+
+\usetikzlibrary{calc}
+
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+\newcommand{\DrawBox}[1][]{%
+    \tikz[overlay,remember picture]{
+    \draw[red,#1]
+      ($(left)+(-0.2em,0.9em)$) rectangle
+      ($(right)+(0.2em,-0.3em)$);}
+}
+
+%%%%%%%%%% Macros misceláneos - Inicio %%%%%%%%%%
+\newcommand{\xmm}[1]{\texttt{XMM#1}\ }
+\newcommand{\rax}{\texttt{RAX}\ }
+\newcommand{\rbx}{\texttt{RBX}\ }
+\newcommand{\rcx}{\texttt{RCX}\ }
+\newcommand{\rdx}{\texttt{RDX}\ }
+\newcommand{\rbp}{\texttt{RBP}\ }
+\newcommand{\rsp}{\texttt{RSP}\ }
+\newcommand{\mem}{\texttt{MEM}\ }
+\newcommand{\reg}[1]{\texttt{R#1}\ }
+\newcommand{\asm}[1]{\texttt{\uppercase{#1}}\ }
+\newcommand{\addr}[1]{\texttt{#1}\ }
+\newcommand{\file}[1]{\texttt{#1}\ }
+\newcommand{\command}[1]{\texttt{#1}\ }
+%%%%%%%%%% Macros misceláneos - Fin %%%%%%%%%%
+
+% Registros
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\newcommand{\regfloats}[4]{\begin{tabular}{|C{2cm}|C{2cm}|C{2cm}|C{2cm}|}\hline
+  #1 & #2 & #3 & #4 \\ \hline \end{tabular}}
+
+\newcommand{\regintOcho}[8]{
+  \vspace{0.3cm}
+  \begin{tabular}{|C{1.3cm}|C{1.3cm}|C{1.3cm}|C{1.3cm}|C{1.3cm}|C{1.3cm}|C{1.3cm}|C{1.3cm}|}\hline
+  #1 & #2 & #3 & #4 & #5 & #6 & #7 & #8  \\ \hline \end{tabular}
+  \vspace{0.3cm}
+}
+\onehalfspacing
+\begin{document}
+
+%% cover page
+
+\maketitle
+
+\bigskip
+\normalsize
+\begin{table}[h]
+\centering
+\begin{tabular}{|l l l|}
+\hline
+Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico        \\ \hline
+Christian Cuneo & \multicolumn{1}{c}{755/13} & chriscuneo93@gmail.com \\ 
+Julián Bayardo & 850/13                      & julian@bayardo.com.ar \\
+Martin Baigorria & 575/14          & martinbaigorria@gmail.com \\ \hline
+\end{tabular}
+\end{table}
+
+\vfill
+
+\begin{center}
+\textbf{Reservado para la cátedra}
+\end{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Instancia       & Docente & Nota \\ \hline
+Primera entrega &         &      \\ \hline
+Segunda entrega &         &      \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+\tableofcontents
+
+% end cover page
+
+\pagebreak
+
+\input{intro}
+\pagebreak
+
+\input{modoReal}
+\pagebreak
+
+\input{modoProtegido}
+
+\end{document}
+
