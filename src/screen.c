@@ -30,6 +30,10 @@ void screen_pintar(uchar c, uchar color, uint fila, uint columna) {
     p[fila][columna].a = color;
 }
 
+void screen_foreground(uchar color, uint fila, uint columna) {
+    p[fila][columna].a = color;
+}
+
 uchar screen_valor_actual(uint fila, uint columna) {
     return p[fila][columna].c;
 }

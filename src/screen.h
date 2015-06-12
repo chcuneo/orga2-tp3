@@ -11,6 +11,7 @@
 /* Definicion de la pantalla */
 #define VIDEO_FILS 50
 #define VIDEO_COLS 80
+#define TOP_MARGIN  1
 
 #define VIDEO                   0x000B8000 /* direccion fisica del buffer de video */
 

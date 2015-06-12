@@ -8,6 +8,7 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 #include "mmu.h"
 #include "tss.h"
 #include "screen.h"
+#include "colors.h"
 #include "error.h"
 #include "gdt.h"
 #include "defines.h"
@@ -105,7 +106,6 @@ uint game_valor_tesoro(uint x, uint y) {
 	return 0;
 }
 
-
 void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
@@ -123,7 +123,6 @@ char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
 	uint offsetInChar = pos % 8;
 	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
 }
-
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
 void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y) {
 	int next = 0;
@@ -201,21 +200,23 @@ pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo){
 	return NULL;
 }
 
+int game_jugador_taskAdress(jugador_t *j, pirata_t *p){
+	if (j->index == 0){
+		if (p->type == EXPLORADOR){ return 0x10000; } else { return 0x11000; }
+	} else {
+		if (p->type == EXPLORADOR){ return 0x12000; } else { return 0x13000; }
+	}
+}
 
 void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 	pirata_t *pirate = game_jugador_erigir_pirata(j, tipo);
 	if (pirate){
-		uint taskaddrs = 0x0; //TODO: Setear bien la direccion del task
-
+		uint taskaddrs = game_jugador_taskAdress(j, pirate);
 		mmu_inicializar_dir_pirata(DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE, taskaddrs, game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
 		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;	//TODO: ver si esto se hace o no
 
 		pirate->exists = 1;
 	}
-}
-
-void game_pirata_habilitar_posicion(jugador_t *j, pirata_t *pirata, int x, int y)
-{
 }
 
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
@@ -243,17 +244,31 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			//TODO: ver si este if entero deberia ir dentro de game_jugador_paginarPosMapa_piratasExistentes
 			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
 				game_jugador_paginarPosMapa_piratasExistentes(jugador, x, y);
 				game_jugador_setBitMapPos(jugador, x, y, 1);
+				if (game_valor_tesoro(x, y)){
+					game_jugador_lanzar_pirata(jugador, MINERO);
+				}
+				game_updateScreen(0, j, x, y);
 			}
 		}
 	}
 }
 
-int game_syscall_pirata_mover(uint id, direccion dir)
-{
+void game_updateScreen(pirate_p *p, jugador_t *j, int x, int y){
+	uchar color = 2 + j->index;
+	int xc = x;
+	int yc = y + TOP_MARGIN;
+	if (p){
+		if (p->exists == 0) colors += C_BG_RED;
+		if (p->type == MINERO) { screen_pintar('M', color, xc, yc); } else { screen_pintar('E', color, xc, yc); }
+	} else {
+		screen_foreground(color, xc, yc);
+	}
+}
+
+int game_syscall_pirata_mover(uint id, direccion dir){
 	int x, y;
 	game_dir2xy(dir, &x, &y);
 	pirata_t * pirate;
@@ -261,6 +276,7 @@ int game_syscall_pirata_mover(uint id, direccion dir)
 	int xdst = pirate->coord_x + x, ydst = pirate->coord_y + y;
 	if (game_posicion_valida(xdst, ydst)){
 		mmu_move_codepage(game_xy2addressPhys(pirate->coord_x, pirate->coord_y), game_xy2addressPhys(xdst, ydst), pirate);
+		game_updateScreen(pirate, pirate->jugador, xdst, ydst);
 		game_explorar_posicion(pirate->jugador, xdst, ydst);
 	}
     return 0;
@@ -326,8 +342,12 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
     return code;
 }
 
-void game_pirata_exploto(uint id)
-{
+void game_pirata_exploto(uint id){
+	pirata_t *pirate = id_pirata2pirata(id);
+	pirate->exists = 0;
+	munmap(DIRECTORY_TABLE_PHYS + id * PAGE_SIZE, CODIGO_BASE);
+	gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x00;	//TODO: ver si va o no, idem lanzar_pirata
+	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 }
 
 pirata_t* game_pirata_en_posicion(uint x, uint y) {
@@ -358,8 +378,8 @@ void game_terminar() {
 }
 
 void game_terminar_si_es_hora() {
-}
 
+}
 
 #define KB_w_Aup    0x11 // 0x91
 #define KB_s_Ado    0x1f // 0x9f
