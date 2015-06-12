@@ -43,7 +43,7 @@ typedef struct jugador_t
     pirata_t piratas[MAX_CANT_PIRATAS_VIVOS];
     uint port_coord_x;
     uint port_coord_y;
-    char map[MAPA_ALTO * MAPA_ANCHO / 8];
+    char map[BIT_SIZE(MAPA_ALTO, MAPA_ANCHO)];
     uint miners;                    //Cantidad de mineros
     uint explorers;                 //Cantidad de exploradores
     uint score;
