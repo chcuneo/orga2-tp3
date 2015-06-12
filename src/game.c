@@ -165,7 +165,8 @@ void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
 	game_jugador_inicializar_mapa(j);
 }
 
-void game_tick(uint id_pirata){
+void game_tick(uint id_pirata) {
+	
 }
 
 

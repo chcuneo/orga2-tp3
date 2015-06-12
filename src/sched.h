@@ -8,6 +8,6 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
-#include "game.h"
+int scheduler_tick();
 
 #endif	/* !__SCHED_H__ */

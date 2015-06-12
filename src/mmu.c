@@ -247,8 +247,7 @@ int mmap(
 	uchar readWrite,
 	uchar userSupervisor) {
 	static uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
-    print_hex((int)&pageTableLastAddress, 4, 1, 1, 0x7F);
-    breakpoint();
+
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
 	}

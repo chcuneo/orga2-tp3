@@ -28,14 +28,13 @@ struct jugador_t;
 typedef struct pirata_t
 {
     uchar exists:1;
-    uint index;                     //Indice en array interno (numero de 0 a 8)
+    uint index;                     //Indice en array interno (numero de 0 a 7)
     uint id;                        //Id unica: representa el indice general en el array de TSDs y Directorios de Paginacion
     struct jugador_t *jugador;
     uint coord_x;                   //Coordenadas Actuales
     uint coord_y;
-    char type;                      //Tipo: explorador o minero
+    uchar type:1;                      //Tipo: explorador o minero
     char clock;
-    // id unica, posicion, tipo, reloj
 } pirata_t;
 
 typedef struct jugador_t

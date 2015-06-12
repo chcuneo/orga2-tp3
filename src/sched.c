@@ -9,15 +9,15 @@ definicion de funciones del scheduler
 #include "sched.h"
 #include "i386.h"
 #include "error.h"
+#include "game.h"
 
 /**
  * Number of scheduler ticks until a task switch is necessary
  */
 #define SCHEDULER_TASK_TICKS 1000
 
-/** Processes a single scheduler tick
- * @ret Error code
- * @error E_OK
+/** Processes a single scheduler tick, returns the next task to be run
+ * @ret Task index in the gdt
  */
 int scheduler_tick() {
     /** Currently running task
@@ -67,77 +67,72 @@ int scheduler_tick() {
      *   If he does, then we just switch to that one, otherwise, we run the idle
      *   task.
      */
-    uchar found = 0;
 
-    while (tick == 0 && found < 2) {
-        jugador_t *p;
-        ushort *i;
-        ushort pirateSwitcher;
+    if (tick == 0) {
+        uchar found = 0;
+        
+        while (found < 2) {
+            jugador_t *p;
+            ushort *i;
+            ushort pirateSwitcher;
 
-        switch (playerSwitcher) {
-            case 0:
-                p = &jugadorA;
-                i = &pirateSwitcherA;
-                pirateSwitcher = pirateSwitcherA;
-                break;
-            case 1:
-                p = &jugadorB;
-                i = &pirateSwitcherB;
-                pirateSwitcher = pirateSwitcherB;
-                break;
-        }
-
-        uchar tested = 0;
-
-        do {
-            tested = 1;
-
-            if (p->piratas[*i].exists) {
-                break;
+            switch (playerSwitcher) {
+                case 0:
+                    p = &jugadorA;
+                    i = &pirateSwitcherA;
+                    pirateSwitcher = pirateSwitcherA;
+                    break;
+                case 1:
+                    p = &jugadorB;
+                    i = &pirateSwitcherB;
+                    pirateSwitcher = pirateSwitcherB;
+                    break;
             }
 
-            *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
-        } while (*i != pirateSwitcher);
+            uchar tested = 0;
 
-        if (*i != pirateSwitcher || tested == 0) {
-            // We found some existant task to switch to, so we set the current
-            // task to this one.
-            current = *i + playerSwitcher * MAX_CANT_PIRATAS_VIVOS + 2;
-            // We flip the player so that in the next run, its the other player's
-            // turn.
-            playerSwitcher = BIT_FLIP(playerSwitcher, 0);
-            // Select the next task to be scheduled during the next run.
-            *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
-            break;
-        } else {
-            if (found == 0) {
-                // We are at stage 0, so we're checking the first player, and no
-                // task was found for this player, hence, just switch both
-                // player and stage.
+            do {
+                tested = 1;
+
+                if (p->piratas[*i].exists) {
+                    break;
+                }
+
+                *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
+            } while (*i != pirateSwitcher);
+
+            if (*i != pirateSwitcher || tested == 0) {
+                // We found some existant task to switch to, so we set the current
+                // task to this one.
+                current = *i + playerSwitcher * MAX_CANT_PIRATAS_VIVOS + 2;
                 // We flip the player so that in the next run, its the other player's
                 // turn.
                 playerSwitcher = BIT_FLIP(playerSwitcher, 0);
-                // Select stage one
-                found = 1;
-            } else {
-                // We are at stage 1, so we just ran checks for both players,
-                // and found that neither of them has any task to run. Hence, we
-                // run the idle task.
-                current = 1;
+                // Select the next task to be scheduled during the next run.
+                *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
                 break;
+            } else {
+                if (found == 0) {
+                    // We are at stage 0, so we're checking the first player, and no
+                    // task was found for this player, hence, just switch both
+                    // player and stage.
+                    // We flip the player so that in the next run, its the other player's
+                    // turn.
+                    playerSwitcher = BIT_FLIP(playerSwitcher, 0);
+                    // Select stage one
+                    found = 1;
+                } else {
+                    // We are at stage 1, so we just ran checks for both players,
+                    // and found that neither of them has any task to run. Hence, we
+                    // run the idle task.
+                    current = 1;
+                    break;
+                }
             }
         }
+
+        return current + GDT_IDX_TASKB_DESC;
+    } else {
+        return -1;
     }
-
-    ushort tr = rtr() >> 3;
-
-    if (tr != current) {
-        // We want to switch to current. Hence, we have to calculate its offset
-        // within the gdt.
-        current = current << 3;
-        // Now, all we have to do is jmp!
-        __asm __volatile("jmp %0, $0xF3D3F450" :: "r" (current));
-    }
-
-    return E_OK;
 }

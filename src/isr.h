@@ -51,11 +51,6 @@ void unrecoverableHandler(uint exception) {
 void isr_keyboard(uchar scanCode) {
     if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P){
         game_atender_teclado(scanCode);
-    } else{
-        switch (scanCode) {
-            default:
-                break;
-        }
     }
 }
 

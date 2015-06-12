@@ -8,13 +8,6 @@
 
 BITS 32
 
-sched_tarea_offset:     dd 0x00
-sched_tarea_selector:   dw 0x00
-
-;; Sched
-extern sched_tick
-extern sched_tarea_actual
-
 ;;
 ;; Definición de MACROS
 ;; -------------------------------------------------------------------------- ;;
@@ -80,9 +73,13 @@ ISR 20
 ;;
 ;; Rutina de atención del RELOJ
 ;; -------------------------------------------------------------------------- ;;
+sched_tarea_offset:     dd 0xCACABEEF
+sched_tarea_selector:   dw 0x00
+
 extern screen_actualizar_reloj_global
 extern fin_intr_pic1
 extern scheduler_tick
+extern game_tick
 global _isr32
 
 _isr32:
@@ -90,6 +87,26 @@ _isr32:
 	call fin_intr_pic1
 
 	call scheduler_tick
+	; eax = indice en la gdt de tarea que quiero ir, o -1
+
+	push eax
+
+	cmp eax, -1
+	je .end
+
+	str bx
+	; bx = offset en la gdt de tarea en la que estoy
+	shl eax, 3
+	; eax = offset en la gdt de la tarea en la que quiero ir
+	cmp eax, ebx
+	je .end
+
+	mov [sched_tarea_selector], ax
+	jmp far [sched_tarea_offset]
+.end:
+	call game_tick
+	pop eax
+
 	call screen_actualizar_reloj_global
 	popad
 iret
@@ -131,7 +148,9 @@ _isr46:
 	pop ecx
 	pop eax
 
-	popad
+	; TODO: verificar
+	mov word [sched_tarea_selector], 0xE ; GDT_IDX_TASKI_DESC este es el valor posta posta.
+	jmp far [sched_tarea_offset]
 
-	call idle
+	popad
 iret

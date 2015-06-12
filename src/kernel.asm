@@ -98,9 +98,6 @@ BITS 32
     call tss_inicializar
     lgdt [GDT_DESC]
 
-    ; Inicializar el scheduler
-    call scheduler_initialize
-
     ; Inicializar la IDT
     call idt_inicializar
 
@@ -119,13 +116,13 @@ BITS 32
 
     ; Saltar a la primera tarea: Idle
     ; NOTE: El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
-    jmp 0x70:0xF3D3F450
+    jmp 0x70:0xDEAD
 
     ; Ciclar infinitamente (por si algo sale mal...)
     mov eax, 0xF3D3
-    mov ebx, 0xF450
-    mov ecx, 0xD34D
-    mov edx, 0xBEEF
+    mov ebx, 0xDE
+    mov ecx, 0xF450
+    mov edx, 0xD34D
     jmp $
     jmp $
 
@@ -143,6 +140,5 @@ extern resetear_pic
 extern habilitar_pic
 extern tss_inicializar
 extern tss_inicializar_tasking
-extern scheduler_initialize
 
 %include "a20.asm"
