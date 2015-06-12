@@ -253,6 +253,7 @@ void game_updateScreen(pirate_p *p, jugador_t *j, int x, int y){
 	int xc = x;
 	int yc = y + TOP_MARGIN;
 	if (p){
+		if (p->exists == 0) colors += C_BG_RED;
 		if (p->type == MINERO) { screen_pintar('M', color, xc, yc); } else { screen_pintar('E', color, xc, yc); }
 	} else {
 		screen_foreground(color, xc, yc);
@@ -334,6 +335,11 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
 }
 
 void game_pirata_exploto(uint id){
+	pirata_t *pirate = id_pirata2pirata(id);
+	pirate->exists = 0;
+	munmap(DIRECTORY_TABLE_PHYS + id * PAGE_SIZE, CODIGO_BASE);
+	gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x00;	//TODO: ver si va o no, idem lanzar_pirata
+	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 }
 
 pirata_t* game_pirata_en_posicion(uint x, uint y) {
