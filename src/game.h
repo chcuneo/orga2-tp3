@@ -89,5 +89,4 @@ void game_terminar_si_es_hora();
 void game_terminar();
 void game_atender_teclado(unsigned char tecla);
 
-
 #endif  /* !__GAME_H__ */

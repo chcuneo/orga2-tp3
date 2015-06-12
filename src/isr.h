@@ -104,7 +104,7 @@ void unrecoverableHandler(uint exception) {
 }
 
 void isr_keyboard(uchar scanCode) {
-    if (!game_termino() && (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P)) {
+    if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P) {
         game_atender_teclado(scanCode);
     } else if (scanCode == KBC_Y_R) {
         screen_flip_debug_screen();
@@ -122,12 +122,15 @@ int isr_syscall(uint operation, uint param) {
 
         switch (operation) {
             case 0x1:
+                breakpoint();
                 ret = game_syscall_pirata_mover(id, param);
                 break;
             case 0x2:
+                breakpoint();
                 ret = game_syscall_cavar(id);
                 break;
             case 0x3:
+                breakpoint();
                 ret = game_syscall_pirata_posicion(id, param);
                 break;
             default:

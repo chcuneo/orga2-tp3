@@ -19,6 +19,7 @@
 #include "colors.h"
 #include "defines.h"
 #include "i386.h"
+#include "tss.h"
 /* Estructura de para acceder a memoria de video */
 typedef struct ca_s {
     unsigned char c;
@@ -62,5 +63,7 @@ void screen_pintar_relojes();
 void screen_actualizar_posicion_mapa(uint x, uint y);
 void screen_stop_game_show_winner(jugador_t *j);
 
+void screen_flip_debug_screen();
+void screen_set_debug_registers(uint exception, char *message, tss *registers);
 
 #endif  /* !__SCREEN_H__ */

@@ -23,9 +23,9 @@ _isr%1:
 	xchg bx, bx
 	pushf
 	push esp
-	add [esp], 8
+	add dword [esp], 8
 	push ebp
-	push [esp - 12]
+	push dword [esp - 12]
 	call loadRegisters
 
     mov eax, %1
@@ -144,7 +144,6 @@ _isr46:
 	pop esi
 	pop edi
 
-	; TODO: como hacemos para hacer un return cuando llaman a posicion?
 	mov word [sched_tarea_selector], 0xE ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
 

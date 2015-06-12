@@ -163,7 +163,7 @@ void screen_inicializar() {
 
 void printS(const char * text, uint x, uint y, unsigned short attr) {
     int i;
-    
+
     for (i = 0; text[i] != 0; i++) {
         screen_pintar(text[i], attr, x, y);
 
@@ -381,4 +381,12 @@ void print_state(){
     __asm __volatile("mov %0,%%ecx" : : "r" (ecxR));
     __asm __volatile("mov %0,%%edx" : : "r" (edxR));
     __asm __volatile("mov %0,%%eax" : : "r" (eaxR)); 
+}
+
+void screen_flip_debug_screen() {
+
+}
+
+void screen_set_debug_registers(uint exception, char *message, tss *registers) {
+    
 }

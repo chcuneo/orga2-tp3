@@ -240,9 +240,6 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	int yend = MIN(f+1, MAPA_ALTO - 1);
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			// print_dec(x, 2, 10, 10, 0x7F);
-			// print_dec(y, 2, 10, 14, 0x7F);
-			// breakpoint();
 			if (game_jugador_getBitMapPos(jugador, x, y) == 0x00){
 				game_jugador_paginarPosMapa_piratasExistentes(jugador, x, y);
 				game_jugador_setBitMapPos(jugador, x, y, 1);
@@ -397,7 +394,6 @@ void game_atender_teclado(unsigned char tecla){
 	switch (tecla){
 		case KB_shiftA:
 			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR);
-			breakpoint();
 			break;
 		case KB_shiftB:
 			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR);
