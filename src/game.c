@@ -17,8 +17,8 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 
 #define POS_INIT_A_X                      1
 #define POS_INIT_A_Y                      1
-#define POS_INIT_B_Y         MAPA_ANCHO - 2
-#define POS_INIT_B_X          MAPA_ALTO - 2
+#define POS_INIT_B_X         MAPA_ANCHO - 2
+#define POS_INIT_B_Y          MAPA_ALTO - 2
 
 #define CANT_POSICIONES_VISTAS            9
 #define MAX_SIN_CAMBIOS                 999
@@ -42,7 +42,7 @@ void* error() {
 }
 
 uint game_xy2lineal (uint x, uint y) {
-	return (x * MAPA_ANCHO + y);
+	return (y * MAPA_ANCHO + x);
 }
 
 uint game_posicion_valida(int x, int y) {
@@ -88,11 +88,11 @@ uint game_dir2xy(direccion dir, int *x, int *y) {
 }
 
 uint game_xy2addressVirt(int x, int y){
-	return MAPA_BASE_VIRTUAL + (((x * MAPA_ANCHO) + y) * 0x1000);
+	return MAPA_BASE_VIRTUAL + (((y * MAPA_ANCHO) + x) * 0x1000);
 }
 
 uint game_xy2addressPhys(int x, int y){
-	return MAPA_BASE_FISICA + (((x * MAPA_ANCHO) + y) * 0x1000);
+	return MAPA_BASE_FISICA + (((y * MAPA_ANCHO) + x) * 0x1000);
 }
 
 uint game_valor_tesoro(uint x, uint y) {
@@ -122,7 +122,7 @@ char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
-	return (j->map[charInBMArray] << offsetInChar) >> 7;
+	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
 }
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
 void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y) {
@@ -182,8 +182,8 @@ void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id
 	
 	//Esto se puede mover a mmu.c, pero creo que deberia quedar aca, mi corazon dice que aqui pertenece
 	int x, y;
-	for (x = 0; x < MAPA_ALTO; x++){
-		for (y = 0; y < MAPA_ANCHO; y++){
+	for (x = 0; x < MAPA_ANCHO; x++){
+		for (y = 0; y < MAPA_ALTO; y++){
 			if (game_jugador_getBitMapPos(j, x, y)) game_pirata_paginarPosMapa(pirata, x, y);
 		}
 	}
@@ -233,15 +233,11 @@ void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y){
 
 void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	int x, y;
-	int xstart;
-	if (0 > c-1) { xstart = 0; } else { xstart = c-1; }
-	int ystart;
-	if (0 > f-1) { ystart = 0; } else { ystart = f-1; }
+	int xstart = MAX(c-1, 0);
+	int ystart = MAX(f-1, 0);
 	
-	int xend;
-	if (MAPA_ALTO - 1 < c+1) { xend = MAPA_ALTO - 1; } else { xend = c+1; }
-	int yend;
-	if (MAPA_ANCHO - 1 < f+1) { yend = MAPA_ANCHO - 1; } else { yend = f+1; }
+	int xend = MIN(c+1, MAPA_ANCHO - 1);
+	int yend = MIN(f+1, MAPA_ALTO - 1);
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
 			// print_dec(x, 2, 10, 10, 0x7F);
@@ -261,13 +257,13 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 	uchar color = (2 + j->index) << 4;
-	int xc = x + TOP_MARGIN;
-	int yc = y;
+	int xc = x;
+	int yc = y + TOP_MARGIN;
 	if (p){
 		if (p->exists == 0) color += C_BG_RED;
-		if (p->type == MINERO) { screen_pintar('M', color, xc, yc); } else { screen_pintar('E', color, xc, yc); }
+		if (p->type == MINERO) { screen_pintar('M', color, yc, xc ); } else { screen_pintar('E', color, yc, xc ); }
 	} else {
-		screen_changecolor(color, xc, yc);
+		screen_changecolor(color, yc, xc);
 	}
 }
 
