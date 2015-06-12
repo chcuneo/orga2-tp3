@@ -1,7 +1,83 @@
 \section{Modo Protegido}
 
+\subsection{Interrupt Descriptor Table}
+
+Una interrupción es una señal que le indica a la CPU que debe interrumpir la ejecución actual de instrucciones. El rol de la \texttt{IDT} (Interrupt Descriptor Table) es contener los diferentes descriptores de interrupcion y asociar las diferentes interrupciones a sus respectivas rutinas de atención de interrupción. Existen tres fuentes de interrupciones:
+
+\begin{enumerate}
+\item Hardware
+\item Software
+\item Internas
+\end{enumerate}
+
+A su vez, la \texttt{IDT} puede contener tres tipos de descriptores:
+
+\begin{enumerate}
+\item Interrupt Gate
+\item Trap Gate
+\item Task Gate
+\end{enumerate}
+
+Para construir la IDT, armamos primero en C la estructura \texttt{idt\_entry} con sus respectivos atributos y luego construimos un array de 256 posiciones del mismo (la máxima cantidad soportada por el procesador). Modificamos la macro de la cátedra para poder cargar la IDT con diferentes atributos. Luego inicializamos las diferentes posiciones que utilizamos con sus respectivos selectores de segmento y atributos, tomando también la referencia a las respectivas rutinas de atención.
+
+Un procesador Intel reserva por default las primeras 31 posiciones de la \texttt{IDT} para las diferentes excepciones del procesador. Actualmente, el procesador solo utiliza las primeras 21. Inicializamos estas excepciones del procesador a una rutina que imprime la excepción en pantalla.
+
+Mas adelante inicializaremos otros descriptores de la \texttt{IDT} para atender otras interrupciones como la del reloj y la del teclado.
+
 \subsection{Memory Management Unit}
+Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza una \texttt{MMU} (Memory Management Unit). La misma esta compuesta por la Unidad de Segmentación y la Unidad de Paginación.
 
-\subsection{Task State Segment}
+Antes de explicar como funciona este proceso, debemos explicar la diferencia entre los diferentes tipos de direcciones:
 
-\subsection{Scheduler \& Interrupt Descriptor Table}
+\begin{enumerate}
+\item Dirección Lógica
+\item Dirección Lineal
+\item Dirección Física
+\end{enumerate}
+
+TODO: Insertar diagramas de como se compone cada tipo de dirección?
+
+\subsubsection{Unidad de Segmentación}
+
+La unidad de segmentación se ocupa de pasar desde las \textit{direcciones lógicas} a direcciones lineales. Para ello, utiliza la GDT para identificar el segmento adecuado y luego su respectivo offset. La unidad de protección verifica que el \texttt{RPL} es compatible con el \texttt{CPL} y el \texttt{DPL}.
+
+\subsubsection{Unidad de Paginación}
+
+Para activar la paginación, en primer lugar debemos inicializar el directorio de paginas y cargar el registro \reg{cr3} con la dirección del mismo. Como los directorios de paginas estan alineados a 4 kb, los primeros 20 bits del cr3 no son necesarios para identificar el directorio, por lo que son utilizados por atributos del procesador. En nuestro caso no utilizamos estos atributos, por lo que son todos 0.
+
+Luego, debemos activar la paginacion con el ultimo bit del registro \reg{cr0}.
+
+Si la paginación esta activada, la dirección lineal luego pasa por la unidad de paginación. La unidad de paginación se encarga de ir desde la dirección lineal a la dirección física en memoria. En caso de que la dirección lineal no este paginada, el procesador tiene una page fault exception.
+
+Para facilitar el manejo del armado de estructuras para la paginación, se crearon las siguientes funciones en C. Antes de explicar que hace cada función, un comentario. Cada directorio de paginas tiene 1024 entradas de descriptores de 4 bytes. Lo mismo sucede con los directorios de paginas, que también tienen 1024 entradas con descriptores de 4 bytes. El procesador, al buscar estas estructuras en memoria RAM, requiere que las mismas estén alineadas a 4kb, dado que es el tamaño de pagina que carga en memoria cache.
+
+\begin{enumerate}
+\item \fun{create\_page\_table(uint directoryBase, uint directoryEntry, uint physicalAddress, uchar readWrite, uchar userSupervisor)}: Asigna una \texttt{page\_table} a una tabla de directorios con los atributos pasados por parametro. Al final de la función, se limpia la memoria cache para garantizar que cuando el procesador busca esta pagina, la misma se encuentra actualizada.
+
+\item \fun{delete\_page\_table(uint directoryBase, uint directoryEntry)}: Borra una tabla de paginas de un directorio de paginas. Esto lo hace simplemente setteando el bit P (present) en cada pagina en 0.
+
+\item \fun{create\_page(uint directoryBase, uint directoryEntry, uint tableEntry, uint physicalAddress, \\ uchar readWrite, uchar userSupervisor)}: Crea una pagina en la tabla de paginas de algún directorio.
+
+\item \fun{delete\_page(uint directoryBase, uint directoryEntry, uint tableEntry)}: Borra una pagina en la tabla de paginas de algún directorio. Esto lo hace setteando el bit P en 0.
+
+\item \fun{mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, \\ uchar userSupervisor)}: Mappea una dirección virtual en una direccion fisica. Para esto, primero se busca la tabla de paginas y la pagina correspondiente a la dirección virtual. Luego se le asigna a esa pagina la dirección física. Esto se hace de la siguiente forma:
+	\begin{enumerate}
+	\item A partir de la dirección virtual, se busca la entrada de directorio correspondiente a la misma. Esto se hace dividiendo el virtualAdress por el tamaño direccionable por cada page\_directory.$virtualAdress / 1024*4kb$. Esto es equivalente a $virtualAdress >> 22$.
+	\item Buscamos el indice en la entrada de paginas. Esto se calcula dividiendo por el tamaño de pagina e ignorando los bits correspondientes a la entrada de directorio $virtualAdress / 4kb$ $\&$ $0x3FF$, que es equivalente a $virtualAdress >> 12$ $\&$ $0x3FF$.
+	\end{enumerate}
+
+\item \fun{munmap(uint directoryBase, uint virtualAddress)}: Desmappea la pagina correspondiente a una dirección virtual. Calcula todos los indices necesarios de la misma manera que \fun{mmap}
+
+\item \fun{mmu\_inicializar\_dir\_kernel()}: Inicializa el directorio del kernel. Para ello, hacemos memory mapping sobre el kernel y le asignamos un area libre, todo desde \addr{0x00000000} a \addr{0x003FFFF}.
+
+\item \fun{mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: Esta función inicializa el directorio de un pirata. Al igual que el Kernel, hacemos memory mapping, aunque en modo user y en read only. A su vez, mappeamos la pagina donde vamos a poner el codigo del pirata, y copiamos el código del pirata que se encuentra en el Kernel en esta pagina.
+
+\item \fun{mmu\_move\_codepage(uint src, uint dst, pirata\_t *p)}: Mueve la pagina de codigo del pirata desde $src$ a $dst$.
+
+No implementamos la funcion \texttt{mmu\_inicializar} dado que todo el trabajo lo hace \texttt{mmu\_inicializar\_dir\_kernel}.
+
+\end{enumerate}
+
+\subsection{Otras Interrupciones}
+
+\subsection{Task State Segment \& Scheduler}
