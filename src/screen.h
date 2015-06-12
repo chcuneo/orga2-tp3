@@ -46,6 +46,7 @@ void screen_pintar_puntajes();
 void clear();
 void screen_printear_ascii(uint fila, uint columna, uint from);
 void print_state();
+void screen_foreground(uchar color, uint fila, uint columna);
 
 void screen_actualizar_reloj_global();
 void screen_actualizar_reloj_pirata (jugador_t *j, pirata_t *pirata);

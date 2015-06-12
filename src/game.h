@@ -68,7 +68,7 @@ uint game_xy2addressPhys(int x, int y);
 uint game_xy2addressVirt(int x, int y);
 uint game_posicion_valida(int x, int y);
 int game_jugador_taskAdress(jugador_t *j, pirata_t *p);
-void game_updateScreen(uchar c, jugador_t * j, int x, int y);
+void game_updateScreen(pirata_t * p, jugador_t * j, int x, int y);
 
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
 void game_jugador_lanzar_pirata(jugador_t *j, uint tipo);

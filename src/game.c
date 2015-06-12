@@ -250,18 +250,18 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 				if (game_valor_tesoro(x, y)){
 					game_jugador_lanzar_pirata(jugador, MINERO);
 				}
-				game_updateScreen(0, j, x, y);
+				game_updateScreen(0, jugador, x, y);
 			}
 		}
 	}
 }
 
-void game_updateScreen(pirate_p *p, jugador_t *j, int x, int y){
+void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 	uchar color = 2 + j->index;
 	int xc = x;
 	int yc = y + TOP_MARGIN;
 	if (p){
-		if (p->exists == 0) colors += C_BG_RED;
+		if (p->exists == 0) color += C_BG_RED;
 		if (p->type == MINERO) { screen_pintar('M', color, xc, yc); } else { screen_pintar('E', color, xc, yc); }
 	} else {
 		screen_foreground(color, xc, yc);
