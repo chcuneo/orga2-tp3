@@ -82,9 +82,6 @@ BITS 32
     ; Inicializar pantalla
     call screen_inicializar
 
-    ; Inicializar el juego
-    call game_inicializar
-
     ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3
     call mmu_inicializar_dir_kernel
 
@@ -105,6 +102,10 @@ BITS 32
 
     ; Cargar IDT
     lidt [IDT_DESC]
+
+    ; Inicializar el juego
+    call game_inicializar
+    xchg bx, bx
 
     ; Configurar controlador de interrupciones
     call resetear_pic

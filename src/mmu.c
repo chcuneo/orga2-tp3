@@ -330,7 +330,7 @@ void mmu_inicializar_dir_kernel() {
 		uint y;
 		
 		for (y = 0; y < MAPA_ALTO; ++y) {
-			uint offset = MAPA_BASE_FISICA + ((x * MAPA_ANCHO + y) * PAGE_SIZE);
+			uint offset = game_xy2addressPhys(x, y);
 			mmap(offset, offset, KERNEL_DIR_TABLE, 1, 1);
 		}
 	}

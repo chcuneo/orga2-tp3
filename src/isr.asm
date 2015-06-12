@@ -145,10 +145,11 @@ _isr46:
 	push eax
 	push ecx
 	call isr_syscall
-	pop ecx
-	pop eax
+	; Popeamos en otro lado para no perder el dato de retorno, que esta en eax
+	pop esi
+	pop edi
 
-	; TODO: verificar
+	; TODO: como hacemos para hacer un return cuando llaman a posicion?
 	mov word [sched_tarea_selector], 0xE ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
 
