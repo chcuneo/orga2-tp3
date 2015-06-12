@@ -80,4 +80,20 @@ No implementamos la funcion \texttt{mmu\_inicializar} dado que todo el trabajo l
 
 \subsection{Otras Interrupciones}
 
+Para inicializar otras interrupciones, tenemos que agregar los diferentes descriptores a la IDT, que apuntan a su correspondiente rutina de atención y ademas tienen los atributos correctos. Recordemos que las rutinas de atención de la interrupción deben ser transparentes a lo que el procesador estaba ejecutando en el momento, por lo que se debe guardar todos los registros y luego restaurarlos al finalizar la rutina de atención. Ademas, las interrupciones en general llevan a un escalamiento de privilegios, por lo que los privilegios también deben ser restaurados.
+
+A su vez, la rutina de atención de la interrupción debe indicarle al pic que la interrupción esta siendo atendida, para que otras interrupciones puedan suceder. Esto se hace con la función de la cátedra \fun{fin\_intr\_pic1}.
+
+\subsubsection{Reloj}
+
+Esta es una interrupción interna, que sucede con cada \texttt{tick} del reloj del procesador. La rutina de atención de esta interrupción se encarga de mostrar la animación de un cursor rotando en la esquina inferior derecha de la pantalla, por medio de la función \fun{screen\_actualizar\_reloj\_global}.
+
+\subsubsection{Teclado}
+Utilizaremos la rutina de atención del teclado para habilitar las diferentes teclas disponibles a los jugadores. Cuando programábamos esto, notamos que es necesario tomar la tecla presionada desde el controlador del teclado, caso contrario el teclado no vuelve a solicitar una interrupción.
+
+\subsubsection{Software}
+Asignamos a la interrupcion \addr{0x46} una rutina que atiende un servicio del sistema.
+
 \subsection{Task State Segment \& Scheduler}
+
+La \texttt{TSS} (Task State Segment) es el espacio de memoria previsto en los procesadores \texttt{IA-32} como el espacio de contexto de cada tarea.
