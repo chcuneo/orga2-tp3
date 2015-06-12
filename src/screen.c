@@ -7,6 +7,7 @@ definicion de funciones del scheduler
 
 #include "screen.h"
 #include "game.h"
+#include "error.h"
 
 
 extern jugador_t jugadorA, jugadorB;
@@ -52,19 +53,6 @@ void print(const char * text, uint x, uint y, unsigned short attr) {
     }
 }
 
-void printS(const char * text, uint x, uint y, unsigned short attr) {
-    int i;
-    for (i = 0; text[i] != 0; i++) {
-        screen_pintar(text[i], attr, x, y);
-
-        y++;
-
-        if (y == VIDEO_COLS) {
-            y = 0;
-        }
-    }
-}
-
 void print_hex(uint numero, int size, uint x, uint y, unsigned short attr) {
     int i;
     char hexa[8];
@@ -77,6 +65,7 @@ void print_hex(uint numero, int size, uint x, uint y, unsigned short attr) {
     hexa[5] = letras[ ( numero & 0x00F00000 ) >> 20 ];
     hexa[6] = letras[ ( numero & 0x0F000000 ) >> 24 ];
     hexa[7] = letras[ ( numero & 0xF0000000 ) >> 28 ];
+
     for(i = 0; i < size; i++) {
         p[y][x + size - i - 1].c = hexa[i];
         p[y][x + size - i - 1].a = attr;
@@ -95,38 +84,61 @@ void print_dec(uint numero, int size, uint x, uint y, unsigned short attr) {
     }
 }
 
-uint min(uint left, uint right) {
-    if (left > right) {
-        return right;
+int screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho) {
+    if (fila > VIDEO_FILS || fila + alto > VIDEO_FILS) {
+        return E_OUT_OF_BOUNDS;
     }
 
-    return left;
-}
+    if (columna > VIDEO_COLS || columna + ancho > VIDEO_COLS) {
+        return E_OUT_OF_BOUNDS;
+    }
 
-void screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho) {
     uint i;
     uint j;
-    for (i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
-        for (j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+
+    for (i = fila; i < fila + alto; ++i) {
+        for (j = columna; j < columna + ancho; ++j) {
             screen_pintar(c, color, i, j);
         }
     }
+
+    return E_OK;
 }
 
-void screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho) {
+int screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho) {
+    if (fila > VIDEO_FILS) {
+        return E_OUT_OF_BOUNDS;
+    }
+
+    if (columna > VIDEO_COLS || columna + ancho > VIDEO_COLS) {
+        return E_OUT_OF_BOUNDS;
+    }
+
     uint j;
 
-    for (j = columna; j < min(columna + ancho, VIDEO_COLS); ++j) {
+    for (j = columna; j < columna + ancho; ++j) {
         screen_pintar(c, color, fila, j);
     }
+
+    return E_OK;
 }
 
-void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto) {
+int screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto) {
+    if (fila > VIDEO_FILS || fila + alto > VIDEO_FILS) {
+        return E_OUT_OF_BOUNDS;
+    }
+
+    if (columna > VIDEO_COLS) {
+        return E_OUT_OF_BOUNDS;
+    }
+
     uint i;
 
-    for (i = fila; i < min(fila + alto, VIDEO_FILS); ++i) {
+    for (i = fila; i < MIN(fila + alto, VIDEO_FILS); ++i) {
         screen_pintar(c, color, i, columna);
     }
+
+    return E_OK;
 }
 
 void clear() {
@@ -149,8 +161,19 @@ void screen_inicializar() {
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
 }
 
-// gdt_entry gdt[GDT_COUNT] = {
-//     [GDT_IDX_NULL_DESC] = (gdt_entry) {
+void printS(const char * text, uint x, uint y, unsigned short attr) {
+    int i;
+    
+    for (i = 0; text[i] != 0; i++) {
+        screen_pintar(text[i], attr, x, y);
+
+        y++;
+
+        if (y == VIDEO_COLS) {
+            y = 0;
+        }
+    }
+}
 
 char *logo[] = {
     [17] = "     \\  \"      \",/ /    -  ( <    |\\_)",
@@ -209,7 +232,7 @@ void screen_refresh_logo() {
 
     while (1) {
         if (clocknegro % (timec - 1) == 0) {
-            screen_pintar_rect(0, 0, 0, 0, 27, min(VIDEO_COLS, (columna + 60)));
+            screen_pintar_rect(0, 0, 0, 0, 27, MIN(VIDEO_COLS, (columna + 60)));
         }
 
         if (clocknegro % timec == 0) {

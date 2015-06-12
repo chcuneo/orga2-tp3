@@ -397,6 +397,3 @@ void mmu_move_codepage(uint srcp, uint dstp, pirata_t *p){
 	munmap( GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
 	mmap(CODIGO_BASE, (int)dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
 }
-
-void mmu_inicializar() {
-}

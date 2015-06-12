@@ -13,6 +13,7 @@
 #include "screen.h"
 #include "error.h"
 #include "keyboardcodes.h"
+#include "tss.h"
 
 char *unrecoverableMsgs[] = {
     "Division by zero",
@@ -38,19 +39,75 @@ char *unrecoverableMsgs[] = {
     "Virtualization Exception"
 };
 
-void unrecoverableHandler(uint exception) {
-    int line = 0;
+uchar hasExceptionHappened = 0;
+tss firstException;
 
-    if (exception == 8) {
-        line++;
+void loadRegisters(
+    uint eip,
+    uint ebp,
+    uint esp,
+    uint eflags) {
+
+    uint eax = reax();
+
+    if (!hasExceptionHappened) {
+        firstException = (tss) {
+            .ptl = 0x0,
+            .unused0 = 0x0,
+            .esp0 = rcr0(),
+            .ss0 = 0x0,
+            .unused1 = 0x0,
+            .esp1 = rcr2(),
+            .ss1 = 0x0,
+            .unused2 = 0x0,
+            .esp2 = rcr4(),
+            .ss2 = 0x0,
+            .unused3 = 0x0,
+            .cr3 = rcr3(),
+            .eip = eip,
+            .eflags = eflags,
+            .eax = eax,
+            .ecx = recx(),
+            .edx = redx(),
+            .ebx = rebx(),
+            .esp = esp,
+            .ebp = ebp,
+            .esi = resi(),
+            .edi = redi(),
+            .es = res(),
+            .unused4 = 0x0,
+            .cs = rcs(),
+            .unused5 = 0x0,
+            .ss = rss(),
+            .unused6 = 0x0,
+            .ds = rds(),
+            .unused7 = 0x0,
+            .fs = rfs(),
+            .unused8 = 0x0,
+            .gs = rgs(),
+            .unused9 = 0x0,
+            .ldt = 0x0,
+            .unused10 = 0x0,
+            .dtrap = 0x0,
+            .iomap = 0x0
+        };
+    }
+}
+
+void unrecoverableHandler(uint exception) {
+    if (!hasExceptionHappened) {
+        screen_set_debug_registers(exception, unrecoverableMsgs[exception], &firstException);
+        hasExceptionHappened = 1;
     }
 
-    print(unrecoverableMsgs[exception], line, 0, C_FG_RED | C_BLINK);
+    // TODO: matar pirata
 }
 
 void isr_keyboard(uchar scanCode) {
-    if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P){
+    if (!game_termino() && (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P)) {
         game_atender_teclado(scanCode);
+    } else if (scanCode == KBC_Y_R) {
+        screen_flip_debug_screen();
     }
 }
 

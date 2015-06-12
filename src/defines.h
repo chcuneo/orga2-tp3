@@ -102,4 +102,7 @@ void* error();
 
 #define BIT_SIZE(h, w) (h * w / 8)
 
+#define MIN(x, y) ((x < y)? x:y)
+#define MAX(x, y) ((y < x)? x:y)
+
 #endif  /* !__DEFINES_H__ */

@@ -14,24 +14,19 @@ BITS 32
 
 ;; ISR
 extern unrecoverableHandler
-extern print_state
-extern clear
+extern loadRegisters
 
 %macro ISR 1
 global _isr%1
 
 _isr%1:
-	push ecx
-	push eax
-	push edx
-	call clear
-	pop edx
-	pop eax
-	pop ecx
-
-	;;Checkear esto
-	add esp, 12
-	print_regs
+	xchg bx, bx
+	pushf
+	push esp
+	add [esp], 8
+	push ebp
+	push [esp - 12]
+	call loadRegisters
 
     mov eax, %1
     push eax

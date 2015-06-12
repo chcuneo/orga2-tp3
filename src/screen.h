@@ -39,9 +39,9 @@ void screen_pintar(unsigned char c, unsigned char color, uint fila, uint columna
 void print(const char * text, unsigned int x, unsigned int y, unsigned short attr);
 void print_hex(unsigned int numero, int size, unsigned int x, unsigned int y, unsigned short attr);
 void print_dec(uint numero, int size, uint x, uint y, unsigned short attr);
-void screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho);
-void screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho);
-void screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto);
+int screen_pintar_rect(unsigned char c, unsigned char color, uint fila, uint columna, uint alto, uint ancho);
+int screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint columna, uint ancho);
+int screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto);
 void screen_inicializar();
 void screen_pintar_puntajes();
 void clear();

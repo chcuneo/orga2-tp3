@@ -65,8 +65,6 @@ BITS 32
     mov es, ax
     mov gs, ax
 
-    imprimir_texto_mp iniciando_mp_msg, iniciando_mp_len, 0x07, 2, 0
-
     ; Selector del segmento de video
     mov ax, 0x60
     mov fs, ax
@@ -74,10 +72,6 @@ BITS 32
     ; Establecer la base de la pila
     mov ebp, 0x27000
     mov esp, 0x27000
-
-    ; Imprimir mensaje de bienvenida
-    ;call screen_refresh_logo
-
 
     ; Inicializar pantalla
     call screen_inicializar
@@ -89,9 +83,6 @@ BITS 32
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
-
-    ; Mapeamos las paginas a memoria
-    call mmu_inicializar
 
     ; Inicializar tss
     call tss_inicializar
@@ -105,7 +96,6 @@ BITS 32
 
     ; Inicializar el juego
     call game_inicializar
-    xchg bx, bx
 
     ; Configurar controlador de interrupciones
     call resetear_pic
