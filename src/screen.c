@@ -30,7 +30,7 @@ void screen_pintar(uchar c, uchar color, uint fila, uint columna) {
     p[fila][columna].a = color;
 }
 
-void screen_foreground(uchar color, uint fila, uint columna) {
+void screen_changecolor(uchar color, uint fila, uint columna) {
     p[fila][columna].a = color;
 }
 
@@ -90,8 +90,8 @@ void print_dec(uint numero, int size, uint x, uint y, unsigned short attr) {
     for(i = 0; i < size; i++) {
         int resto  = numero % 10;
         numero = numero / 10;
-        p[y][x + size - i - 1].c = letras[resto];
-        p[y][x + size - i - 1].a = attr;
+        p[x][y + size - i - 1].c = letras[resto];
+        p[x][y + size - i - 1].a = attr;
     }
 }
 

@@ -12,12 +12,13 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 #include "error.h"
 #include "gdt.h"
 #include "defines.h"
+#include "i386.h"
 
 
 #define POS_INIT_A_X                      1
 #define POS_INIT_A_Y                      1
-#define POS_INIT_B_X         MAPA_ANCHO - 2
-#define POS_INIT_B_Y          MAPA_ALTO - 2
+#define POS_INIT_B_Y         MAPA_ANCHO - 2
+#define POS_INIT_B_X          MAPA_ALTO - 2
 
 #define CANT_POSICIONES_VISTAS            9
 #define MAX_SIN_CAMBIOS                 999
@@ -41,7 +42,7 @@ void* error() {
 }
 
 uint game_xy2lineal (uint x, uint y) {
-	return (y * MAPA_ANCHO + x);
+	return (x * MAPA_ANCHO + y);
 }
 
 uint game_posicion_valida(int x, int y) {
@@ -121,7 +122,7 @@ char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
-	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
+	return (j->map[charInBMArray] << offsetInChar) >> 7;
 }
 // dada una posicion (x,y) guarda las posiciones de alrededor en dos arreglos, uno para las x y otro para las y
 void game_calcular_posiciones_vistas(int *vistas_x, int *vistas_y, int x, int y) {
@@ -238,13 +239,15 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	if (0 > f-1) { ystart = 0; } else { ystart = f-1; }
 	
 	int xend;
-	if (MAPA_ANCHO - 1 < c+1) { xend = MAPA_ANCHO - 1; } else { xend = c+1; }
+	if (MAPA_ALTO - 1 < c+1) { xend = MAPA_ALTO - 1; } else { xend = c+1; }
 	int yend;
-	if (MAPA_ALTO - 1 < f+1) { yend = MAPA_ALTO - 1; } else { ystart = f+1; }
-
+	if (MAPA_ANCHO - 1 < f+1) { yend = MAPA_ANCHO - 1; } else { yend = f+1; }
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
+			// print_dec(x, 2, 10, 10, 0x7F);
+			// print_dec(y, 2, 10, 14, 0x7F);
+			// breakpoint();
+			if (game_jugador_getBitMapPos(jugador, x, y) == 0x00){
 				game_jugador_paginarPosMapa_piratasExistentes(jugador, x, y);
 				game_jugador_setBitMapPos(jugador, x, y, 1);
 				if (game_valor_tesoro(x, y)){
@@ -257,14 +260,14 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 }
 
 void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
-	uchar color = 2 + j->index;
-	int xc = x;
-	int yc = y + TOP_MARGIN;
+	uchar color = (2 + j->index) << 4;
+	int xc = x + TOP_MARGIN;
+	int yc = y;
 	if (p){
 		if (p->exists == 0) color += C_BG_RED;
 		if (p->type == MINERO) { screen_pintar('M', color, xc, yc); } else { screen_pintar('E', color, xc, yc); }
 	} else {
-		screen_foreground(color, xc, yc);
+		screen_changecolor(color, xc, yc);
 	}
 }
 
@@ -398,6 +401,7 @@ void game_atender_teclado(unsigned char tecla){
 	switch (tecla){
 		case KB_shiftA:
 			game_jugador_lanzar_pirata(&jugadorA, EXPLORADOR);
+			breakpoint();
 			break;
 		case KB_shiftB:
 			game_jugador_lanzar_pirata(&jugadorB, EXPLORADOR);

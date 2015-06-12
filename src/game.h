@@ -43,7 +43,7 @@ typedef struct jugador_t
     pirata_t piratas[MAX_CANT_PIRATAS_VIVOS];
     uint port_coord_x;
     uint port_coord_y;
-    char map[BIT_SIZE(MAPA_ALTO, MAPA_ANCHO)];
+    char map[MAPA_ALTO * MAPA_ANCHO / 8];
     uint miners;                    //Cantidad de mineros
     uint explorers;                 //Cantidad de exploradores
     uint score;
@@ -70,6 +70,7 @@ uint game_posicion_valida(int x, int y);
 int game_jugador_taskAdress(jugador_t *j, pirata_t *p);
 void game_updateScreen(pirata_t * p, jugador_t * j, int x, int y);
 
+void game_inicializar();
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
 void game_jugador_lanzar_pirata(jugador_t *j, uint tipo);
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo);

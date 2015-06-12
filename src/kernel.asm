@@ -76,12 +76,14 @@ BITS 32
     mov esp, 0x27000
 
     ; Imprimir mensaje de bienvenida
-    call screen_refresh_logo
+    ;call screen_refresh_logo
 
-    ; Inicializar el juego
 
     ; Inicializar pantalla
     call screen_inicializar
+
+    ; Inicializar el juego
+    call game_inicializar
 
     ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3
     call mmu_inicializar_dir_kernel
@@ -140,5 +142,6 @@ extern resetear_pic
 extern habilitar_pic
 extern tss_inicializar
 extern tss_inicializar_tasking
+extern game_inicializar
 
 %include "a20.asm"
