@@ -24,6 +24,8 @@ Un procesador Intel reserva por default las primeras 31 posiciones de la \texttt
 
 Mas adelante inicializaremos otros descriptores de la \texttt{IDT} para atender otras interrupciones como la del reloj y la del teclado.
 
+Una vez cargada la IDT, se debe remapear el PIC (Programmable Interrupt Controler) para referir a las nuevas interrupciones que agreguemos. Esto se hace con las rutinas de la catedra \texttt{resetear\_pic} y luego \texttt{habilitar\_pic}.
+
 \subsection{Memory Management Unit}
 Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza una \texttt{MMU} (Memory Management Unit). La misma esta compuesta por la Unidad de Segmentación y la Unidad de Paginación.
 
@@ -40,6 +42,8 @@ TODO: Insertar diagramas de como se compone cada tipo de dirección?
 \subsubsection{Unidad de Segmentación}
 
 La unidad de segmentación se ocupa de pasar desde las \textit{direcciones lógicas} a direcciones lineales. Para ello, utiliza la GDT para identificar el segmento adecuado y luego su respectivo offset. La unidad de protección verifica que el \texttt{RPL} es compatible con el \texttt{CPL} y el \texttt{DPL}.
+
+En modo protegido, los selectores de segmento tienen 16 bits. Los 13 bits mas significativos contienen el indice dentro de la tabla de descriptores. El bit 2 especifica si la operación utiliza la \texttt{GDT} o la \texttt{LDT}. Finalmente, los 2 bits menos significativos definen el nivel de privilegio solicitado.
 
 \subsubsection{Unidad de Paginación}
 
@@ -94,6 +98,13 @@ Utilizaremos la rutina de atención del teclado para habilitar las diferentes te
 \subsubsection{Software}
 Asignamos a la interrupcion \addr{0x46} una rutina que atiende un servicio del sistema.
 
-\subsection{Task State Segment \& Scheduler}
+\subsection{Task State Segment}
 
-La \texttt{TSS} (Task State Segment) es el espacio de memoria previsto en los procesadores \texttt{IA-32} como el espacio de contexto de cada tarea.
+La \texttt{TSS} (Task State Segment) es el espacio de memoria previsto en los procesadores \texttt{IA-32} como el espacio de contexto de cada tarea. Este segmento debe tener su respectivo descriptor en la \texttt{GDT}. Ademas, el selector de segmento de la tarea que se
+esta ejecutando actualmente se debe encontrar en el registro \reg{TR} (Task Register).
+
+Para llamar a una tarea, se lleva a cabo un \texttt{call far} con su respectivo selector de segmento. Si ya estabamos ejecutando una tarea, se guarda su contexto en \reg{TR} antes de ejecutar la nueva tarea. 
+
+La primera vez que llamamos a una tarea, el registro \reg{TR} no tiene un valor definido. Ademas, debemos guardar el contexto del programa en ejecucion. Para ello, se crea una tarea inicial  en la \texttt{TSS} para que el procesador tenga donde guardar el contexto actual.
+
+\subsection{Scheduler}
