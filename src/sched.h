@@ -9,5 +9,6 @@
 #define __SCHED_H__
 
 int scheduler_tick();
+void scheduler_load_cr3(uint taskGdtOffset);
 
 #endif	/* !__SCHED_H__ */

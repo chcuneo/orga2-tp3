@@ -10,11 +10,31 @@ definicion de funciones del scheduler
 #include "i386.h"
 #include "error.h"
 #include "game.h"
+#include "screen.h"
 
 /**
  * Number of scheduler ticks until a task switch is necessary
  */
-#define SCHEDULER_TASK_TICKS 1000
+#define SCHEDULER_TASK_TICKS 20
+
+/** Scheduler tick
+ * Whenever this value reaches 0, the scheduler will change tasks, doing a
+ * context switch if necessary. Should there be a single task requiring
+ * attention, nothing shall be done.
+ */
+uint tick = 0;
+
+/** Player switch
+ * Stores which player's turn is it now. Its values are 0 and 1.
+ */
+uchar playerSwitcher = 0;
+
+/** Pirate switch
+ * Stores which pirate's turn is it now. Its values are between 0 and
+ * MAX_CANT_PIRATAS_VIVOS - 1.
+ */
+ushort pirateSwitcherA = 0;
+ushort pirateSwitcherB = 0;
 
 /** Processes a single scheduler tick, returns the next task to be run
  * @ret Task index in the gdt
@@ -31,26 +51,7 @@ int scheduler_tick() {
      */
     uchar current = 0;
 
-    /** Scheduler tick
-     * Whenever this value reaches 0, the scheduler will change tasks, doing a
-     * context switch if necessary. Should there be a single task requiring
-     * attention, nothing shall be done.
-     */
-    static uint tick = 0;
-
-    /** Player switch
-     * Stores which player's turn is it now. Its values are 0 and 1.
-     */
-    static uchar playerSwitcher = 0;
-
-    /** Pirate switch
-     * Stores which pirate's turn is it now. Its values are between 0 and
-     * MAX_CANT_PIRATAS_VIVOS - 1.
-     */
-    static ushort pirateSwitcherA = 0;
-    static ushort pirateSwitcherB = 0;
-
-    tick = tick + 1 % SCHEDULER_TASK_TICKS;
+    tick = (tick + 1) % SCHEDULER_TASK_TICKS;
 
     /**
      * The algorithm runs in two stages, with the variable `found` deciding
@@ -67,6 +68,9 @@ int scheduler_tick() {
      *   If he does, then we just switch to that one, otherwise, we run the idle
      *   task.
      */
+    // print_dec(pirateSwitcherA, 3, 0, VIDEO_FILS -1, 0xF);
+    // print_dec(pirateSwitcherB, 3, 4, VIDEO_FILS -1, 0xF);
+    // print_dec(tick, 3, 8, VIDEO_FILS - 1, 0xF);
 
     if (tick == 0) {
         uchar found = 0;
@@ -89,11 +93,7 @@ int scheduler_tick() {
                     break;
             }
 
-            uchar tested = 0;
-
             do {
-                tested = 1;
-
                 if (p->piratas[*i].exists) {
                     break;
                 }
@@ -101,7 +101,7 @@ int scheduler_tick() {
                 *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
             } while (*i != pirateSwitcher);
 
-            if (*i != pirateSwitcher || tested == 0) {
+            if (p->piratas[*i].exists) {
                 // We found some existant task to switch to, so we set the current
                 // task to this one.
                 current = *i + playerSwitcher * MAX_CANT_PIRATAS_VIVOS + 2;
@@ -134,5 +134,16 @@ int scheduler_tick() {
         return current + GDT_IDX_TASKB_DESC;
     } else {
         return -1;
+    }
+}
+
+void scheduler_load_cr3(uint taskGdtOffset) {
+    taskGdtOffset = taskGdtOffset >> 3;
+
+    if (taskGdtOffset == GDT_IDX_TASKB_DESC) {
+        lcr3(KERNEL_DIR_TABLE);
+    } else {
+        taskGdtOffset -= GDT_IDX_START_TSKS;
+        lcr3(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * taskGdtOffset);
     }
 }

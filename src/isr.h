@@ -122,15 +122,12 @@ int isr_syscall(uint operation, uint param) {
 
         switch (operation) {
             case 0x1:
-                breakpoint();
                 ret = game_syscall_pirata_mover(id, param);
                 break;
             case 0x2:
-                breakpoint();
                 ret = game_syscall_cavar(id);
                 break;
             case 0x3:
-                breakpoint();
                 ret = game_syscall_pirata_posicion(id, param);
                 break;
             default:
