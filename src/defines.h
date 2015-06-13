@@ -77,14 +77,14 @@ typedef unsigned int   uint;
 #define MAX_CANT_PIRATAS_VIVOS           8
 
 /**
- * Address where we locate the directory tables
- */
-#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - MAX_CANT_PIRATAS_VIVOS * 2 * PAGE_SIZE)
-
-/**
  * Number of page tables within a directory table
  */
 #define DIRECTORY_TABLE_ENTRY_SIZE 0x1000
+
+/**
+ * Address where we locate the directory tables
+ */
+#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - MAX_CANT_PIRATAS_VIVOS * 2 * DIRECTORY_TABLE_ENTRY_SIZE)
 
  /**
   * Number of pages within a page table

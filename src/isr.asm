@@ -20,7 +20,6 @@ extern loadRegisters
 global _isr%1
 
 _isr%1:
-	xchg bx, bx
 	pushf
 	push esp
 	add dword [esp], 8
@@ -75,6 +74,7 @@ extern screen_actualizar_reloj_global
 extern fin_intr_pic1
 extern scheduler_tick
 extern game_tick
+extern scheduler_load_cr3
 global _isr32
 
 _isr32:
@@ -84,23 +84,26 @@ _isr32:
 	call scheduler_tick
 	; eax = indice en la gdt de tarea que quiero ir, o -1
 
-	push eax
-
 	cmp eax, -1
 	je .end
 
 	str bx
+	and ebx, 0x00FF
 	; bx = offset en la gdt de tarea en la que estoy
 	shl eax, 3
 	; eax = offset en la gdt de la tarea en la que quiero ir
 	cmp eax, ebx
 	je .end
 
-	mov [sched_tarea_selector], ax
+	xchg bx, bx
+	mov ecx, eax
+	push eax
+	call scheduler_load_cr3
+	pop edx
+
+	mov [sched_tarea_selector], cx
 	jmp far [sched_tarea_offset]
-.end:
-	call game_tick
-	pop eax
+.end: ; TODO: certificar que aca no va una llamada a game_tick
 
 	call screen_actualizar_reloj_global
 	popad
