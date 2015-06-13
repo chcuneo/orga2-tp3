@@ -215,8 +215,8 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 		uint taskaddrs = game_jugador_taskAdress(j, pirate);
 		mmu_inicializar_dir_pirata(DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE, taskaddrs, game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
 		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;	//TODO: ver si esto se hace o no
-
 		pirate->exists = 1;
+		game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 	}
 }
 
