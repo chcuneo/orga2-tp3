@@ -74,6 +74,7 @@ BITS 32
     mov esp, 0x27000
 
     ; Inicializar pantalla
+    ;call screen_refresh_logo
     call screen_inicializar
 
     ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3

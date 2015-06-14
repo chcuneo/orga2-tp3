@@ -95,6 +95,10 @@ uint game_xy2addressPhys(int x, int y){
 	return MAPA_BASE_FISICA + (((y * MAPA_ANCHO) + x) * 0x1000);
 }
 
+uint game_pirateIdtoDirectoryAddress(uint id){
+	return DIRECTORY_TABLE_PHYS + id * PAGE_SIZE;
+}
+
 uint game_valor_tesoro(uint x, uint y) {
 	int i;
 

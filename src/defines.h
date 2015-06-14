@@ -72,7 +72,7 @@ typedef unsigned int   uint;
 
 #define MAPA_BASE_FISICA  0x500000
 
-#define ALIGN(x) (x/PAGE_SIZE) * PAGE_SIZE
+#define ALIGN(x) ((x) & 0xFFFFF000)
 
 #define MAX_CANT_PIRATAS_VIVOS           8
 

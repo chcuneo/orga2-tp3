@@ -94,14 +94,8 @@ _isr32:
 	; eax = offset en la gdt de la tarea en la que quiero ir
 	cmp eax, ebx
 	je .end
-
 	xchg bx, bx
-	mov ecx, eax
-	push eax
-	call scheduler_load_cr3
-	pop edx
-
-	mov [sched_tarea_selector], cx
+	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]
 .end: ; TODO: certificar que aca no va una llamada a game_tick
 
