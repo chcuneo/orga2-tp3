@@ -128,9 +128,9 @@ iret
 
 extern isr_syscall
 extern idle
-global _isr46
+global _isr70
 
-_isr46:
+_isr70:
 	pushad
 	call fin_intr_pic1
 
