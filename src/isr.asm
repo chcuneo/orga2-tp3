@@ -95,7 +95,6 @@ _isr32:
 	cmp eax, ebx
 	je .end
 
-	xchg bx, bx
 	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]
 .end: ; TODO: certificar que aca no va una llamada a game_tick
@@ -132,16 +131,18 @@ global _isr70
 
 _isr70:
 	pushad
-	call fin_intr_pic1
-
 	push eax
+	call fin_intr_pic1
+	pop eax
+
 	push ecx
+	push eax
+	xchg bx, bx
 	call isr_syscall
 	; Popeamos en otro lado para no perder el dato de retorno, que esta en eax
 	pop esi
 	pop edi
-
-	mov word [sched_tarea_selector], 0xE ; GDT_IDX_TASKI_DESC este es el valor posta posta.
+	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
 
 	popad
