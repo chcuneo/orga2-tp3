@@ -228,7 +228,7 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 }
 
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
-	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 0); //TODO: chequear atributos
+	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 1); //TODO: chequear atributos
 }
 
 void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y){

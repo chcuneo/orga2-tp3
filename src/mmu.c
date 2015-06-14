@@ -41,7 +41,7 @@ int create_page_table(
 	uint directoryEntry,
 	uint physicalAddress,
 	uchar readWrite,
-	uchar userSupervisor) {
+	uchar supervisorUser) {
 
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
@@ -60,7 +60,7 @@ int create_page_table(
 	pageDirectory[directoryEntry] = (page_entry) {
 			(uchar) 0x1,
 			(uchar) readWrite,
-			(uchar) userSupervisor,
+			(uchar) supervisorUser,
 			(uchar) 0x0,
 			(uchar) 0x0,
 			(uchar) 0x0,
@@ -137,7 +137,7 @@ int create_page(
 	uint tableEntry,
 	uint physicalAddress,
 	uchar readWrite,
-	uchar userSupervisor) {
+	uchar supervisorUser) {
 
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
@@ -169,7 +169,7 @@ int create_page(
 			 */
 			(uchar) 0x1,
 			(uchar) readWrite,
-			(uchar) userSupervisor,
+			(uchar) supervisorUser,
 			(uchar) 0x0,
 			(uchar) 0x0,
 			(uchar) 0x0,
@@ -245,7 +245,7 @@ int mmap(
 	uint physicalAddress,
 	uint directoryBase,
 	uchar readWrite,
-	uchar userSupervisor) {
+	uchar supervisorUser) {
 	static uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 
 	if (directoryBase != ALIGN(directoryBase)) {
@@ -265,7 +265,7 @@ int mmap(
 		directoryEntry,
 		pageTableLastAddress,
 		readWrite,
-		userSupervisor);
+		supervisorUser);
 
 	if (output == E_OK) {
 		pageTableLastAddress -= PAGE_TABLE_SIZE;
@@ -278,7 +278,7 @@ int mmap(
 		tableEntry,
 		physicalAddress,
 		readWrite,
-		userSupervisor);
+		supervisorUser);
 
 	if (output != E_OK) {
 		return E_INVALID_ADDRESS;
@@ -315,14 +315,14 @@ int munmap(
 }
 
 void mmu_inicializar_dir_kernel() {
-	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 1);
+	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 0);
 
 	uint offset = 0;
 	long long x;
 
 	// x/1024wx 0x28000
 	for (x = 0; x < 1024; ++x) {
-		create_page(KERNEL_DIR_TABLE, 0, x, offset, 1, 1);
+		create_page(KERNEL_DIR_TABLE, 0, x, offset, 1, 0);
 		offset += PAGE_SIZE;
 	}
 
@@ -331,7 +331,7 @@ void mmu_inicializar_dir_kernel() {
 		
 		for (y = 0; y < MAPA_ALTO; ++y) {
 			uint offset = game_xy2addressPhys(x, y);
-			mmap(offset, offset, KERNEL_DIR_TABLE, 1, 1);
+			mmap(offset, offset, KERNEL_DIR_TABLE, 1, 0);
 		}
 	}
 
@@ -359,7 +359,7 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 	}
 
 	// Mapeamos el codigo del pirata
-	mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 0);
+	mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 1);
 
 	// Cargamos el cr3 nuevo y backupeamos el nuestro
 	offset = rcr3();
@@ -395,5 +395,5 @@ void mmu_move_codepage(uint srcp, uint dstp, pirata_t *p){
 	}
 
 	munmap( GDT_IDX_START_TSKS + p->id,	CODIGO_BASE);
-	mmap(CODIGO_BASE, (int)dst, GDT_IDX_START_TSKS + p->id, 1, 0); 
+	mmap(CODIGO_BASE, (int)dst, GDT_IDX_START_TSKS + p->id, 1, 1); 
 }

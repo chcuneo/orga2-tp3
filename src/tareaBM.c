@@ -10,6 +10,5 @@
 #include "syscall.h"
 
 void task() {
-    /* Tarea */    
-   while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
+	while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
 }

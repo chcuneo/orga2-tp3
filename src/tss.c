@@ -113,7 +113,7 @@ int tss_gdt_inicializar(uint tssBaseAddress) {
 		(uchar)     (tssBaseAddress & (0x00FF0000)) >> 16, /* base[23:16]  */
 		(uchar)     0x09,           /* type         */
 		(uchar)     0x00,           /* s            */
-		(uchar)     0x01,           /* dpl          */
+		(uchar)     0x00,           /* dpl          */
 		(uchar)     0x01,			/* p            */
 		(uchar)     0x00,           /* limit[16:19] */
 		(uchar)     0x00,           /* avl          */
@@ -223,17 +223,17 @@ int tss_inicializar() {
 			.ebp = 0x401000 - 12,
 			.esi = 0x0,
 			.edi = 0x0,
-			.es = 0x0,
+			.es = GDT_OFF_DATA3_DESC | 0x3,
 			.unused4 = 0x0,
-			.cs = GDT_OFF_CODE3_DESC,
+			.cs = GDT_OFF_CODE3_DESC | 0x3,
 			.unused5 = 0x0,
-			.ss = GDT_OFF_DATA3_DESC,
+			.ss = GDT_OFF_DATA3_DESC | 0x3,
 			.unused6 = 0x0,
-			.ds = GDT_OFF_DATA3_DESC,
+			.ds = GDT_OFF_DATA3_DESC | 0x3,
 			.unused7 = 0x0,
 			.fs = 0x0,
 			.unused8 = 0x0,
-			.gs = 0x0,
+			.gs = GDT_OFF_DATA3_DESC | 0x3,
 			.unused9 = 0x0,
 			.ldt = 0x0,
 			.unused10 = 0x0,
@@ -265,17 +265,17 @@ int tss_inicializar() {
 			.ebp = 0x401000 - 12,
 			.esi = 0x0,
 			.edi = 0x0,
-			.es = 0x0,
+			.es = GDT_OFF_DATA3_DESC | 0x3,
 			.unused4 = 0x0,
-			.cs = GDT_OFF_CODE3_DESC,
+			.cs = GDT_OFF_CODE3_DESC | 0x3,
 			.unused5 = 0x0,
-			.ss = GDT_OFF_DATA3_DESC,
+			.ss = GDT_OFF_DATA3_DESC | 0x3,
 			.unused6 = 0x0,
-			.ds = GDT_OFF_DATA3_DESC,
+			.ds = GDT_OFF_DATA3_DESC | 0x3,
 			.unused7 = 0x0,
 			.fs = 0x0,
 			.unused8 = 0x0,
-			.gs = 0x0,
+			.gs = GDT_OFF_DATA3_DESC | 0x3,
 			.unused9 = 0x0,
 			.ldt = 0x0,
 			.unused10 = 0x0,

@@ -8,7 +8,6 @@
 #include "defines.h"
 #include "game.h"
 #include "syscall.h"
-#include "i386.h"
 
 void task(int x, int y) {
     /* Tarea */
