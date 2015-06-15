@@ -239,6 +239,7 @@ int delete_page(
  * begins. Whenever we map a new page table, we just put it next to the
  * last defined page table.
  */
+uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 
 int mmap(
 	uint virtualAddress,
@@ -246,8 +247,6 @@ int mmap(
 	uint directoryBase,
 	uchar readWrite,
 	uchar supervisorUser) {
-	static uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
-
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
 	}
@@ -314,6 +313,78 @@ int munmap(
 	}
 }
 
+int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
+	uint directoryEntry = virtualAddress >> 22;
+	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
+
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+
+	if (pageDirectory[directoryEntry].p == 0) {
+		return E_PAGE_TABLE_MISSING;
+	}
+
+	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
+	page_entry *pageTable = (page_entry *)pageTableAddress;
+
+	if (pageTable[tableEntry].p == 0) {
+		return E_PAGE_MISSING;
+	}
+
+	pageTable[tableEntry].offset = physicalAddress >> 12;
+
+	tlbflush();
+
+	return E_OK;
+}
+
+uint getPhysVirt(uint directoryBase, uint virtualAddress) {
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
+	uint directoryEntry = virtualAddress >> 22;
+	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
+
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+
+	if (pageDirectory[directoryEntry].p == 0) {
+		return E_PAGE_TABLE_MISSING;
+	}
+
+	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
+	page_entry *pageTable = (page_entry *)pageTableAddress;
+
+	if (pageTable[tableEntry].p == 0) {
+		return E_PAGE_MISSING;
+	}
+
+	return (pageTable[tableEntry].offset << 12) | (virtualAddress & 0x00000FFF);
+}
+
+int isMapped(uint directoryBase, uint virtualAddress) {
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
+	uint directoryEntry = virtualAddress >> 22;
+	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
+
+	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+
+	if (pageDirectory[directoryEntry].p == 0) {
+		return 0;
+	}
+
+	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
+	page_entry *pageTable = (page_entry *)pageTableAddress;
+
+	return pageTable[tableEntry].p != 0;
+}
+
 void mmu_inicializar_dir_kernel() {
 	create_page_table(KERNEL_DIR_TABLE, 0, KERNEL_PAGE0, 1, 0);
 
@@ -361,43 +432,40 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 	// Mapeamos el codigo del pirata
 	mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 1);
 
-	// Cargamos el cr3 nuevo y backupeamos el nuestro
-	offset = rcr3();
-	lcr3(directoryBase);
+	// Copiamos la pagina correspondiente
+	mmu_move_codepage(directoryBase, pirateCodeBaseSrc, CODIGO_BASE);
 
-	// Copiamos el codigo del pirata
-	int y;
-	int *src = (int *)pirateCodeBaseSrc;
-	int *dst = (int *)CODIGO_BASE;
-
-	for (y = 0; y < 1024; ++y) {
-		*dst = *src;
-		++src;
-		++dst;
-	}
-
-	// Volvemos al cr3 anterior
-	lcr3(offset);
 	return E_OK;
 }
 
-void mmu_move_codepage(uint srcv, uint dstp, pirata_t *p){
-	// Copiamos el codigo del pirata
+/**
+ * @param directoryBase page directory address, 4K aligned
+ * @param codeBaseSrc source virtual address
+ * @param codeBaseDstVirt destination virtual address
+ */
+int mmu_move_codepage(uint directoryBase, uint codeBaseSrc, uint codeBaseDst) {
+	if (directoryBase != ALIGN(directoryBase)) {
+		return E_ADDRESS_NOT_ALIGNED;
+	}
+
+	if (!isMapped(directoryBase, codeBaseSrc)) {
+		return E_INVALID_ADDRESS;
+	}
+
+	uint oldCr3 = rcr3();
+	lcr3(directoryBase);
+
 	int y;
-	int *src = (int *)srcv;
-	int *dst = (int *)0x400000;
-	int e;
-	breakpoint();
-	e = munmap( DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE, CODIGO_BASE);
-	print_hex(e, 8, 20, 20, 0x7f);
-	breakpoint();
-	e = mmap(CODIGO_BASE, dstp, DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE, 1, 1); 
-	print_hex(e, 8, 20, 21, 0x7f);
-	breakpoint();
+	int *src = (int *)codeBaseSrc;
+	int *dst = (int *)codeBaseDst;
+
 	for (y = 0; y < 1024; ++y) {
 		*dst = *src;
-		//*src = 0;
 		++src;
 		++dst;
 	}
+
+	lcr3(oldCr3);
+
+	return E_OK;
 }

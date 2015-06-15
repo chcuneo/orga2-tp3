@@ -40,6 +40,7 @@ char *unrecoverableMsgs[] = {
 };
 
 uchar hasExceptionHappened = 0;
+
 tss firstException;
 
 void loadRegisters(

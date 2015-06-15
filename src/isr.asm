@@ -137,13 +137,12 @@ _isr70:
 
 	push ecx
 	push eax
-	xchg bx, bx
 	call isr_syscall
 	; Popeamos en otro lado para no perder el dato de retorno, que esta en eax
 	pop esi
 	pop edi
+
 	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
-
 	popad
 iret

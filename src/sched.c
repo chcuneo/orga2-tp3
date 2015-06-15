@@ -68,9 +68,6 @@ int scheduler_tick() {
      *   If he does, then we just switch to that one, otherwise, we run the idle
      *   task.
      */
-    // print_dec(pirateSwitcherA, 3, 0, VIDEO_FILS -1, 0xF);
-    // print_dec(pirateSwitcherB, 3, 4, VIDEO_FILS -1, 0xF);
-    // print_dec(tick, 3, 8, VIDEO_FILS - 1, 0xF);
 
     if (tick == 0) {
         uchar found = 0;

@@ -34,7 +34,10 @@ typedef struct _page_entry {
 void mmu_inicializar_dir_kernel();
 void mmu_inicializar();
 int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst);
-void mmu_move_codepage(uint srcv, uint dstp, pirata_t *p);
+int mmu_move_codepage(uint directoryBase, uint codeBaseSrc, uint codeBaseDst);
+int isMapped(uint directoryBase, uint virtualAddress);
+uint getPhysVirt(uint directoryBase, uint virtualAddress);
+int remap(uint directoryBase, uint virtualAddress, uint physicalAddress);
 
 int mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, uchar userSupervisor);
 int munmap(uint directoryBase, uint virtualAddress);
