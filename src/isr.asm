@@ -135,6 +135,7 @@ extern idle
 global _isr70
 
 _isr70:
+	xchg bx, bx
 	pushad
 	push eax
 	call fin_intr_pic1
@@ -149,7 +150,8 @@ _isr70:
 
 	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
+	
+	popad
 
 	xchg bx, bx
-	popad
 iret

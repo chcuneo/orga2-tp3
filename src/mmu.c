@@ -424,12 +424,21 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 
 	for (x = 0; x < 1024; ++x) {
 		// La memoria del kernel la ponemos como user y en read
-		mmap(offset, offset, directoryBase, 0, 1);
+		uint code = mmap(offset, offset, directoryBase, 0, 1);
+
+		if (code != E_OK) {
+			break;
+		}
+
 		offset += PAGE_SIZE;
 	}
 
 	// Mapeamos el codigo del pirata
-	mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 1);
+	uint code = mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 1);
+	
+	if (code != E_OK) {
+		remap(directoryBase, CODIGO_BASE, pirateCodeBaseDst);
+	}
 
 	// Copiamos la pagina correspondiente
 	mmu_move_codepage(directoryBase, pirateCodeBaseSrc, CODIGO_BASE);

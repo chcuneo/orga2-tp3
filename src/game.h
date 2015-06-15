@@ -33,7 +33,7 @@ typedef struct pirata_t
     struct jugador_t *jugador;
     uint coord_x;                   //Coordenadas Actuales
     uint coord_y;
-    uchar type:1;                      //Tipo: explorador o minero
+    uint type;                      //Tipo: explorador o minero
     char clock;
 } pirata_t;
 
@@ -73,7 +73,7 @@ uint ame_pirateIdtoDirectoryAddress(uint id);
 
 void game_inicializar();
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target);
+int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target);
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo);
 void game_jugador_anotar_punto(jugador_t *j);
 void game_explorar_posicion(jugador_t *jugador, int x, int y);

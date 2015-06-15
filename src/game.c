@@ -35,12 +35,6 @@ uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
 jugador_t jugadorA;
 jugador_t jugadorB;
 
-
-void* error() {
-	__asm__ ("int3");
-	return 0;
-}
-
 uint game_xy2lineal (uint x, uint y) {
 	return (y * MAPA_ANCHO + x);
 }
@@ -88,11 +82,11 @@ uint game_dir2xy(direccion dir, int *x, int *y) {
 }
 
 uint game_xy2addressVirt(int x, int y){
-	return MAPA_BASE_VIRTUAL + (((y * MAPA_ANCHO) + x) * 0x1000);
+	return MAPA_BASE_VIRTUAL + (((y * MAPA_ANCHO) + x) * PAGE_SIZE);
 }
 
 uint game_xy2addressPhys(int x, int y){
-	return MAPA_BASE_FISICA + (((y * MAPA_ANCHO) + x) * 0x1000);
+	return MAPA_BASE_FISICA + (((y * MAPA_ANCHO) + x) * PAGE_SIZE);
 }
 
 uint game_pirateIdtoDirectoryAddress(uint id){
@@ -141,15 +135,17 @@ void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
 	j->port_coord_x = x;
 	j->port_coord_y = y;
 	j->index = idx;
-	int i;
-	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++) j->piratas[i].exists = 0;
-	//Inicializar mapa
-	int bitmapSize = BIT_SIZE(MAPA_ANCHO, MAPA_ALTO);
-	int xi;
 
-	for (xi = 0; xi < bitmapSize; ++xi) {
-		j->map[xi] = 0;
+	uint i;
+
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++) {
+		j->piratas[i].exists = 0;
 	}
+
+	for (i = 0; i < BIT_SIZE(MAPA_ANCHO, MAPA_ALTO); ++i) {
+		j->map[i] = 0;
+	}
+
 	game_explorar_posicion(j, j->port_coord_x, j->port_coord_y);
 }
 
@@ -161,9 +157,10 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	
 	int xend = MIN(c+1, MAPA_ANCHO - 1);
 	int yend = MIN(f+1, MAPA_ALTO - 1);
+
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			if (game_jugador_getBitMapPos(jugador, x, y) == 0x00){
+			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
 
 				int p;
 				for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
@@ -180,34 +177,6 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	}
 }
 
-void game_pirata_inicializar(pirata_t *pirata, jugador_t *j, uint index, uint id) {
-	pirata->index = index;
-	pirata->jugador = j;
-	pirata->id = id;
-	pirata->coord_x = j->port_coord_x;
-	pirata->coord_y = j->port_coord_y;
-	
-	//Esto se puede mover a mmu.c, pero creo que deberia quedar aca, mi corazon dice que aqui pertenece
-	int x, y;
-	for (x = 0; x < MAPA_ANCHO; x++){
-		for (y = 0; y < MAPA_ALTO; y++){
-			if (game_jugador_getBitMapPos(j, x, y)) game_pirata_paginarPosMapa(pirata, x, y);
-		}
-	}
-}
-
-pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo){
-	int i;
-	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++){
-		if (j->piratas[i].exists == 0){
-			game_pirata_inicializar(&(j->piratas[i]), j, i, j->index * MAX_CANT_PIRATAS_VIVOS + i);
-			if (tipo == EXPLORADOR) { j->explorers++; } else { j->miners++; }
-			return &(j->piratas[i]);
-		}
-	}
-	return NULL;
-}
-
 int game_jugador_taskAdress(jugador_t *j, pirata_t *p){
 	if (j->index == 0){
 		if (p->type == EXPLORADOR){ return 0x10000; } else { return 0x11000; }
@@ -216,22 +185,63 @@ int game_jugador_taskAdress(jugador_t *j, pirata_t *p){
 	}
 }
 
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target){
-	pirata_t *pirate = game_jugador_erigir_pirata(j, tipo);
-	if (pirate){
-		uint taskaddrs = game_jugador_taskAdress(j, pirate);
-		mmu_inicializar_dir_pirata(
-			game_pirateIdtoDirectoryAddress(pirate->id),
-			taskaddrs,
-			game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
-		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;
-		pirate->exists = 1;
-		game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
-	}
-}
 
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
 	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), game_pirateIdtoDirectoryAddress(p->id), 0, 1);
+}
+
+int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target) {
+	uint i;
+
+	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; ++i) {
+		if (!j->piratas[i].exists) {
+			break;
+		}
+	}
+
+	if (i == MAX_CANT_PIRATAS_VIVOS) {
+		return E_PIRATE_LIMIT_REACHED;
+	}
+
+	pirata_t *pirate = &(j->piratas[i]);
+
+	pirate->index = i;
+	pirate->jugador = j;
+	pirate->id = i + j->index * MAX_CANT_PIRATAS_VIVOS;
+	pirate->coord_x = j->port_coord_x;
+	pirate->coord_y = j->port_coord_y;
+	pirate->exists = 1;
+	pirate->type = tipo;
+	
+	uint x, y;
+
+	for (x = 0; x < MAPA_ANCHO; ++x) {
+		for (y = 0; y < MAPA_ALTO; ++y) {
+			if (game_jugador_getBitMapPos(j, x, y)) {
+				game_pirata_paginarPosMapa(pirate, x, y);
+			}
+		}
+	}
+
+	switch (tipo) {
+		case EXPLORADOR:
+			j->explorers++;
+			break;
+		case MINERO:
+			j->miners++;
+			break;
+		default:
+			return E_OUT_OF_BOUNDS;
+			break;
+	}
+
+	mmu_inicializar_dir_pirata(
+		game_pirateIdtoDirectoryAddress(pirate->id),
+		game_jugador_taskAdress(j, pirate),
+		game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
+	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
+
+	return E_OK;
 }
 
 void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
@@ -247,27 +257,30 @@ void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 }
 
 int game_syscall_pirata_mover(uint id, direccion dir){
-	int x, y;
-	game_dir2xy(dir, &x, &y);
-	pirata_t * pirate;
+	pirata_t * pirate = id_pirata2pirata(id);
 
-	if (id < MAX_CANT_PIRATAS_VIVOS) { 
-		pirate = &(jugadorA.piratas[id]); 
-	} else { 
-		pirate = &(jugadorB.piratas[id - MAX_CANT_PIRATAS_VIVOS]); 
+	if (pirate == NULL) {
+		return E_NON_EXISTANT_PIRATE;
+	} else {
+		int x, y;
+		game_dir2xy(dir, &x, &y);
+		x += pirate->coord_x;
+		y += pirate->coord_y;
+
+		if (game_posicion_valida(x, y)) {
+			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
+			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
+			mmu_move_codepage(directoryBase, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
+			game_updateScreen(pirate, pirate->jugador, x, y);
+			game_explorar_posicion(pirate->jugador, x, y);
+			pirate->coord_x = x;
+			pirate->coord_y = y;
+
+			return E_OK;
+		} else {
+			return E_OUT_OF_BOUNDS;
+		}
 	}
-
-	int xdst = pirate->coord_x + x;
-	int ydst = pirate->coord_y + y;
-
-	if (game_posicion_valida(xdst, ydst)){
-		uint dirTable = game_pirateIdtoDirectoryAddress(pirate->id);
-		remap(dirTable, CODIGO_BASE, game_xy2addressPhys(xdst, ydst));
-		mmu_move_codepage(dirTable, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
-		game_updateScreen(pirate, pirate->jugador, xdst, ydst);
-		game_explorar_posicion(pirate->jugador, xdst, ydst);
-	}
-    return 0;
 }
 
 int game_syscall_cavar(uint pirateId) {
@@ -330,11 +343,10 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
     return code;
 }
 
-void game_pirata_exploto(uint id){
+void game_pirata_exploto(uint id) {
 	pirata_t *pirate = id_pirata2pirata(id);
 	pirate->exists = 0;
 	munmap(game_pirateIdtoDirectoryAddress(id), CODIGO_BASE);
-	gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x00;	//TODO: ver si va o no, idem lanzar_pirata
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 }
 
