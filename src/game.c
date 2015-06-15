@@ -278,7 +278,9 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 	if (id < MAX_CANT_PIRATAS_VIVOS) { pirate = &(jugadorA.piratas[id]); } else { pirate = &(jugadorB.piratas[id - MAX_CANT_PIRATAS_VIVOS]); }
 	int xdst = pirate->coord_x + x, ydst = pirate->coord_y + y;
 	if (game_posicion_valida(xdst, ydst)){
-		mmu_move_codepage(game_xy2addressVirt(pirate->coord_x, pirate->coord_y), pirate);
+		uint dirTable = game_pirateIdtoDirectoryAddress(pirate->id);
+		remap(dirTable, CODIGO_BASE, game_xy2addressPhys(xdst, ydst));
+		mmu_move_codepage(dirTable, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
 		game_updateScreen(pirate, pirate->jugador, xdst, ydst);
 		game_explorar_posicion(pirate->jugador, xdst, ydst);
 	}
