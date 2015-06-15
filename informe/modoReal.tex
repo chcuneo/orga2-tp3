@@ -20,14 +20,14 @@ Antes de poder pasar a modo protegido, debemos cargar la GDT. La GDT se encarga 
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.5\textwidth]{segment_descriptor}
+    \includegraphics[width=0.5\textwidth]{images/segment_descriptor}
   \caption{Segment Descriptor}
 \end{figure}
 
 Luego, cargamos la GDT con el comando \command{lgdt} y el descriptor de la GDT armado desde C (\texttt{GDT\_DESC}).
 
 \subsection{Pasaje a Modo Protegido}
-Una vez armada la GDT y habilitado el A20, debemos habilitar Modo Protegido. El modo de proteccion esta definido por el bit menos significativo del registro \reg{CR0}. Usando un \& logico, habilitamos este bit.
+Una vez armada la GDT y habilitado el A20, debemos habilitar Modo Protegido. El modo de protección esta definido por el bit menos significativo del registro \reg{CR0}. Usando un \& lógico, habilitamos este bit.
 
-Una vez que tenemos todas las estructuras necesarias armadas, hay que hacer un \command{jump far} a alguno de los segmentos que definimos en la GDT. De esta forma finalmente habilitamos la proteccion por hardware y pasamos a Modo Protegido. 
+Una vez que tenemos todas las estructuras necesarias armadas, hay que hacer un \command{jump far} a alguno de los segmentos que definimos en la GDT. De esta forma finalmente habilitamos la protección por hardware y pasamos a Modo Protegido. 
 

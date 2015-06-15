@@ -5,7 +5,7 @@ Al entrar a modo protegido, inicializamos los diferentes selectores de segmento.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[scale=0.8]{segment_selector}
+    \includegraphics[scale=0.8]{images/segment_selector}
   \caption{Segment Selector}
 \end{figure}
 
@@ -15,7 +15,7 @@ Intel soporta 4 niveles de protección diferentes, siendo 0 el mas alto y 4 el m
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.4\textwidth]{protection_rings}
+    \includegraphics[width=0.4\textwidth]{images/protection_rings}
   \caption{IDT Descriptor}
 \end{figure}
 
@@ -43,7 +43,7 @@ Para construir la IDT, armamos primero en C la estructura \texttt{idt\_entry} co
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.5\textwidth]{idt_desc}
+    \includegraphics[width=0.5\textwidth]{images/idt_desc}
   \caption{IDT Descriptor}
 \end{figure}
 
@@ -68,7 +68,7 @@ Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza un
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=0.6\textwidth]{memory_management}
+    \includegraphics[width=0.6\textwidth]{images/memory_management}
   \caption{Segmentation \& Paging}
 \end{figure}
 
@@ -141,5 +141,23 @@ esta ejecutando actualmente se debe encontrar en el registro \reg{TR} (Task Regi
 Para llamar a una tarea, se lleva a cabo un \texttt{call far} con su respectivo selector de segmento. Si ya estabamos ejecutando una tarea, se guarda su contexto en \reg{TR} antes de ejecutar la nueva tarea. 
 
 La primera vez que llamamos a una tarea, el registro \reg{TR} no tiene un valor definido. Ademas, debemos guardar el contexto del programa en ejecucion. Para ello, se crea una tarea inicial  en la \texttt{TSS} para que el procesador tenga donde guardar el contexto actual.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.6\textwidth]{images/tss_descriptor}
+  \caption{TSS Descriptor}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.6\textwidth]{images/tss}
+  \caption{Task State Segment}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.6\textwidth]{images/task_register}
+  \caption{Segmentation \& Paging}
+\end{figure}
 
 \subsection{Scheduler}
