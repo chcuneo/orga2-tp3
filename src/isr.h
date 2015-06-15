@@ -12,6 +12,7 @@
 #include "game.h"
 #include "screen.h"
 #include "error.h"
+#include "colors.h"
 #include "keyboardcodes.h"
 #include "tss.h"
 
@@ -41,6 +42,7 @@ char *unrecoverableMsgs[] = {
 
 uchar hasExceptionHappened = 0;
 
+uint firstExceptionNumber;
 tss firstException;
 
 void loadRegisters(
@@ -97,29 +99,36 @@ void loadRegisters(
 
 void unrecoverableHandler(uint exception) {
     if (!hasExceptionHappened) {
-        screen_set_debug_registers(exception, unrecoverableMsgs[exception], &firstException);
+        firstExceptionNumber = exception;
         hasExceptionHappened = 1;
     }
 
-    // TODO: matar pirata
+    uint id = rtr() >> 3;
+
+    if (id >= GDT_IDX_START_TSKS) {
+        id -= GDT_IDX_START_TSKS;
+
+        game_pirata_exploto(id);
+    } else {
+        screen_clear();
+        print(unrecoverableMsgs[firstExceptionNumber], 0, 0, C_FG_WHITE);
+    }
 }
 
 void isr_keyboard(uchar scanCode) {
     if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P) {
         game_atender_teclado(scanCode);
     } else if (scanCode == KBC_Y_R) {
-        //screen_flip_debug_screen();
+        screen_flip_debug(firstExceptionNumber, unrecoverableMsgs[firstExceptionNumber], &firstException);
     }
 }
 
 int isr_syscall(uint operation, uint param) {
     int ret = 0;
-
-    // ID es el índice del pirata basado en 0
     uint id = rtr() >> 3;
 
     if (id >= GDT_IDX_START_TSKS) {
-        id -= (GDT_IDX_START_TSKS);
+        id -= GDT_IDX_START_TSKS;
 
         switch (operation) {
             case 0x1:
@@ -135,6 +144,7 @@ int isr_syscall(uint operation, uint param) {
                 ret = E_UNKNOWN_OPERATION;
                 break;
         }
+
     } else {
         ret = E_UNKNOWN_OPERATION;
     }

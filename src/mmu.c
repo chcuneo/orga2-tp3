@@ -424,7 +424,7 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 
 	for (x = 0; x < 1024; ++x) {
 		// La memoria del kernel la ponemos como user y en read
-		mmap(offset, offset, directoryBase, 1, 0);
+		mmap(offset, offset, directoryBase, 0, 1);
 		offset += PAGE_SIZE;
 	}
 
