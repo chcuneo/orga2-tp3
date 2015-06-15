@@ -317,7 +317,7 @@ int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
 	}
-
+	//print_hex(0x0, 1, 20, 24, 0x7f);
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
@@ -337,7 +337,6 @@ int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
 	pageTable[tableEntry].offset = physicalAddress >> 12;
 
 	tlbflush();
-
 	return E_OK;
 }
 

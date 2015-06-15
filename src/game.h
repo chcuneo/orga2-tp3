@@ -73,7 +73,7 @@ uint ame_pirateIdtoDirectoryAddress(uint id);
 
 void game_inicializar();
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
-void game_jugador_lanzar_pirata(jugador_t *j, uint tipo);
+void game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target);
 pirata_t* game_jugador_erigir_pirata(jugador_t *j, uint tipo);
 void game_jugador_anotar_punto(jugador_t *j);
 void game_explorar_posicion(jugador_t *jugador, int x, int y);
@@ -85,7 +85,6 @@ pirata_t* game_pirata_en_posicion(uint x, uint y);
 int game_syscall_pirata_posicion(uint id, int idx);
 int game_syscall_pirata_mover(uint id, direccion key);
 int game_syscall_cavar(uint id);
-void game_tick(uint id_pirata);
 void game_terminar_si_es_hora();
 void game_terminar();
 void game_atender_teclado(unsigned char tecla);

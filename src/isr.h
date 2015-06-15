@@ -108,7 +108,7 @@ void isr_keyboard(uchar scanCode) {
     if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P) {
         game_atender_teclado(scanCode);
     } else if (scanCode == KBC_Y_R) {
-        screen_flip_debug_screen();
+        //screen_flip_debug_screen();
     }
 }
 
