@@ -136,14 +136,3 @@ int scheduler_tick() {
         return -1;
     }
 }
-
-void scheduler_load_cr3(uint taskGdtOffset) {
-    taskGdtOffset = taskGdtOffset >> 3;
-
-    if (taskGdtOffset == GDT_IDX_TASKB_DESC) {
-        lcr3(KERNEL_DIR_TABLE);
-    } else {
-        taskGdtOffset -= GDT_IDX_START_TSKS;
-        lcr3(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * taskGdtOffset);
-    }
-}
