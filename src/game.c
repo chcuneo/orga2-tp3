@@ -218,7 +218,7 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 	if (pirate){
 		uint taskaddrs = game_jugador_taskAdress(j, pirate);
 		mmu_inicializar_dir_pirata(
-			DIRECTORY_TABLE_PHYS + pirate->id * PAGE_SIZE,
+			game_pirateIdtoDirectoryAddress(pirate->id),
 			taskaddrs,
 			game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
 		gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x01;	//TODO: ver si esto se hace o no
@@ -228,7 +228,7 @@ void game_jugador_lanzar_pirata(jugador_t *j, uint tipo){
 }
 
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
-	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), DIRECTORY_TABLE_PHYS + (p->id * PAGE_SIZE), 0, 1); //TODO: chequear atributos
+	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), game_pirateIdtoDirectoryAddress(p->id), 0, 1); //TODO: chequear atributos
 }
 
 void game_jugador_paginarPosMapa_piratasExistentes (jugador_t *j, int x, int y){
@@ -348,7 +348,7 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
 void game_pirata_exploto(uint id){
 	pirata_t *pirate = id_pirata2pirata(id);
 	pirate->exists = 0;
-	munmap(DIRECTORY_TABLE_PHYS + id * PAGE_SIZE, CODIGO_BASE);
+	munmap(game_pirateIdtoDirectoryAddress(id), CODIGO_BASE);
 	gdt[GDT_IDX_START_TSKS + pirate->id].p = 0x00;	//TODO: ver si va o no, idem lanzar_pirata
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 }
