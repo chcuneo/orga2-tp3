@@ -381,17 +381,19 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 	return E_OK;
 }
 
-void mmu_move_codepage(uint srcp, pirata_t *p){
+void mmu_move_codepage(uint srcv, uint dstp, pirata_t *p){
 	// Copiamos el codigo del pirata
 	int y;
-	int *src = (int *)srcp;
+	int *src = (int *)srcv;
 	int *dst = (int *)0x400000;
 	int e;
-	e = munmap( DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE,	CODIGO_BASE);
+	breakpoint();
+	e = munmap( DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE, CODIGO_BASE);
 	print_hex(e, 8, 20, 20, 0x7f);
-	e = mmap(CODIGO_BASE, (int)dst, DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE, 1, 1); 
+	breakpoint();
+	e = mmap(CODIGO_BASE, dstp, DIRECTORY_TABLE_PHYS + p->id * PAGE_SIZE, 1, 1); 
 	print_hex(e, 8, 20, 21, 0x7f);
-	breakpoint();	
+	breakpoint();
 	for (y = 0; y < 1024; ++y) {
 		*dst = *src;
 		//*src = 0;
