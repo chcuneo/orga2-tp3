@@ -287,6 +287,105 @@ int tss_inicializar() {
 	return E_OK;
 }
 
+int tss_reset_StateSegment(uint index){
+	int task = index % 8;
+	if (index < 8){
+		tss_jugadorA[task] = (tss) {
+			.ptl = 0x0,
+			.unused0 = 0x0,
+			// Place where ebp and esp will be in case we need to switch to level
+			// 0. See the MMU files for reference about why this is this way
+			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + 1),
+			.ss0 = GDT_OFF_DATA0_DESC,
+			.unused1 = 0x0,
+			.esp1 = 0x0,
+			.ss1 = 0x0,
+			.unused2 = 0x0,
+			.esp2 = 0x0,
+			.ss2 = 0x0,
+			.unused3 = 0x0,
+			// See the MMU files for reference about why this is this way
+			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * task),
+			.eip = 0x400000,
+			// We have to enable interrupts within these tasks
+			.eflags = 0x202,
+			.eax = 0x0,
+			.ecx = 0x0,
+			.edx = 0x0,
+			.ebx = 0x0,
+			// The stack is supposed to be at the end of the code page. The -12
+			// is there because the task is supposed to be given 3 parameters
+			// when its called.
+			.esp = 0x401000 - 12,
+			.ebp = 0x401000 - 12,
+			.esi = 0x0,
+			.edi = 0x0,
+			.es = GDT_OFF_DATA3_DESC | 0x3,
+			.unused4 = 0x0,
+			.cs = GDT_OFF_CODE3_DESC | 0x3,
+			.unused5 = 0x0,
+			.ss = GDT_OFF_DATA3_DESC | 0x3,
+			.unused6 = 0x0,
+			.ds = GDT_OFF_DATA3_DESC | 0x3,
+			.unused7 = 0x0,
+			.fs = 0x0,
+			.unused8 = 0x0,
+			.gs = GDT_OFF_DATA3_DESC | 0x3,
+			.unused9 = 0x0,
+			.ldt = 0x0,
+			.unused10 = 0x0,
+			.dtrap = 0x0,
+			// This is this way just to simplify the code
+			.iomap = 0xFFFF
+		};
+	}
+	if (index >= 8 && index < 16){
+		tss_jugadorB[task] = (tss) {
+			.ptl = 0x0,
+			.unused0 = 0x0,
+			.esp0 = TSS_STACKS_PHYS + PAGE_SIZE * (task + MAX_CANT_PIRATAS_VIVOS + 1),
+			.ss0 = GDT_OFF_DATA0_DESC,
+			.unused1 = 0x0,
+			.esp1 = 0x0,
+			.ss1 = 0x0,
+			.unused2 = 0x0,
+			.esp2 = 0x0,
+			.ss2 = 0x0,
+			.unused3 = 0x0,
+			.cr3 = ALIGN(DIRECTORY_TABLE_PHYS + DIRECTORY_TABLE_ENTRY_SIZE * (task + MAX_CANT_PIRATAS_VIVOS)),
+			.eip = 0x400000,
+			.eflags = 0x202,
+			.eax = 0x0,
+			.ecx = 0x0,
+			.edx = 0x0,
+			.ebx = 0x0,
+			.esp = 0x401000 - 12,
+			.ebp = 0x401000 - 12,
+			.esi = 0x0,
+			.edi = 0x0,
+			.es = GDT_OFF_DATA3_DESC | 0x3,
+			.unused4 = 0x0,
+			.cs = GDT_OFF_CODE3_DESC | 0x3,
+			.unused5 = 0x0,
+			.ss = GDT_OFF_DATA3_DESC | 0x3,
+			.unused6 = 0x0,
+			.ds = GDT_OFF_DATA3_DESC | 0x3,
+			.unused7 = 0x0,
+			.fs = 0x0,
+			.unused8 = 0x0,
+			.gs = GDT_OFF_DATA3_DESC | 0x3,
+			.unused9 = 0x0,
+			.ldt = 0x0,
+			.unused10 = 0x0,
+			.dtrap = 0x0,
+			.iomap = 0xFFFF
+		};
+	} else {
+		return E_OUT_OF_BOUNDS;
+	}
+	return E_OK;
+}
+
 void tss_inicializar_tasking() {
 	ltr(GDT_OFF_TASKB_DESC);
 }
