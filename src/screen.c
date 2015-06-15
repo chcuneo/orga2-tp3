@@ -9,9 +9,7 @@ definicion de funciones del scheduler
 #include "game.h"
 #include "error.h"
 
-
 extern jugador_t jugadorA, jugadorB;
-
 
 static ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO;
 static uint reloj_global = 0;

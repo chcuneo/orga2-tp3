@@ -26,10 +26,15 @@ _isr%1:
 	push ebp
 	push dword [esp - 12]
 	call loadRegisters
+	pop eax
+	pop eax
+	pop eax
+	popf
 
     mov eax, %1
     push eax
     call unrecoverableHandler
+    pop eax
     jmp $
 
 %endmacro
@@ -144,5 +149,7 @@ _isr70:
 
 	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
+
+	xchg bx, bx
 	popad
 iret
