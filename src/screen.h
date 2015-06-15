@@ -45,7 +45,7 @@ int screen_pintar_linea_h(unsigned char c, unsigned char color, uint fila, uint 
 int screen_pintar_linea_v(unsigned char c, unsigned char color, uint fila, uint columna, uint alto);
 void screen_inicializar();
 void screen_pintar_puntajes();
-void clear();
+void screen_clear();
 void screen_printear_ascii(uint fila, uint columna, uint from);
 void print_state();
 void screen_changecolor(uchar color, uint fila, uint columna);
@@ -63,7 +63,6 @@ void screen_pintar_relojes();
 void screen_actualizar_posicion_mapa(uint x, uint y);
 void screen_stop_game_show_winner(jugador_t *j);
 
-void screen_flip_debug_screen();
-void screen_set_debug_registers(uint exception, char *message, tss *registers);
+void screen_flip_debug(uint exception, const char *message, const tss *registers);
 
 #endif  /* !__SCREEN_H__ */
