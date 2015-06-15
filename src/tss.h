@@ -51,5 +51,6 @@ typedef struct str_tss {
 
 int tss_inicializar();
 void tss_inicializar_tasking();
+int tss_reset_StateSegment(uint index);
 
 #endif  /* !__TSS_H__ */

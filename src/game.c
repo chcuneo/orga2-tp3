@@ -35,11 +35,11 @@ uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
 jugador_t jugadorA;
 jugador_t jugadorB;
 
-uint game_xy2lineal (uint x, uint y) {
+inline uint game_xy2lineal (uint x, uint y) {
 	return (y * MAPA_ANCHO + x);
 }
 
-uint game_posicion_valida(int x, int y) {
+inline uint game_posicion_valida(int x, int y) {
 	return (x >= 0 && y >= 0 && x < MAPA_ANCHO && y < MAPA_ALTO);
 }
 
@@ -81,15 +81,15 @@ uint game_dir2xy(direccion dir, int *x, int *y) {
 	return 0;
 }
 
-uint game_xy2addressVirt(int x, int y){
-	return MAPA_BASE_VIRTUAL + (((y * MAPA_ANCHO) + x) * PAGE_SIZE);
+inline uint game_xy2addressVirt(int x, int y){
+	return MAPA_BASE_VIRTUAL + (game_xy2lineal(x, y) * PAGE_SIZE);
 }
 
-uint game_xy2addressPhys(int x, int y){
-	return MAPA_BASE_FISICA + (((y * MAPA_ANCHO) + x) * PAGE_SIZE);
+inline uint game_xy2addressPhys(int x, int y){
+	return MAPA_BASE_FISICA + (game_xy2lineal(x, y) * PAGE_SIZE);
 }
 
-uint game_pirateIdtoDirectoryAddress(uint id){
+inline uint game_pirateIdtoDirectoryAddress(uint id){
 	return DIRECTORY_TABLE_PHYS + id * PAGE_SIZE;
 }
 
@@ -160,19 +160,21 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
+			int p;
 
-				int p;
-				for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
-					if (jugador->piratas[p].exists) game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
+			for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
+				if (jugador->piratas[p].exists) {
+					game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
 				}
-
-				game_jugador_setBitMapPos(jugador, x, y, 1);
-				if (game_valor_tesoro(x, y)){
-					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
-				}
-				game_updateScreen(0, jugador, x, y);
 			}
+
+			game_jugador_setBitMapPos(jugador, x, y, 1);
+
+			if (game_valor_tesoro(x, y)) {
+				game_jugador_lanzar_pirata(jugador, MINERO, x, y);
+			}
+
+			game_updateScreen(0, jugador, x, y);
 		}
 	}
 }
@@ -194,7 +196,7 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 	uint i;
 
 	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; ++i) {
-		if (!j->piratas[i].exists) {
+		if (j->piratas[i].exists == 0) {
 			break;
 		}
 	}
@@ -235,6 +237,7 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 			break;
 	}
 
+	tss_reset_StateSegment(pirate->id);
 	mmu_inicializar_dir_pirata(
 		game_pirateIdtoDirectoryAddress(pirate->id),
 		game_jugador_taskAdress(j, pirate),
@@ -349,25 +352,6 @@ void game_pirata_exploto(uint id) {
 	munmap(game_pirateIdtoDirectoryAddress(id), CODIGO_BASE);
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 }
-
-pirata_t* game_pirata_en_posicion(uint x, uint y) {
-	int i;
-
-	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++){
-		if (jugadorA.piratas[i].coord_x == x && jugadorA.piratas[i].coord_y == y){
-			return &(jugadorA.piratas[i]);
-		}
-	}
-
-	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; i++) {
-		if (jugadorB.piratas[i].coord_x == x && jugadorB.piratas[i].coord_y == y){
-			return &(jugadorB.piratas[i]);
-		}
-	}
-
-	return NULL;
-}
-
 
 void game_jugador_anotar_punto(jugador_t *j) {
 	j->score++;

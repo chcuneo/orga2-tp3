@@ -84,7 +84,8 @@ typedef unsigned int   uint;
 /**
  * Address where we locate the directory tables
  */
-#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF) - MAX_CANT_PIRATAS_VIVOS * 2 * DIRECTORY_TABLE_ENTRY_SIZE)
+#define DIRECTORY_TABLE_PHYS (ALIGN(0x3FFFFF - MAX_CANT_PIRATAS_VIVOS * 2 * DIRECTORY_TABLE_ENTRY_SIZE))
+// = 3FF00 - 10000 = 2FF00
 
  /**
   * Number of pages within a page table
