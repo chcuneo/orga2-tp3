@@ -18,6 +18,12 @@ Para solucionar este problema, a IBM se le ocurrió utilizar un pin del controla
 \subsection{Global Descriptor Table}
 Antes de poder pasar a modo protegido, debemos cargar la GDT. La GDT se encarga de asignar diferentes atributos de protección a los segmentos de memoria, para luego poder habilitar la protección por hardware. Esta estructura la armamos como un array de \texttt{gdt\_entry} en C.
 
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{segment_descriptor}
+  \caption{Segment Descriptor}
+\end{figure}
+
 Luego, cargamos la GDT con el comando \command{lgdt} y el descriptor de la GDT armado desde C (\texttt{GDT\_DESC}).
 
 \subsection{Pasaje a Modo Protegido}

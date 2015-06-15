@@ -1,5 +1,26 @@
 \section{Modo Protegido}
 
+\subsection{Selector de Segmento}
+Al entrar a modo protegido, inicializamos los diferentes selectores de segmento. Los mismos tienen el siguiente formato:
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[scale=0.8]{segment_selector}
+  \caption{Segment Selector}
+\end{figure}
+
+\subsection{Niveles de protección}
+
+Intel soporta 4 niveles de protección diferentes, siendo 0 el mas alto y 4 el mas bajo. Por esa razón los bits de protección tienen 2 bits.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.4\textwidth]{protection_rings}
+  \caption{IDT Descriptor}
+\end{figure}
+
+TODO: Escribir un poco como funciona la unidad de protección con RPL, DPL Y CPL.
+
 \subsection{Interrupt Descriptor Table}
 
 Una interrupción es una señal que le indica a la CPU que debe interrumpir la ejecución actual de instrucciones. El rol de la \texttt{IDT} (Interrupt Descriptor Table) es contener los diferentes descriptores de interrupcion y asociar las diferentes interrupciones a sus respectivas rutinas de atención de interrupción. Existen tres fuentes de interrupciones:
@@ -18,7 +39,23 @@ A su vez, la \texttt{IDT} puede contener tres tipos de descriptores:
 \item Task Gate
 \end{enumerate}
 
-Para construir la IDT, armamos primero en C la estructura \texttt{idt\_entry} con sus respectivos atributos y luego construimos un array de 256 posiciones del mismo (la máxima cantidad soportada por el procesador). Modificamos la macro de la cátedra para poder cargar la IDT con diferentes atributos. Luego inicializamos las diferentes posiciones que utilizamos con sus respectivos selectores de segmento y atributos, tomando también la referencia a las respectivas rutinas de atención.
+Para construir la IDT, armamos primero en C la estructura \texttt{idt\_entry} con sus respectivos atributos y luego construimos un array de 256 posiciones del mismo (la máxima cantidad soportada por el procesador). En este trabajo practico solo utilizaremos descriptores de interrupción y de tarea.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.5\textwidth]{idt_desc}
+  \caption{IDT Descriptor}
+\end{figure}
+
+ Modificamos la macro de la cátedra para poder cargar la IDT con diferentes atributos. Luego inicializamos las diferentes posiciones que utilizamos con sus respectivos selectores de segmento y atributos, tomando también la referencia a las respectivas rutinas de atención.
+
+Hay que tener mucho cuidado al settear los atributos. Caso contrario, al cambiar de segmento podemos tener un General Protection Fault (\#GP). Algunos atributos son:
+
+\begin{enumerate}
+\item P: Present flag. 1 if present.
+\item DPL: Descriptor Protection Level. Nivel de privilegios del descriptor.
+\item D: Size of gate. 1 = 32 bits; 0 = 16 bits.
+\end{enumerate}
 
 Un procesador Intel reserva por default las primeras 31 posiciones de la \texttt{IDT} para las diferentes excepciones del procesador. Actualmente, el procesador solo utiliza las primeras 21. Inicializamos estas excepciones del procesador a una rutina que imprime la excepción en pantalla.
 
@@ -29,15 +66,13 @@ Una vez cargada la IDT, se debe remapear el PIC (Programmable Interrupt Controle
 \subsection{Memory Management Unit}
 Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza una \texttt{MMU} (Memory Management Unit). La misma esta compuesta por la Unidad de Segmentación y la Unidad de Paginación.
 
-Antes de explicar como funciona este proceso, debemos explicar la diferencia entre los diferentes tipos de direcciones:
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.6\textwidth]{memory_management}
+  \caption{Segmentation \& Paging}
+\end{figure}
 
-\begin{enumerate}
-\item Dirección Lógica
-\item Dirección Lineal
-\item Dirección Física
-\end{enumerate}
-
-TODO: Insertar diagramas de como se compone cada tipo de dirección?
+La paginacion nos permite que cada tarea pueda tener su propia \texttt{memoria virtual}, mappeando direcciones físicas a direcciones virtuales.
 
 \subsubsection{Unidad de Segmentación}
 
@@ -96,7 +131,7 @@ Esta es una interrupción interna, que sucede con cada \texttt{tick} del reloj d
 Utilizaremos la rutina de atención del teclado para habilitar las diferentes teclas disponibles a los jugadores. Cuando programábamos esto, notamos que es necesario tomar la tecla presionada desde el controlador del teclado, caso contrario el teclado no vuelve a solicitar una interrupción.
 
 \subsubsection{Software}
-Asignamos a la interrupcion \addr{0x46} una rutina que atiende un servicio del sistema.
+Asignamos a la interrupción \addr{0x46} (70) una rutina que atiende un servicio del sistema.
 
 \subsection{Task State Segment}
 
