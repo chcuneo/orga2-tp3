@@ -126,6 +126,8 @@ char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
 void game_inicializar(){
 	game_jugador_inicializar(&jugadorA, 0, POS_INIT_A_X, POS_INIT_A_Y);
 	game_jugador_inicializar(&jugadorB, 1, POS_INIT_B_X, POS_INIT_B_Y);
+	int x;
+	for (x = 0; x < MAX_CANT_PIRATAS_VIVOS * 2; x++) game_tick(GDT_IDX_START_TSKS + x);
 }
 
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y) {
@@ -244,7 +246,14 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 		game_pirateIdtoDirectoryAddress(pirate->id),
 		game_jugador_taskAdress(j, pirate),
 		game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
-	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
+	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);	
+
+	//ESTO LOGRA PASARLE DOS PARAMETROS A UN EXPLORADOR, pero no a un minero, es que tiene mas variables locales, y reserva esos espacios para eso y que se yo
+	/*int *pstack = (int *)(game_xy2addressPhys(pirate->coord_x, pirate->coord_y) + 0x1000 - 12);
+	pstack += 1;
+	*pstack = x_target;
+	pstack += 1;
+	*pstack = y_target;*/
 
 	return E_OK;
 }
@@ -381,7 +390,7 @@ void game_jugador_anotar_punto(jugador_t *j) {
 	j->score++;
 }
 
-#define PCLOCK_ROW (MAPA_ALTO - 2)
+#define PCLOCK_ROW (VIDEO_FILS - 2)
 #define PCLOCK_COL0_JA 4
 #define PCLOCK_COL0_JB 59
 
