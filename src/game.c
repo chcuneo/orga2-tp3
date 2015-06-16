@@ -36,6 +36,10 @@ uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
 jugador_t jugadorA;
 jugador_t jugadorB;
 
+#define TIMER_LIMIT 	100
+uint timerEnd = 0;
+uint lastScores = 0;
+
 inline uint game_xy2lineal (uint x, uint y) {
 	return (y * MAPA_ANCHO + x);
 }
@@ -334,8 +338,9 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 	}
 }
 
+uint treasuresLeft = BOTINES_CANTIDAD;
+
 int game_syscall_cavar(uint pirateId) {
-    static uint treasuresLeft = BOTINES_CANTIDAD;
     pirata_t *p = id_pirata2pirata(pirateId);
 
     if (p == NULL) {
@@ -418,6 +423,16 @@ void game_tick(uint taskid){
 	uint pirateid = taskid - GDT_IDX_START_TSKS;
 	uint playerindex = pirateid / 8;
 	uint pirateindex = pirateid % 8;
+	int scoresNow = jugadorA.score + jugadorB.score;
+	
+	if (scoresNow != lastScores){
+		lastScores = scoresNow;
+		timerEnd = 0;
+	} else {
+		timerEnd++;
+	}
+
+	if (timerEnd > TIMER_LIMIT) game_terminar();
 
 	if (playerindex == 0){
 		if (jugadorA.piratas[pirateindex].exists == 1){
@@ -439,11 +454,7 @@ void game_tick(uint taskid){
 }
 
 void game_terminar() {
-
-}
-
-void game_terminar_si_es_hora() {
-
+	
 }
 
 #define KB_w_Aup    0x11 // 0x91

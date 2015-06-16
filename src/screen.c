@@ -262,3 +262,12 @@ void screen_flip_debug(uint exception, const char *message, const tss *registers
         }
     }
 }
+
+void screen_stop_game_show_winner(jugador_t *j){
+    screen_pintar_linea_h(' ', 0x00, fila + 0, col + 0, 30);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 0, 34);
+    screen_pintar_linea_h(' ', 0x00, fila + 35, col + 0, 30);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 29, 34);
+    screen_pintar_linea_h(' ', 0x44, fila + 1, col + 1, 28);
+    screen_pintar_rect(' ', 0x70, fila + 2, col + 1, 33, 28);
+}
