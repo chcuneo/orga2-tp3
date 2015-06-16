@@ -197,6 +197,18 @@ LS_INLINE unsigned int reflags(void) {
     return ret;
 }
 
+LS_INLINE void leax(unsigned int val) {
+    __asm __volatile("movl %0,%%eax" : : "r" (val));
+}
+
+LS_INLINE void lebx(unsigned int val) {
+    __asm __volatile("movl %0,%%ebx" : : "r" (val));
+}
+
+LS_INLINE void lecx(unsigned int val) {
+    __asm __volatile("movl %0,%%ecx" : : "r" (val));
+}
+
 // LS_INLINE unsigned int rcr0(void) {
 //     unsigned int ret;
 //     __asm __volatile("movl %%cr0,%0" : "=r" (ret) : );

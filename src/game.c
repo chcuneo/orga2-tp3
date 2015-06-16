@@ -320,6 +320,7 @@ int game_syscall_cavar(uint pirateId) {
                 if (botines[i][2] > 0) {
                     game_jugador_anotar_punto(p->jugador);
                     botines[i][2]--;
+                    screen_pintar_puntajes();
                 } else {
                     // TODO: revisar que usar esta funcion este bien
                     game_pirata_exploto(pirateId);
@@ -409,4 +410,14 @@ void game_atender_teclado(unsigned char tecla){
 		default:
 			break;
 	}
+}
+
+uchar paused = 0;
+
+void game_pause_toggle() {
+	paused = BIT_FLIP(paused, 0);
+}
+
+uchar game_is_paused() {
+	return paused;
 }
