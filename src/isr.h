@@ -145,7 +145,6 @@ int isr_syscall(uint operation, uint param) {
                 ret = E_UNKNOWN_OPERATION;
                 break;
         }
-
     } else {
         ret = E_UNKNOWN_OPERATION;
     }
