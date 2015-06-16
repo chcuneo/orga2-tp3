@@ -44,9 +44,9 @@ inline uint game_posicion_valida(int x, int y) {
 }
 
 pirata_t* id_pirata2pirata(uint pirate_id) {
+    uint player = pirate_id / MAX_CANT_PIRATAS_VIVOS;
+    uint pirate = pirate_id - player*MAX_CANT_PIRATAS_VIVOS;
     if (pirate_id < (MAX_CANT_PIRATAS_VIVOS << 1)) {
-        uint player = pirate_id / MAX_CANT_PIRATAS_VIVOS;
-        uint pirate = pirate_id - player*MAX_CANT_PIRATAS_VIVOS;
         jugador_t *p;
 
         switch (player) {
@@ -63,9 +63,8 @@ pirata_t* id_pirata2pirata(uint pirate_id) {
 
         if (p != NULL && p->piratas[pirate].exists) {
             return &(p->piratas[pirate]);
-        }
-    }
-
+    	}
+	}
     return NULL;
 }
 
@@ -174,8 +173,8 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
 				}
 
-				game_updateScreen(0, jugador, x, y);
 			}
+			game_updateScreen(0, jugador, x, y);
 		}
 	}
 }
@@ -248,13 +247,34 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 }
 
 void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
-	uchar color = (2 + j->index) << 4;
 	int xc = x;
 	int yc = y + TOP_MARGIN;
+	uchar color;
 	if (p){
-		if (p->exists == 0) color += C_FG_RED;
-		if (p->type == MINERO) { screen_pintar('M', color, yc, xc ); } else { screen_pintar('E', color, yc, xc ); }
+		if (p->exists == 0) { 
+			if (j->index == 0){
+				color = C_BG_BLACK | C_FG_LIGHT_RED;
+			} else {
+				color = C_BG_BLACK | C_FG_LIGHT_BLUE;
+			}
+		} else {
+			if (j->index == 0){
+				color = C_BG_RED | C_FG_WHITE;
+			} else {
+				color = C_BG_BLUE | C_FG_WHITE;
+			}
+		}
+		if (p->type == MINERO) { 
+			screen_pintar('M', color, yc, xc ); 
+		} else { 
+			screen_pintar('E', color, yc, xc ); 
+		}
 	} else {
+		if (j->index == 0){
+			color = C_BG_GREEN;
+		} else {
+			color = C_BG_CYAN;
+		}
 		screen_changecolor(color, yc, xc);
 	}
 }
@@ -274,8 +294,8 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
 			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
 			mmu_move_codepage(directoryBase, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
-			game_updateScreen(pirate, pirate->jugador, x, y);
 			if (pirate->type == EXPLORADOR) game_explorar_posicion(pirate->jugador, x, y);
+			game_updateScreen(pirate, pirate->jugador, x, y);
 			pirate->coord_x = x;
 			pirate->coord_y = y;
 
