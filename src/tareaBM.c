@@ -8,7 +8,29 @@
 #include "defines.h"
 #include "game.h"
 #include "syscall.h"
+#include "i386.h"
 
-void task() {
-	while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
+void task(int x_target, int y_target) {
+
+
+    // x_target = 70;
+    // y_target = 42;
+
+    /* Tarea */
+    /*lecx(x_target);
+    lebx(y_target);
+    breakpoint();*/
+    uint pos = syscall_posicion(-1);
+    int x = pos & 0xFF;
+    int y = pos >> 8;
+    int i;
+    for(i=x; i < x_target; i++)
+        syscall_mover(DER);
+
+    for(i=y; i < y_target; i++)
+        syscall_mover(ABA);
+
+    while(1) {syscall_cavar();}
+
+  while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
 }

@@ -196,6 +196,9 @@ void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
 }
 
 int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target) {
+
+	// bug: nunca usa x_target y y_target! cuando es un minero, tiene que saber a donde ir (se pasa por pila level 3)
+
 	uint i;
 
 	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; ++i) {
@@ -301,7 +304,14 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 		x += pirate->coord_x;
 		y += pirate->coord_y;
 
-		if (game_posicion_valida(x, y)) {
+		// solo permitir que el minero se mueva si la posicion ya ha sido explorada
+		if (game_posicion_valida(x, y) & (pirate->type == EXPLORADOR || game_jugador_getBitMapPos(pirate->jugador, x, y))) {
+
+			// restaurar posicion anterior
+			game_updateScreen(0, pirate->jugador, pirate->coord_x, pirate->coord_y);
+			if (game_valor_tesoro(pirate->coord_x, pirate->coord_y))
+			screen_changechar('o', pirate->coord_x, pirate->coord_y + 1); // le sumo el upper border.
+
 			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
 			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
 			mmu_move_codepage(directoryBase, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
