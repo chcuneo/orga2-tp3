@@ -226,7 +226,7 @@ int tss_reset_StateSegment(uint index){
 			.edx = 0x0,
 			.ebx = 0x0,
 			.esp = 0x401000 - 12,
-			.ebp = 0x401000 - 12,
+			.ebp = 0x401000 - 4,
 			.esi = 0x0,
 			.edi = 0x0,
 			.es = GDT_OFF_DATA3_DESC | 0x3,

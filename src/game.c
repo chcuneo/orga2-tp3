@@ -23,14 +23,14 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 #define CANT_POSICIONES_VISTAS            9
 #define MAX_SIN_CAMBIOS                 999
 
-#define BOTINES_CANTIDAD 8
+#define BOTINES_CANTIDAD 9
 
 const char pClock[] = "|/-\\";
 #define pClock_size 4
 
 uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
                                         {30,  3, 50}, {30, 38, 50}, {15, 21, 100}, {45, 21, 100} ,
-                                        {49,  3, 50}, {49, 38, 50}, {64, 21, 100}, {34, 21, 100}
+                                        {49,  3, 50}, {49, 38, 50}, {64, 21, 100}, {34, 21, 100} , {10, 2, 50}
                                     };
 
 jugador_t jugadorA;
@@ -249,11 +249,10 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);	
 
 	//ESTO LOGRA PASARLE DOS PARAMETROS A UN EXPLORADOR, pero no a un minero, es que tiene mas variables locales, y reserva esos espacios para eso y que se yo
-	/*int *pstack = (int *)(game_xy2addressPhys(pirate->coord_x, pirate->coord_y) + 0x1000 - 12);
-	pstack += 1;
+	int *pstack = (int *)(game_xy2addressPhys(pirate->coord_x, pirate->coord_y) + 0x1000 - 12);
 	*pstack = x_target;
-	pstack += 1;
-	*pstack = y_target;*/
+	pstack ++;
+	*pstack = y_target;
 
 	return E_OK;
 }

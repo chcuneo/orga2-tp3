@@ -105,7 +105,7 @@ _isr32:
 	; Si la tarea actual y la nueva son la misma, saltamos al final del algoritmo
 	cmp eax, ebx
 	je .end
-
+;xchg bx, bx
 	; Saltamos a la nueva tarea
 	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]

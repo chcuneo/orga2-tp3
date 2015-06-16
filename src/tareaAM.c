@@ -12,9 +12,9 @@
 
 void task(int x_target, int y_target) {
     /* Tarea */
-    /*lecx(x_target);
+    lecx(x_target);
     lebx(y_target);
-    breakpoint();*/
+    breakpoint();
     uint pos = syscall_posicion(-1);
     int x = pos & 0xFF;
     int y = pos >> 8;
