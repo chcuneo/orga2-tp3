@@ -156,6 +156,13 @@ void screen_inicializar() {
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
 
     screen_pintar_puntajes();
+
+    uint i;
+    for (i = 1; i <= 8; i++)
+		print_dec(i, 1, VIDEO_FILS - 4, 4 + (i-1)*2, C_BG_BLACK | C_FG_WHITE);
+
+    for (i = 1; i <= 8; i++)
+    	print_dec(i, 1, VIDEO_FILS - 4, 59 + (i-1)*2, C_BG_BLACK | C_FG_WHITE);
 }
 
 extern jugador_t jugadorA, jugadorB;
