@@ -9,14 +9,11 @@ definicion de funciones del scheduler
 #include "game.h"
 #include "error.h"
 
-extern jugador_t jugadorA, jugadorB;
-
 static ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO;
 static uint reloj_global = 0;
 
 const char reloj[] = "|/-\\";
 #define reloj_size 4
-
 
 void screen_actualizar_reloj_global() {
     reloj_global = (reloj_global + 1) % reloj_size;
@@ -150,17 +147,22 @@ void screen_inicializar() {
 	// pirate arena
 	screen_pintar_rect(0, C_BG_LIGHT_GREY, 1, 0, VIDEO_FILS - 6, VIDEO_COLS);
 
-	// pintar contenedores de score
-	screen_pintar_rect(0, C_BG_RED, VIDEO_FILS - 5, VIDEO_COLS / 2 - 6, 5, 6);
-	screen_pintar_rect(0, C_BG_BLUE, VIDEO_FILS - 5, VIDEO_COLS / 2, 5, 6);
-
 	// pintar bordes de score
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, 0, 5, VIDEO_COLS / 2 - 7); // left border
 	screen_pintar_rect(0, C_BG_BLACK, VIDEO_FILS - 5, VIDEO_COLS / 2 + 7, 5, VIDEO_COLS / 2 - 7); // right border
+
+    screen_pintar_puntajes();
 }
 
-void screen_pintar_puntajes() {
+extern jugador_t jugadorA, jugadorB;
 
+void screen_pintar_puntajes() {
+    // pintar contenedores de score
+    screen_pintar_rect(0, C_BG_RED, VIDEO_FILS - 5, VIDEO_COLS / 2 - 6, 5, 6);
+    screen_pintar_rect(0, C_BG_BLUE, VIDEO_FILS - 5, VIDEO_COLS / 2, 5, 6);
+
+    print_dec(jugadorA.score, 4, VIDEO_FILS - 3, VIDEO_COLS / 2 - 5, C_BG_RED | C_FG_WHITE);
+    print_dec(jugadorB.score, 4, VIDEO_FILS - 3, VIDEO_COLS / 2 + 1, C_BG_BLUE | C_FG_WHITE);
 }
 
 void screen_show_debug(uint exception, const char *message, const tss *registers) {
