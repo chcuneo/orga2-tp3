@@ -271,10 +271,33 @@ void screen_flip_debug(uint exception, const char *message, const tss *registers
 }
 
 void screen_stop_game_show_winner(jugador_t *j){
-    screen_pintar_linea_h(' ', 0x00, fila + 0, col + 0, 30);
-    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 0, 34);
-    screen_pintar_linea_h(' ', 0x00, fila + 35, col + 0, 30);
-    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 29, 34);
-    screen_pintar_linea_h(' ', 0x44, fila + 1, col + 1, 28);
-    screen_pintar_rect(' ', 0x70, fila + 2, col + 1, 33, 28);
+    uint fila = 20, col = 30;
+    screen_pintar_linea_h(' ', 0x00, fila + 0, col + 0, 20);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 0, 15);
+    screen_pintar_linea_h(' ', 0x00, fila + 15, col + 0, 20);
+    screen_pintar_linea_v(' ', 0x00, fila + 1, col + 19, 15);
+    screen_pintar_linea_h(' ', 0x44, fila + 1, col + 1, 18);
+    screen_pintar_rect(' ', C_BG_RED, fila + 2, col + 1, 13, 18);
+    print("Ganador:", fila + 3, col + 6, C_FG_WHITE | C_BG_RED);
+    uint RL = fila + 5;
+    uint CL = col + 7;
+    if (j->index == 0){
+        print(" AAA ", RL, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 1, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 2, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 3, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 4, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("AAAAA", RL + 5, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 6, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("A   A", RL + 7, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+    } else {
+        print("BBBB ", RL, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("B   B", RL + 1, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("B   B", RL + 2, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("BBBB ", RL + 3, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("B   B", RL + 4, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("B   B", RL + 5, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("B   B", RL + 6, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+        print("BBBB ", RL + 7, CL, C_FG_GREEN | C_BG_RED | C_BLINK);
+    }
 }

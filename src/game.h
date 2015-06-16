@@ -8,6 +8,7 @@
 #define __GAME_H__
 
 #include "defines.h"
+#include "pic.h"
 
 typedef enum direccion_e { ARR = 0x4, ABA = 0x7, DER = 0xA, IZQ = 0xD} direccion;
 

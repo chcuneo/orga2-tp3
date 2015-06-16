@@ -36,7 +36,7 @@ uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
 jugador_t jugadorA;
 jugador_t jugadorB;
 
-#define TIMER_LIMIT 	100
+#define TIMER_LIMIT 	10000
 uint timerEnd = 0;
 uint lastScores = 0;
 
@@ -426,7 +426,6 @@ void game_tick(uint taskid){
 	} else {
 		timerEnd++;
 	}
-
 	if (timerEnd > TIMER_LIMIT) game_terminar();
 
 	if (playerindex == 0){
@@ -449,7 +448,14 @@ void game_tick(uint taskid){
 }
 
 void game_terminar() {
-	
+	deshabilitar_pic();
+	jugador_t *j;
+	if (jugadorA.score < jugadorB.score){ 
+		j = &jugadorB;
+	} else {
+		j = &jugadorA;
+	}
+	screen_stop_game_show_winner(j);
 }
 
 #define KB_w_Aup    0x11 // 0x91
