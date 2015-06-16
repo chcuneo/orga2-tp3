@@ -51,7 +51,7 @@ int create_page_table(
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 1) {
 		return E_PAGE_TABLE_PRESENT;
@@ -96,7 +96,7 @@ int delete_page_table(
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -147,7 +147,7 @@ int create_page(
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -208,7 +208,7 @@ int delete_page(
 		return E_OUT_OF_BOUNDS;
 	}
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -321,7 +321,7 @@ int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -348,7 +348,7 @@ uint getPhysVirt(uint directoryBase, uint virtualAddress) {
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return E_PAGE_TABLE_MISSING;
@@ -372,7 +372,7 @@ int isMapped(uint directoryBase, uint virtualAddress) {
 	uint directoryEntry = virtualAddress >> 22;
 	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
 
-	page_entry *pageDirectory __attribute__((aligned(DIRECTORY_TABLE_ENTRY_SIZE))) = (page_entry *)directoryBase;
+	page_entry *pageDirectory = (page_entry *)directoryBase;
 
 	if (pageDirectory[directoryEntry].p == 0) {
 		return 0;

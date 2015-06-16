@@ -223,7 +223,7 @@ void screen_show_debug(uint exception, const char *message, const tss *registers
     int stackElementsRow = fila + 21;
     int i;
 
-    for (i = 0; i < (registers->esp - registers->ebp + 1); ++i){
+    for (i = 0; i < MIN(10, (registers->esp - registers->ebp)); ++i) {
         print_hex(*((int *)(registers->esp + i)), 8, col + 16, stackElementsRow + i, attrData);
     }
 }

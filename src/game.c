@@ -390,3 +390,13 @@ void game_atender_teclado(unsigned char tecla){
 			break;
 	}
 }
+
+uchar paused = 0;
+
+void game_pause_toggle() {
+	paused = BIT_FLIP(paused, 0);
+}
+
+uchar game_is_paused() {
+	return paused;
+}

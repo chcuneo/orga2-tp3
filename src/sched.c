@@ -15,7 +15,7 @@ definicion de funciones del scheduler
 /**
  * Number of scheduler ticks until a task switch is necessary
  */
-#define SCHEDULER_TASK_TICKS 20
+#define SCHEDULER_TASK_TICKS 1
 
 /** Scheduler tick
  * Whenever this value reaches 0, the scheduler will change tasks, doing a
@@ -52,6 +52,11 @@ int scheduler_tick() {
     uchar current = 0;
 
     tick = (tick + 1) % SCHEDULER_TASK_TICKS;
+
+    // If the game is paused is active, we just jump to the idle task
+    if (game_is_paused()) {
+        return 1 + GDT_IDX_TASKB_DESC;
+    }
 
     /**
      * The algorithm runs in two stages, with the variable `found` deciding

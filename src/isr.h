@@ -120,6 +120,7 @@ void isr_keyboard(uchar scanCode) {
         game_atender_teclado(scanCode);
     } else if (scanCode == KBC_Y_R) {
         screen_flip_debug(firstExceptionNumber, unrecoverableMsgs[firstExceptionNumber], &firstException);
+        game_pause_toggle();
     }
 }
 

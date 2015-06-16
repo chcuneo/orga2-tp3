@@ -20,6 +20,7 @@ extern loadRegisters
 global _isr%1
 
 _isr%1:
+	; Cargamos los registros para debug, si fuera necesario.
 	pushf
 	push esp
 	add dword [esp], 8
@@ -31,12 +32,17 @@ _isr%1:
 	pop eax
 	popf
 
+	; Llamamos al handler para esta excepcion
     mov eax, %1
     push eax
     call unrecoverableHandler
     pop eax
-    jmp $
 
+    ; Saltamos a la tarea idle, asi nos evitamos volver a faultear
+	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
+	jmp far [sched_tarea_offset]
+
+    jmp $
 %endmacro
 
 ;;
@@ -102,7 +108,7 @@ _isr32:
 
 	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]
-.end: ; TODO: certificar que aca no va una llamada a game_tick
+.end:
 	call screen_actualizar_reloj_global
 	popad
 iret
@@ -117,8 +123,10 @@ _isr33:
 	pushad
 	call fin_intr_pic1
 
+	; Levantamos la entrada de teclado
 	in al, 0x60
 
+	; Llamamos al "driver" de teclado
 	push eax
 	call isr_keyboard
 	pop eax
@@ -140,6 +148,7 @@ _isr70:
 	call fin_intr_pic1
 	pop eax
 
+	; Llamamos al handler para la syscall
 	push ecx
 	push eax
 	call isr_syscall
@@ -147,6 +156,7 @@ _isr70:
 	pop esi
 	pop edi
 
+	; Saltamos a la tarea idle
 	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.
 	jmp far [sched_tarea_offset]
 	
