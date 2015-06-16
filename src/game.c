@@ -321,7 +321,7 @@ int game_syscall_cavar(uint pirateId) {
         for (i = 0; i < BOTINES_CANTIDAD; ++i) {
             if (botines[i][0] == p->coord_x && botines[i][1] == p->coord_y) {
                 if (botines[i][2] > 0) {
-                    game_jugador_anotar_punto(p->jugador);
+                    p->jugador->score++;
                     botines[i][2]--;
                     screen_pintar_puntajes();
                 } else {
