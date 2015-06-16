@@ -252,10 +252,17 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);	
 
 	//ESTO LOGRA PASARLE DOS PARAMETROS A UN EXPLORADOR, pero no a un minero, es que tiene mas variables locales, y reserva esos espacios para eso y que se yo
+	uint oldCr3 = rcr3();
+	lcr3(KERNEL_DIR_TABLE);
+
 	int *pstack = (int *)(game_xy2addressPhys(pirate->coord_x, pirate->coord_y) + 0x1000 - 12);
+	*pstack = 0x000000;
+	pstack++;
 	*pstack = x_target;
-	pstack ++;
+	pstack++;
 	*pstack = y_target;
+
+	lcr3(oldCr3);
 
 	return E_OK;
 }
@@ -310,7 +317,7 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 			// restaurar posicion anterior
 			game_updateScreen(0, pirate->jugador, pirate->coord_x, pirate->coord_y);
 			if (game_valor_tesoro(pirate->coord_x, pirate->coord_y))
-			screen_changechar('o', pirate->coord_x, pirate->coord_y + 1); // le sumo el upper border.
+				screen_changechar('o', pirate->coord_x, pirate->coord_y + 1); // le sumo el upper border.
 
 			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
 			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
@@ -343,7 +350,6 @@ int game_syscall_cavar(uint pirateId) {
                     botines[i][2]--;
                     screen_pintar_puntajes();
                 } else {
-                    // TODO: revisar que usar esta funcion este bien
                     game_pirata_exploto(pirateId);
                     --treasuresLeft;
                 }
@@ -369,13 +375,13 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
         code = E_NON_EXISTANT_PIRATE;
     } else {
         if (param == -1) {
-            code = (p->coord_y << 8) | p->coord_x;
+            code = ((p->coord_y << 8) | p->coord_x);
         } else {
             if (param < MAX_CANT_PIRATAS_VIVOS) {
                 pirata_t *q = &(p->jugador->piratas[param]);
 
                 if (q->exists) {
-                    code = (q->coord_y << 8) | q->coord_x;
+                    code = ((q->coord_y << 8) | q->coord_x);
                 } else {
                     code = E_NON_EXISTANT_PIRATE;
                 }
@@ -407,6 +413,7 @@ void game_tick(uint taskid){
 	uint pirateid = taskid - GDT_IDX_START_TSKS;
 	uint playerindex = pirateid / 8;
 	uint pirateindex = pirateid % 8;
+
 	if (playerindex == 0){
 		if (jugadorA.piratas[pirateindex].exists == 1){
 			screen_pintar(pClock[(jugadorA.piratas[pirateindex].clock)], C_FG_WHITE, PCLOCK_ROW, PCLOCK_COL0_JA + pirateindex * 2);

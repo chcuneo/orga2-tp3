@@ -189,7 +189,7 @@ int tss_inicializar() {
 }
 
 
-#define TSS_STACKS_PHYS (0x100000 + 0x68 * (MAX_CANT_PIRATAS_VIVOS * 2 + 1))
+#define TSS_STACKS_PHYS 0x100000
 
 int tss_reset_StateSegment(uint index){
 	int pirateId = index % 8;

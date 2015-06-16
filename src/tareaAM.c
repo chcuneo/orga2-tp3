@@ -12,17 +12,16 @@
 
 void task(int x_target, int y_target) {
     /* Tarea */
-    lecx(x_target);
-    lebx(y_target);
-    breakpoint();
     uint pos = syscall_posicion(-1);
+
     int x = pos & 0xFF;
     int y = pos >> 8;
+    
     int i;
-    for(i=x; i < x_target; i++)
+    for(i = x; i < x_target; i++)
         syscall_mover(DER);
 
-    for(i=y; i < y_target; i++)
+    for(i = y; i < y_target; i++)
         syscall_mover(ABA);
 
     while(1) {syscall_cavar();}

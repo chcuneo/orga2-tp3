@@ -105,7 +105,7 @@ _isr32:
 	; Si la tarea actual y la nueva son la misma, saltamos al final del algoritmo
 	cmp eax, ebx
 	je .end
-;xchg bx, bx
+
 	; Saltamos a la nueva tarea
 	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]
@@ -154,7 +154,7 @@ global _isr70
 _isr70:
 	pushad
 	push ecx ; param
-	push eax ; oparation
+	push eax ; operation
 	call fin_intr_pic1
 
 	; Llamamos al handler para la syscall
@@ -162,6 +162,10 @@ _isr70:
 	; Popeamos en otro lado para no perder el dato de retorno, que esta en eax
 	pop esi
 	pop edi
+
+	; Ponemos el valor de eax en la pila como el valor de retorno del syscall,
+	; asi el popad anda bien y pone el valor de retorno correcto
+	mov [esp + 7*4], eax
 
 	; Saltamos a la tarea idle
 	mov word [sched_tarea_selector], 0x70 ; GDT_IDX_TASKI_DESC este es el valor posta posta.

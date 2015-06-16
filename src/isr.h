@@ -45,6 +45,9 @@ uchar hasExceptionHappened = 0;
 uint firstExceptionNumber;
 tss firstException;
 
+uint lastExceptionNumber;
+tss lastException;
+
 void loadRegisters(
     uint eip,
     uint ebp,
@@ -95,6 +98,47 @@ void loadRegisters(
             .iomap = 0x0
         };
     }
+
+    lastException = (tss) {
+        .ptl = 0x0,
+        .unused0 = 0x0,
+        .esp0 = rcr0(),
+        .ss0 = 0x0,
+        .unused1 = 0x0,
+        .esp1 = rcr2(),
+        .ss1 = 0x0,
+        .unused2 = 0x0,
+        .esp2 = rcr4(),
+        .ss2 = 0x0,
+        .unused3 = 0x0,
+        .cr3 = rcr3(),
+        .eip = eip,
+        .eflags = eflags,
+        .eax = eax,
+        .ecx = recx(),
+        .edx = redx(),
+        .ebx = rebx(),
+        .esp = esp,
+        .ebp = ebp,
+        .esi = resi(),
+        .edi = redi(),
+        .es = res(),
+        .unused4 = 0x0,
+        .cs = rcs(),
+        .unused5 = 0x0,
+        .ss = rss(),
+        .unused6 = 0x0,
+        .ds = rds(),
+        .unused7 = 0x0,
+        .fs = rfs(),
+        .unused8 = 0x0,
+        .gs = rgs(),
+        .unused9 = 0x0,
+        .ldt = 0x0,
+        .unused10 = 0x0,
+        .dtrap = 0x0,
+        .iomap = 0x0
+    };
 }
 
 void unrecoverableHandler(uint exception) {
@@ -102,6 +146,8 @@ void unrecoverableHandler(uint exception) {
         firstExceptionNumber = exception;
         hasExceptionHappened = 1;
     }
+
+    lastExceptionNumber = exception;
 
     uint id = rtr() >> 3;
 
@@ -115,11 +161,18 @@ void unrecoverableHandler(uint exception) {
     }
 }
 
+uchar pausedByDebugScreen = 0;
+
 void isr_keyboard(uchar scanCode) {
     if (scanCode == KBC_LSHFT_P || scanCode == KBC_RSHFT_P) {
         game_atender_teclado(scanCode);
-    } else if (scanCode == KBC_Y_R) {
+    } else if (scanCode == KBC_Y_R && BIT_ISSET(pausedByDebugScreen, 1) == 0) {
+        pausedByDebugScreen = BIT_FLIP(pausedByDebugScreen, 0);
         screen_flip_debug(firstExceptionNumber, unrecoverableMsgs[firstExceptionNumber], &firstException);
+        game_pause_toggle();
+    } else if (scanCode == KBC_SPACE_R && BIT_ISSET(pausedByDebugScreen, 0) == 0) {
+        pausedByDebugScreen = BIT_FLIP(pausedByDebugScreen, 1);
+        screen_flip_debug(lastExceptionNumber, unrecoverableMsgs[lastExceptionNumber], &lastException);
         game_pause_toggle();
     }
 }
@@ -145,7 +198,6 @@ int isr_syscall(uint operation, uint param) {
                 ret = E_UNKNOWN_OPERATION;
                 break;
         }
-
     } else {
         ret = E_UNKNOWN_OPERATION;
     }
