@@ -319,7 +319,7 @@ int game_syscall_cavar(uint pirateId) {
         for (i = 0; i < BOTINES_CANTIDAD; ++i) {
             if (botines[i][0] == p->coord_x && botines[i][1] == p->coord_y) {
                 if (botines[i][2] > 0) {
-                    game_jugador_anotar_punto(p->jugador);
+                    p->jugador->score++;
                     botines[i][2]--;
                     screen_pintar_puntajes();
                 } else {
@@ -373,10 +373,6 @@ void game_pirata_exploto(uint id) {
 	pirate->exists = 0;
 	munmap(game_pirateIdtoDirectoryAddress(id), CODIGO_BASE);
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
-}
-
-void game_jugador_anotar_punto(jugador_t *j) {
-	j->score++;
 }
 
 void game_terminar() {
