@@ -26,11 +26,11 @@ void screen_pintar(uchar c, uchar color, uint fila, uint columna) {
     p[fila][columna].a = color;
 }
 
-void screen_changecolor(uchar color, uint fila, uint columna) {
+void screen_changecolor(uchar color, uint columna, uint fila) {
     p[fila][columna].a = color;
 }
 
-void screen_changechar(uchar ch, uint fila, uint columna) {
+void screen_changechar(uchar ch, uint columna, uint fila) {
     p[fila][columna].c = ch;
 }
 

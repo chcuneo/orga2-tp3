@@ -25,7 +25,8 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 
 #define BOTINES_CANTIDAD 8
 
-
+const char pClock[] = "|/-\\";
+#define pClock_size 4
 
 uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
                                         {30,  3, 50}, {30, 38, 50}, {15, 21, 100}, {45, 21, 100} ,
@@ -171,7 +172,7 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 				if (game_valor_tesoro(x, y)) {
 					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
-					screen_changechar('o', y + 1, x ); 
+					screen_changechar('o', x, y + 1 ); 
 				}
 
 			}
@@ -214,6 +215,7 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 	pirate->coord_y = j->port_coord_y;
 	pirate->exists = 1;
 	pirate->type = tipo;
+	pirate->clock = 0;
 	
 	uint x, y;
 
@@ -276,7 +278,7 @@ void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 		} else {
 			color = C_BG_CYAN;
 		}
-		screen_changecolor(color, yc, xc);
+		screen_changecolor(color, xc, yc);
 	}
 }
 
@@ -377,6 +379,33 @@ void game_pirata_exploto(uint id) {
 
 void game_jugador_anotar_punto(jugador_t *j) {
 	j->score++;
+}
+
+#define PCLOCK_ROW (MAPA_ALTO - 2)
+#define PCLOCK_COL0_JA 4
+#define PCLOCK_COL0_JB 59
+
+void game_tick(uint taskid){
+	uint pirateid = taskid - GDT_IDX_START_TSKS;
+	uint playerindex = pirateid / 8;
+	uint pirateindex = pirateid % 8;
+	if (playerindex == 0){
+		if (jugadorA.piratas[pirateindex].exists == 1){
+			screen_pintar(pClock[(jugadorA.piratas[pirateindex].clock)], C_FG_WHITE, PCLOCK_ROW, PCLOCK_COL0_JA + pirateindex * 2);
+			jugadorA.piratas[pirateindex].clock++;
+			jugadorA.piratas[pirateindex].clock = jugadorA.piratas[pirateindex].clock % pClock_size;
+		} else {
+			screen_pintar('x', C_FG_RED, PCLOCK_ROW, PCLOCK_COL0_JA + pirateindex * 2);
+		}
+	} else {
+		if (jugadorB.piratas[pirateindex].exists == 1){
+			screen_pintar(pClock[jugadorB.piratas[pirateindex].clock], C_FG_WHITE, PCLOCK_ROW, PCLOCK_COL0_JB + pirateindex * 2);
+			jugadorB.piratas[pirateindex].clock++;
+			jugadorB.piratas[pirateindex].clock = jugadorB.piratas[pirateindex].clock % pClock_size;
+		} else {
+			screen_pintar('x', C_FG_BLUE, PCLOCK_ROW, PCLOCK_COL0_JB + pirateindex * 2);
+		}
+	}
 }
 
 void game_terminar() {

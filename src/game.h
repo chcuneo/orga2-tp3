@@ -34,7 +34,7 @@ typedef struct pirata_t
     uint coord_x;                   //Coordenadas Actuales
     uint coord_y;
     uint type;                      //Tipo: explorador o minero
-    char clock;
+    uchar clock;
 } pirata_t;
 
 typedef struct jugador_t
@@ -86,6 +86,7 @@ int game_syscall_pirata_mover(uint id, direccion key);
 int game_syscall_cavar(uint id);
 void game_terminar_si_es_hora();
 void game_terminar();
+void game_tick();
 void game_atender_teclado(unsigned char tecla);
 
 void game_pause_toggle();
