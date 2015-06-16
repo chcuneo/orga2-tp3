@@ -30,7 +30,7 @@ const char pClock[] = "|/-\\";
 
 uint botines[BOTINES_CANTIDAD][3] = { // TRIPLAS DE LA FORMA (X, Y, MONEDAS)
                                         {30,  3, 50}, {30, 38, 50}, {15, 21, 100}, {45, 21, 100} ,
-                                        {49,  3, 50}, {49, 38, 50}, {64, 21, 100}, {34, 21, 100}
+                                        {49,  3, 50}, {70, 40, 50}, {64, 21, 100}, {34, 21, 100}
                                     };
 
 jugador_t jugadorA;
@@ -302,11 +302,12 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 		x += pirate->coord_x;
 		y += pirate->coord_y;
 
-		if (game_posicion_valida(x, y)) {
-			
+		// solo permitir que el explorador se mueva si la posicion ya ha sido explorada
+		if (game_posicion_valida(x, y) & (pirate->type == EXPLORADOR || game_jugador_getBitMapPos(pirate->jugador, x, y))) {
+
 			// restaurar posicion anterior
 			game_updateScreen(0, pirate->jugador, pirate->coord_x, pirate->coord_y);
-			if (game_valor_tesoro(pirate->coord_x, pirate->coord_y) > 0)
+			if (game_valor_tesoro(pirate->coord_x, pirate->coord_y))
 			screen_changechar('o', pirate->coord_x, pirate->coord_y + 1); // le sumo el upper border.
 
 			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
