@@ -303,6 +303,12 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 		y += pirate->coord_y;
 
 		if (game_posicion_valida(x, y)) {
+			
+			// restaurar posicion anterior
+			game_updateScreen(0, pirate->jugador, pirate->coord_x, pirate->coord_y);
+			if (game_valor_tesoro(pirate->coord_x, pirate->coord_y) > 0)
+			screen_changechar('o', pirate->coord_x, pirate->coord_y + 1); // le sumo el upper border.
+
 			uint directoryBase = game_pirateIdtoDirectoryAddress(id);
 			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
 			mmu_move_codepage(directoryBase, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
