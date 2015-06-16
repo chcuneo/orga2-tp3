@@ -85,7 +85,6 @@ extern screen_actualizar_reloj_global
 extern fin_intr_pic1
 extern scheduler_tick
 extern game_tick
-extern scheduler_load_cr3
 global _isr32
 
 _isr32:
