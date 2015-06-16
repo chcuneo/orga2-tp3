@@ -381,7 +381,7 @@ int isMapped(uint directoryBase, uint virtualAddress) {
 	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
 	page_entry *pageTable = (page_entry *)pageTableAddress;
 
-	return pageTable[tableEntry].p != 0;
+	return pageTable[tableEntry].p;
 }
 
 void mmu_inicializar_dir_kernel() {

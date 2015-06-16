@@ -135,7 +135,6 @@ extern idle
 global _isr70
 
 _isr70:
-	xchg bx, bx
 	pushad
 	push eax
 	call fin_intr_pic1
@@ -152,6 +151,4 @@ _isr70:
 	jmp far [sched_tarea_offset]
 	
 	popad
-
-	xchg bx, bx
 iret
