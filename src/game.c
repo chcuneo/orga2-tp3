@@ -160,21 +160,22 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 	for (x = xstart; x <= xend; x++){
 		for (y = ystart; y <= yend; y++){
-			int p;
-
-			for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
-				if (jugador->piratas[p].exists) {
-					game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
+			if (game_jugador_getBitMapPos(jugador, x, y) == 0){
+				int p;
+				for (p = 0; p < MAX_CANT_PIRATAS_VIVOS; p++){
+					if (jugador->piratas[p].exists) {
+						game_pirata_paginarPosMapa(&(jugador->piratas[p]), x, y);
+					}
 				}
+
+				game_jugador_setBitMapPos(jugador, x, y, 1);
+
+				if (game_valor_tesoro(x, y)) {
+					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
+				}
+
+				game_updateScreen(0, jugador, x, y);
 			}
-
-			game_jugador_setBitMapPos(jugador, x, y, 1);
-
-			if (game_valor_tesoro(x, y)) {
-				game_jugador_lanzar_pirata(jugador, MINERO, x, y);
-			}
-
-			game_updateScreen(0, jugador, x, y);
 		}
 	}
 }
@@ -186,7 +187,6 @@ int game_jugador_taskAdress(jugador_t *j, pirata_t *p){
 		if (p->type == EXPLORADOR){ return 0x12000; } else { return 0x13000; }
 	}
 }
-
 
 void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
 	mmap(game_xy2addressVirt(x, y), game_xy2addressPhys(x, y), game_pirateIdtoDirectoryAddress(p->id), 0, 1);
@@ -252,7 +252,7 @@ void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 	int xc = x;
 	int yc = y + TOP_MARGIN;
 	if (p){
-		if (p->exists == 0) color += C_BG_RED;
+		if (p->exists == 0) color += C_FG_RED;
 		if (p->type == MINERO) { screen_pintar('M', color, yc, xc ); } else { screen_pintar('E', color, yc, xc ); }
 	} else {
 		screen_changecolor(color, yc, xc);
@@ -275,7 +275,7 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 			remap(directoryBase, CODIGO_BASE, game_xy2addressPhys(x, y));
 			mmu_move_codepage(directoryBase, game_xy2addressVirt(pirate->coord_x, pirate->coord_y), CODIGO_BASE);
 			game_updateScreen(pirate, pirate->jugador, x, y);
-			game_explorar_posicion(pirate->jugador, x, y);
+			if (pirate->type == EXPLORADOR) game_explorar_posicion(pirate->jugador, x, y);
 			pirate->coord_x = x;
 			pirate->coord_y = y;
 
