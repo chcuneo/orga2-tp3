@@ -11,15 +11,7 @@
 #include "i386.h"
 
 void task(int x_target, int y_target) {
-
-
-    // x_target = 70;
-    // y_target = 42;
-
     /* Tarea */
-    /*lecx(x_target);
-    lebx(y_target);
-    breakpoint();*/
     uint pos = syscall_posicion(-1);
     int x = pos & 0xFF;
     int y = pos >> 8;

@@ -381,11 +381,6 @@ int game_syscall_pirata_posicion(uint pirate_id, int param) {
     } else {
         if (param == -1) {
             code = ((p->coord_y << 8) | p->coord_x);
-
-        	lebx(p->coord_y);
-        	lecx(p->coord_x);
-        	ledx(code);
-        	breakpoint();
         } else {
             if (param < MAX_CANT_PIRATAS_VIVOS) {
                 pirata_t *q = &(p->jugador->piratas[param]);
