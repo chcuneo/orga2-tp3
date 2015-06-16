@@ -30,6 +30,10 @@ void screen_changecolor(uchar color, uint fila, uint columna) {
     p[fila][columna].a = color;
 }
 
+void screen_changechar(uchar ch, uint fila, uint columna) {
+    p[fila][columna].c = ch;
+}
+
 uchar screen_valor_actual(uint fila, uint columna) {
     return p[fila][columna].c;
 }

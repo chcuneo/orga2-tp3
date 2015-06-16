@@ -49,6 +49,7 @@ void screen_clear();
 void screen_printear_ascii(uint fila, uint columna, uint from);
 void print_state();
 void screen_changecolor(uchar color, uint fila, uint columna);
+void screen_changechar(uchar ch, uint fila, uint columna);
 
 void screen_actualizar_reloj_global();
 void screen_actualizar_reloj_pirata (jugador_t *j, pirata_t *pirata);

@@ -171,6 +171,7 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 				if (game_valor_tesoro(x, y)) {
 					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
+					screen_changechar('o', y + 1, x ); 
 				}
 
 			}
