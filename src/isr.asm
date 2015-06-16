@@ -92,23 +92,33 @@ _isr32:
 	pushad
 	call fin_intr_pic1
 
+	; Corremos el scheduler, para ver a donde saltar
 	call scheduler_tick
-	; eax = indice en la gdt de tarea que quiero ir, o -1
+	push eax 		; eax = indice en la gdt de tarea que quiero ir, o -1
 
+	; Si el scheduler no tiene que operar, saltamos al final
 	cmp eax, -1
 	je .end
 
-	str bx
-	and ebx, 0x00FF
-	; bx = offset en la gdt de tarea en la que estoy
-	shl eax, 3
-	; eax = offset en la gdt de la tarea en la que quiero ir
+	str bx			; bx = task register actual
+	and ebx, 0x00FF ; bx = offset en la gdt de tarea en la que estoy
+	shl eax, 3 		; eax = offset en la gdt de la tarea en la que quiero ir
+	; Si la tarea actual y la nueva son la misma, saltamos al final del algoritmo
 	cmp eax, ebx
 	je .end
 
+	; Saltamos a la nueva tarea
 	mov [sched_tarea_selector], ax
 	jmp far [sched_tarea_offset]
 .end:
+	; Si somos una tarea del juego, actualizamos los relojes de tareas
+	mov ebx, [esp]
+	cmp ebx, 2
+	jl .skip
+	call game_tick
+.skip:
+	pop eax
+	; Actualizamos el reloj global
 	call screen_actualizar_reloj_global
 	popad
 iret
