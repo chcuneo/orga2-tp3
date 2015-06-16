@@ -153,13 +153,11 @@ global _isr70
 
 _isr70:
 	pushad
-	push eax
+	push ecx ; param
+	push eax ; oparation
 	call fin_intr_pic1
-	pop eax
 
 	; Llamamos al handler para la syscall
-	push ecx
-	push eax
 	call isr_syscall
 	; Popeamos en otro lado para no perder el dato de retorno, que esta en eax
 	pop esi

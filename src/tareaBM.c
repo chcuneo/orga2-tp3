@@ -8,8 +8,14 @@
 #include "defines.h"
 #include "game.h"
 #include "syscall.h"
+#include "i386.h"
 
 void task(int x_target, int y_target) {
+
+
+    // x_target = 70;
+    // y_target = 42;
+
     /* Tarea */
     /*lecx(x_target);
     lebx(y_target);
@@ -18,15 +24,11 @@ void task(int x_target, int y_target) {
     int x = pos & 0xFF;
     int y = pos >> 8;
     int i;
+    for(i=x; i < x_target; i++)
+        syscall_mover(DER);
 
-    x_target = 70;
-    y_target = 40;
-
-    for(i=x; i != x_target; i++)
-        syscall_mover(IZQ);
-
-    for(i=y; i > y_target; i++)
-        syscall_mover(ARR);
+    for(i=y; i < y_target; i++)
+        syscall_mover(ABA);
 
     while(1) {syscall_cavar();}
 
