@@ -20,6 +20,12 @@ Para facilitar el manejo del armado de estructuras para la paginación, se crear
 
 \item \fun{munmap(uint directoryBase, uint virtualAddress)}: Desmappea la pagina correspondiente a una dirección virtual. Calcula todos los indices necesarios de la misma manera que \fun{mmap}
 
+\item \fun{remap(uint directoryBase, uint virtualAddress, uint physicalAddress)}: Remappea la pagina 
+
+\item \fun{getPhysVirt(uint directoryBase, uint virtualAddress)}:
+
+\item \fun{isMapped(uint directoryBase, uint virtualAddress)}:
+
 \item \fun{mmu\_inicializar\_dir\_kernel()}: Inicializa el directorio del kernel. Para ello, hacemos memory mapping sobre el kernel y le asignamos un area libre, todo desde \addr{0x00000000} a \addr{0x003FFFF}.
 
 \item \fun{mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: Esta función inicializa el directorio de un pirata. Al igual que el Kernel, hacemos memory mapping, aunque en modo user y en read only. A su vez, mappeamos la pagina donde vamos a poner el codigo del pirata, y copiamos el código del pirata que se encuentra en el Kernel en esta pagina.

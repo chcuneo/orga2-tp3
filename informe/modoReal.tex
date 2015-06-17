@@ -1,6 +1,6 @@
 \section{Kernel}
 
-El \texttt{Kernel} es una parte esencial de los sistemas operativos modernos. Se ocupa de inicializar las diferentes estructuras necesarias para utilizar las diferentes funciones del procesador.
+El \texttt{Kernel} es una parte esencial de los sistemas operativos modernos. Se ocupa de inicializar las diferentes estructuras necesarias para utilizar las diferentes funciones del procesador, como la protección por hardware, la paginación y el manejo de interrupciones.
 
 \section{Modo Real}
 
@@ -8,7 +8,7 @@ El \texttt{Kernel} es una parte esencial de los sistemas operativos modernos. Se
 
 Por una cuestión de compatibilidad hacia atrás, al inicializar un procesador Intel, el mismo funciona como un 8086, lo que conocemos como \texttt{Modo Real}. 
 
-En \texttt{Modo Real}, no existe la protección por hardware, por lo que cualquier código en ejecución tiene acceso a todos los segmentos de memoria y puede utilizar cualquier instrucción del 8086. Para poder utilizar otras instrucciones y funcionalidades mas avanzadas y habilitar la protección por hardware, se debe pasar a Modo Protegido.
+En \texttt{Modo Real}, no existe la protección por hardware, por lo que cualquier código en ejecución tiene acceso a todos los segmentos de memoria y puede utilizar cualquier instrucción del 8086. Para poder utilizar otras instrucciones y funcionalidades mas avanzadas, también habilitando la protección por hardware, se debe pasar a Modo Protegido.
 
 \subsection{A20}
 El addressing line \texttt{A20} forma parte del bus de direcciones del procesador. En un \texttt{8086}, este bus tiene 20 lineas, numeradas de la 0 a la 19. Sin embargo, cuando salio al mercado el \texttt{80286}, el primero en soportar el modo protegido,  el bus de direcciones paso a tener 24 bits. El problema que surgió es que muchos programadores en su código del \texttt{8086} utilizaban lo que se conoce como wrap-around. Es decir, cuando accedían a memoria, utilizaban el overflow en el bus de direcciones como parte de la lógica de sus programas. El 80286 no soportaba este overflow, rompiendo la compatibilidad hacia atrás, dado que tenia 4 lineas de address adicionales.
@@ -25,6 +25,8 @@ Antes de poder pasar a modo protegido, debemos cargar la GDT. La GDT se encarga 
 \end{figure}
 
 Luego, cargamos la GDT con el comando \command{lgdt} y el descriptor de la GDT armado desde C (\texttt{GDT\_DESC}).
+
+En este trabajo utilizaremos el modelo de memoria \texttt{flat}. Esto significa que todos los segmentos tendrán como base el address \addr{0x0}. Esto hace que el offset coincida con las direcciones físicas, lo que es sumamente conveniente. % LO DIJE BIEN?
 
 \subsection{Pasaje a Modo Protegido}
 Una vez armada la GDT y habilitado el A20, debemos habilitar Modo Protegido. El modo de protección esta definido por el bit menos significativo del registro \reg{CR0}. Usando un \& con \addr{0x1}, habilitamos este bit.

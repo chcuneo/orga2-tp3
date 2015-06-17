@@ -9,21 +9,29 @@ Al entrar a modo protegido, inicializamos los diferentes selectores de segmento.
   \caption{Segment Selector}
 \end{figure}
 
+El index corresponde a un descriptor de segmento de la \texttt{GDT}. Nosotros no utilizaremos la LDT, por lo que el bit TI estará siempre en 0. Ademas el \texttt{RPL} (Requested Protection Level) estará siempre en nivel 0 (superuser) o en 3 (usuario).
+
 \subsection{Niveles de protección}
 
 Intel soporta 4 niveles de protección diferentes, siendo 0 el mas alto y 4 el mas bajo. Por esa razón los bits de protección tienen 2 bits.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.4\textwidth]{images/protection_rings}
-  \caption{IDT Descriptor}
+    \includegraphics[width=0.3\textwidth]{images/protection_rings}
+  \caption{Protection Rings}
 \end{figure}
 
-TODO: Escribir un poco como funciona la unidad de protección con RPL, DPL Y CPL.
+Si el $max(CPL, RPL) \leq DPL$ (recordemos que un nivel de protección mayor numerico se corresponde a un menor nivel de privilegio) al querer acceder o hacer un salto a un segmento, la \texttt{Unidad de Protección} verifica que no tenemos privilegios suficientes y el procesador nos da un General Protection Fault (\#GP). Esto se puede ver en la siguiente figura:
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.6\textwidth]{images/protection}
+  \caption{Protection Diagram}
+\end{figure}
 
 \subsection{Interrupt Descriptor Table}
 
-Una interrupción es una señal que le indica a la CPU que debe interrumpir la ejecución actual de instrucciones. El rol de la \texttt{IDT} (Interrupt Descriptor Table) es contener los diferentes descriptores de interrupcion y asociar las diferentes interrupciones a sus respectivas rutinas de atención de interrupción. Existen tres fuentes de interrupciones:
+Una interrupción es una señal que le indica a la CPU que debe interrumpir la ejecución actual de instrucciones. El rol de la \texttt{IDT} (Interrupt Descriptor Table) es contener los diferentes descriptores de interrupción y asociar las diferentes interrupciones a sus respectivas rutinas de atención de interrupción. Existen tres fuentes de interrupciones:
 
 \begin{enumerate}
 \item Hardware
@@ -47,7 +55,7 @@ Para construir la IDT, armamos primero en C la estructura \texttt{idt\_entry} co
   \caption{IDT Descriptor}
 \end{figure}
 
- Modificamos la macro de la cátedra para poder cargar la IDT con diferentes atributos. Luego inicializamos las diferentes posiciones que utilizamos con sus respectivos selectores de segmento y atributos, tomando también la referencia a las respectivas rutinas de atención.
+Modificamos la macro de la cátedra para poder cargar la IDT con diferentes atributos. Luego inicializamos las diferentes posiciones que utilizamos con sus respectivos selectores de segmento y atributos, tomando también la referencia a las respectivas rutinas de atención.
 
 Hay que tener mucho cuidado al settear los atributos. Caso contrario, al cambiar de segmento podemos tener un General Protection Fault (\#GP). Algunos atributos son:
 
@@ -57,11 +65,11 @@ Hay que tener mucho cuidado al settear los atributos. Caso contrario, al cambiar
 \item D: Size of gate. 1 = 32 bits; 0 = 16 bits.
 \end{enumerate}
 
-Un procesador Intel reserva por default las primeras 31 posiciones de la \texttt{IDT} para las diferentes excepciones del procesador. Actualmente, el procesador solo utiliza las primeras 21. Inicializamos estas excepciones del procesador a una rutina que imprime la excepción en pantalla.
-
-Mas adelante inicializaremos otros descriptores de la \texttt{IDT} para atender otras interrupciones como la del reloj y la del teclado.
+Un procesador Intel reserva por default las primeras 31 posiciones de la \texttt{IDT} para las diferentes excepciones del procesador. Actualmente, el procesador solo utiliza las primeras 21. Inicializamos estas excepciones del procesador a una rutina que imprime la excepción en pantalla. También inicializamos otros descriptores para atender otras interrupciones como la del reloj y la del teclado.
 
 Una vez cargada la IDT, se debe remapear el PIC (Programmable Interrupt Controler) para referir a las nuevas interrupciones que agreguemos. Esto se hace con las rutinas de la catedra \texttt{resetear\_pic} y luego \texttt{habilitar\_pic}.
+
+\pagebreak
 
 \subsection{Memory Management Unit}
 Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza una \texttt{MMU} (Memory Management Unit). La misma esta compuesta por la Unidad de Segmentación y la Unidad de Paginación.
@@ -72,7 +80,7 @@ Un procesador Intel, para gestionar lo que son los accesos a memoria, utiliza un
   \caption{Segmentation \& Paging}
 \end{figure}
 
-La paginacion nos permite que cada tarea pueda tener su propia \texttt{memoria virtual}, mappeando direcciones físicas a direcciones virtuales.
+La paginación nos permite que cada tarea pueda tener su propia \texttt{memoria virtual}, mappeando direcciones físicas a direcciones virtuales.
 
 \subsubsection{Unidad de Segmentación}
 
