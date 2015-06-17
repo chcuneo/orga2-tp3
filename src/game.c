@@ -343,7 +343,9 @@ uint treasuresLeft = BOTINES_CANTIDAD;
 int game_syscall_cavar(uint pirateId) {
     pirata_t *p = id_pirata2pirata(pirateId);
 
-    if (p == NULL) {
+    if (p->type == EXPLORADOR) {
+    	return E_INVALID_ACTION;
+    } else if (p == NULL) {
         return E_NON_EXISTANT_PIRATE;
     } else {
         uint i;

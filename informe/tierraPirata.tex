@@ -40,15 +40,37 @@ No implementamos la funcion \texttt{mmu\_inicializar} dado que todo el trabajo l
 
 \subsubsection{Reloj}
 
-La interrupcion de reloj comienza llamando la función \fun{scheduler\_tick}, que se ocupa de devolver el indice de la tarea en la \texttt{GDT} al que se debe ir. En caso de que se tenga que intercambiar de tarea, la rutina de atención de esta interrupción hace un \texttt{jump far} a la nueva tarea.
+La interrupción de reloj comienza llamando la función \fun{scheduler\_tick}, que se ocupa de devolver el indice de la tarea en la \texttt{GDT} al que se debe ir. En caso de que se tenga que intercambiar de tarea, la rutina de atención de esta interrupción hace un \texttt{jump far} a la nueva tarea.
 
 \subsubsection{Teclado}
 
 Cuando hay una interrupción de teclado, la tecla que ha sido presionada se codifica con un \texttt{scan code} de 8 bits, que se guarda en el controlador de teclado. Estas se leen a través del puerto \hex{0x60} con la instrucción \texttt{in al, 0x60}. Una vez guardado el código, se llama a la función de C \fun{isr\_keyboard}, a la que se le pasa el código por pila respetando la convención C de 32 bits.
 
+La función \fun{isr\_keyboard} luego le asigna diferentes funciones a las teclas \texttt{right\_shift}, \texttt{left\_shift} e \texttt{y}. Todos los scan codes están definidos en \texttt{keyboardcodes.h}.
+
 \subsubsection{Syscall}
+El sistema provee un servicio a las diferentes tareas mediante la interrupción \hex{0x46}. La misma le permite a las tareas usar de forma indirecta las siguientes funciones.
+\begin{enumerate}
+\item \fun{game\_syscall\_pirata\_mover}: Mueve al pirata de una posición a otra. Si el pirata que llamo a esta función es un minero, requiere que la pagina a la que  se quiere mover ya este paginada. Al moverse el pirata, también se mueve su código, y se debe también remappear la dirección \addr{0x400000} a la nueva dirección física donde el código se ha movido.
+\item \fun{game\_syscall\_cavar}: Actualiza los puntajes y los atributos del tesoro correspondiente cuando un pirata minero cava. En caso de que se acaben las monedas del tesoro, el pirata se desaloja con la función \fun{game\_pirata\_exploto}
+\item \fun{game\_syscall\_pirata\_posicion}: Devuelve la posición del pirata. La misma se codifica como y $<<$ 8 $|$ x en un entero.
+\end{enumerate}
+
+El Syscall se llama indirectamente a través de \texttt{inline asm}, que se ocupa de pasar los parámetros y llamar a la respectiva función. Al ejecutar esta interrupción hay un escalamiento de privilegios a nivel 0, lo que permite manipular la memoria y ejecutar funciones que no se podrían ejecutar desde una tarea (user), como por ejemplo manipular los directorios de pagina.
+
+\pagebreak
 
 \subsection{Scheduler}
+
+El Scheduler es una función en C que es llamada por la interrupción de teclado. La misma de identificar la tarea que se debe ejecutar actualmente para respetar el siguiente diagrama:
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/scheduler}
+  \caption{Diagrama de Tareas}
+\end{figure}
+
+Mantiene un contador para saber por cuantos ciclos de clock se ha ejecutado la tarea actual. A su vez, mantiene un flag para identificar a que jugador pertenece la ultima tarea que ha sido ejecutada. Para identificar que tarea ejecutar, itera sobre los piratas del jugador a partir del actual. Una tarea es ejecutada a lo sumo \texttt{SCHEDULER\_TASK\_TICKS} ciclos de clock. Esto esta definido en \texttt{defines.h}.
 
 \subsection{Estructuras}
 
