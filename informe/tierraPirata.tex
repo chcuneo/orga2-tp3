@@ -20,11 +20,11 @@ Para facilitar el manejo del armado de estructuras para la paginación, se crear
 
 \item \fun{munmap(uint directoryBase, uint virtualAddress)}: Desmappea la pagina correspondiente a una dirección virtual. Calcula todos los indices necesarios de la misma manera que \fun{mmap}
 
-\item \fun{remap(uint directoryBase, uint virtualAddress, uint physicalAddress)}: Remappea la pagina 
+\item \fun{remap(uint directoryBase, uint virtualAddress, uint physicalAddress)}: Remappea la pagina dada por el $virtualAddress$ a la dirección $physicalAddress$.
 
-\item \fun{getPhysVirt(uint directoryBase, uint virtualAddress)}:
+\item \fun{getPhysVirt(uint directoryBase, uint virtualAddress)}: A partir de un $virtualAddress$, devuelve el $physicalAddress$.
 
-\item \fun{isMapped(uint directoryBase, uint virtualAddress)}:
+\item \fun{isMapped(uint directoryBase, uint virtualAddress)}: Devuelve si la dirección virtual esta mappeada en memoria.
 
 \item \fun{mmu\_inicializar\_dir\_kernel()}: Inicializa el directorio del kernel. Para ello, hacemos memory mapping sobre el kernel y le asignamos un area libre, todo desde \addr{0x00000000} a \addr{0x003FFFF}.
 
@@ -36,13 +36,27 @@ No implementamos la funcion \texttt{mmu\_inicializar} dado que todo el trabajo l
 
 \end{enumerate}
 
+\subsection{Interrupciones}
+
+\subsubsection{Reloj}
+
+La interrupcion de reloj comienza llamando la función \fun{scheduler\_tick}, que se ocupa de devolver el indice de la tarea en la \texttt{GDT} al que se debe ir. En caso de que se tenga que intercambiar de tarea, la rutina de atención de esta interrupción hace un \texttt{jump far} a la nueva tarea.
+
+\subsubsection{Teclado}
+
+Cuando hay una interrupción de teclado, la tecla que ha sido presionada se codifica con un \texttt{scan code} de 8 bits, que se guarda en el controlador de teclado. Estas se leen a través del puerto \hex{0x60} con la instrucción \texttt{in al, 0x60}. Una vez guardado el código, se llama a la función de C \fun{isr\_keyboard}, a la que se le pasa el código por pila respetando la convención C de 32 bits.
+
+\subsubsection{Syscall}
+
 \subsection{Scheduler}
 
 \subsection{Estructuras}
 
 \subsection{Funciones Auxiliares}
 
-\subsection{Piratas}
+\subsection{Tareas}
+
+\subsubsection{Idle}
 
 \subsubsection{Explorador}
 

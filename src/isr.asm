@@ -133,6 +133,7 @@ _isr33:
 	call fin_intr_pic1
 
 	; Levantamos la entrada de teclado
+	xor eax, eax
 	in al, 0x60
 
 	; Llamamos al "driver" de teclado
