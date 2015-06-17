@@ -10,8 +10,6 @@ BITS 32
 
 global idle
 
-; ES CRUCIAL QUE ESTA TAREA NO USE LA PILA Y QUE JULI DEJE DE SER PUTO!!
-; COMPARTE EL EBP CON EL KERNEL, PERO EL ESP NO SE ACTUALIZA
 idle:
     .loopear:
         inc dword [numero]

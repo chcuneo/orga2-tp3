@@ -201,8 +201,6 @@ void game_pirata_paginarPosMapa (pirata_t *p, int x, int y){
 
 int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_target) {
 
-	// bug: nunca usa x_target y y_target! cuando es un minero, tiene que saber a donde ir (se pasa por pila level 3)
-
 	uint i;
 
 	for (i = 0; i < MAX_CANT_PIRATAS_VIVOS; ++i) {
@@ -255,7 +253,7 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 		game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
 	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);	
 
-	//ESTO LOGRA PASARLE DOS PARAMETROS A UN EXPLORADOR, pero no a un minero, es que tiene mas variables locales, y reserva esos espacios para eso y que se yo
+	// pasar parametros por pila
 	uint oldCr3 = rcr3();
 	lcr3(KERNEL_DIR_TABLE);
 

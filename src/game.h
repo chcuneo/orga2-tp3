@@ -56,6 +56,7 @@ extern jugador_t jugadorA, jugadorB;
 uint game_xy2lineal();
 pirata_t* id_pirata2pirata(uint id);
 
+
 // ~ auxiliares sugeridas o requeridas (segun disponga enunciado) ~
 void game_pirata_inicializar(pirata_t *pirata, jugador_t *jugador, uint index, uint id);
 void game_pirata_erigir(pirata_t *pirata, jugador_t *j, uint tipo);
@@ -70,7 +71,9 @@ uint game_xy2addressVirt(int x, int y);
 uint game_posicion_valida(int x, int y);
 int game_jugador_taskAdress(jugador_t *j, pirata_t *p);
 void game_updateScreen(pirata_t * p, jugador_t * j, int x, int y);
-uint ame_pirateIdtoDirectoryAddress(uint id);
+uint game_pirateIdtoDirectoryAddress(uint id);
+pirata_t* id_pirata2pirata(uint pirate_id);
+uint game_dir2xy(direccion dir, int *x, int *y);
 
 void game_inicializar();
 void game_jugador_inicializar(jugador_t *j, uint idx, uint x, uint y);
