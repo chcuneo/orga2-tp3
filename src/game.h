@@ -95,4 +95,4 @@ void game_atender_teclado(unsigned char tecla);
 void game_pause_toggle();
 uchar game_is_paused();
 
-#endif  /* !__GAME_H__ */
+#endif

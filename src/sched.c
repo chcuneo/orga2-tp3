@@ -7,13 +7,10 @@ definicion de funciones del scheduler
 
 #include "defines.h"
 #include "sched.h"
-#include "i386.h"
-#include "error.h"
 #include "game.h"
-#include "screen.h"
 
 /**
- * Number of scheduler ticks until a task switch is necessary
+ * Number of scheduler ticks until a task switch is necessary.
  */
 #define SCHEDULER_TASK_TICKS 1
 
@@ -36,11 +33,14 @@ uchar playerSwitcher = 0;
 ushort pirateSwitcherA = 0;
 ushort pirateSwitcherB = 0;
 
-/** Processes a single scheduler tick, returns the next task to be run
- * @ret Task index in the gdt
+/** Processes a single scheduler tick, returns the task that should be switched
+ * to next.
+ *
+ * @return Task index in the gdt
  */
 int scheduler_tick() {
-    /** Currently running task
+    /* Next task to schedule
+     *
      * Possible codes are:
      *  0 - Initial task
      *  1 - Idle task
@@ -51,6 +51,7 @@ int scheduler_tick() {
      */
     uchar current = 0;
 
+    // Update the tick
     tick = (tick + 1) % SCHEDULER_TASK_TICKS;
 
     // If the game is paused is active, we just jump to the idle task
@@ -76,7 +77,7 @@ int scheduler_tick() {
 
     if (tick == 0) {
         uchar found = 0;
-        
+
         while (found < 2) {
             jugador_t *p;
             ushort *i;
@@ -104,35 +105,36 @@ int scheduler_tick() {
             } while (*i != pirateSwitcher);
 
             if (p->piratas[*i].exists) {
-                // We found some existant task to switch to, so we set the current
-                // task to this one.
+                // We found some existant task to switch to, so we set the
+                // current task to this one.
                 current = *i + playerSwitcher * MAX_CANT_PIRATAS_VIVOS + 2;
-                // We flip the player so that in the next run, its the other player's
-                // turn.
+                // We flip the player so that in the next run, its the other
+                // player's turn.
                 playerSwitcher = BIT_FLIP(playerSwitcher, 0);
                 // Select the next task to be scheduled during the next run.
                 *i = (*i + 1) % MAX_CANT_PIRATAS_VIVOS;
                 break;
             } else {
                 if (found == 0) {
-                    // We are at stage 0, so we're checking the first player, and no
-                    // task was found for this player, hence, just switch both
-                    // player and stage.
-                    // We flip the player so that in the next run, its the other player's
-                    // turn.
+                    // We are at stage 0, so we're checking the first player,
+                    // and no task was found for this player, hence, just switch
+                    // both player and stage.
+                    // We flip the player so that in the next run, its the other
+                    // player's turn.
                     playerSwitcher = BIT_FLIP(playerSwitcher, 0);
                     // Select stage one
                     found = 1;
                 } else {
                     // We are at stage 1, so we just ran checks for both players,
-                    // and found that neither of them has any task to run. Hence, we
-                    // run the idle task.
+                    // and found that neither of them has any task to run. Hence,
+                    // we switch to the idle task.
                     current = 1;
                     break;
                 }
             }
         }
 
+        // Convert the task to switch to into an index in our GDT.
         return current + GDT_IDX_TASKB_DESC;
     } else {
         return -1;

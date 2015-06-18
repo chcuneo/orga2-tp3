@@ -1,8 +1,6 @@
 #ifndef __COLORS_H__
 #define __COLORS_H__
 
-/* Definicion de colores */
-/* -------------------------------------------------------------------------- */
 #define C_FG_BLACK              (0x0)
 #define C_FG_BLUE               (0x1)
 #define C_FG_GREEN              (0x2)
@@ -35,4 +33,4 @@
 
 #define C_MAKE_BG(x)            (x << 4)
 
-#endif /* !__COLORS_H__ */
+#endif

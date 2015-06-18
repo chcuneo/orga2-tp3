@@ -52,12 +52,14 @@ start:
     or eax, 0x1
     mov cr0, eax
 
-    ; Saltar a modo protegido
+    ; Saltar a modo protegido, cambiando el selector de código
+    ; NOTE: El selector tiene que corresponderse con GDT_OFF_CODE0_DESC
     jmp 0x40:modoprotegido
 
 modoprotegido:
 BITS 32
-    ; Establecer selectores de segmentos
+    ; Establecer selectores de segmentos de datos
+    ; NOTE: El selector tiene que corresponderse con GDT_OFF_DATA0_DESC
     xor eax, eax
     mov ax, 0x48
     mov ds, ax
@@ -66,6 +68,7 @@ BITS 32
     mov gs, ax
 
     ; Selector del segmento de video
+    ; NOTE: El selector tiene que corresponderse con GDT_OFF_VIDEO_DESC
     mov ax, 0x60
     mov fs, ax
 
@@ -74,7 +77,6 @@ BITS 32
     mov esp, 0x27000
 
     ; Inicializar pantalla
-    ;call screen_refresh_logo
     call screen_inicializar
 
     ; Inicializar el manejador de memoria, cargar directorio de paginas, cargar cr3
@@ -85,8 +87,10 @@ BITS 32
     or eax, 0x80000000
     mov cr0, eax
 
-    ; Inicializar tss
+    ; Inicializar tss, agregando las entradas en la GDT para los TSS
     call tss_inicializar
+
+    ; Recargamos la gdt
     lgdt [GDT_DESC]
 
     ; Inicializar la IDT
@@ -109,31 +113,28 @@ BITS 32
     sti
 
     ; Saltar a la primera tarea: Idle
-    ; NOTE: El selector tiene que corresponderse con GDT_IDX_TASKI_DESC
-    jmp 0x70:0xDEAD
+    ; NOTE: El selector tiene que corresponderse con GDT_OFF_TASKI_DESC
+    jmp 0x70:0x1337
 
     ; Ciclar infinitamente (por si algo sale mal...)
-    mov eax, 0xF3D3
+    mov eax, 0xFEDE
     mov ebx, 0xDE
     mov ecx, 0xF450
-    mov edx, 0xD34D
+    mov edx, 0xDEAD
     jmp $
     jmp $
 
 ;; -------------------------------------------------------------------------- ;;
 
-extern mmu_inicializar_dir_kernel
-extern screen_refresh_logo
 extern GDT_DESC
+extern screen_inicializar
+extern mmu_inicializar_dir_kernel
+extern tss_inicializar
 extern idt_inicializar
 extern IDT_DESC
-extern screen_inicializar
-extern print_state
-extern mmu_inicializar
+extern game_inicializar
 extern resetear_pic
 extern habilitar_pic
-extern tss_inicializar
 extern tss_inicializar_tasking
-extern game_inicializar
 
 %include "a20.asm"

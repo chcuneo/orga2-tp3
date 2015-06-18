@@ -9,24 +9,6 @@
 #include "mmu.h"
 #include "i386.h"
 #include "error.h"
-#include "screen.h"
-/* Atributos paginas */
-// /* -------------------------------------------------------------------------- */
-
-/* Direcciones fisicas de codigos */
-/* -------------------------------------------------------------------------- */
-/* En estas direcciones estan los códigos de todas las tareas. De aqui se
- * copiaran al destino indicado por TASK_<i>_CODE_ADDR.
- */
-
-/* Direcciones fisicas de directorios y tablas de paginas del KERNEL */
-/* -------------------------------------------------------------------------- */
-
-/**
- * All of our functions will operate depending on where the table directory
- * is located. This is intimately related to the task that is currently running.
- * The cr3 register will hold the page directory address.
- */
 
 /**
  * Creates a page table at the specified page directory with some given attributes.
@@ -34,7 +16,7 @@
  * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @param physicalAddress in-memory location of the page table, 4K aligned
- * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_PRESENT, E_OK
+ * @return E_ADDRESS_NOT_ALIGNED, E_OUT_OF_BOUNDS, E_PAGE_TABLE_PRESENT, E_OK
  */
 int create_page_table(
 	uint directoryBase,
@@ -71,7 +53,7 @@ int create_page_table(
 			(uint) physicalAddress >> 12
 		};
 
-	// Limpiamos la cache del procesador
+	// Clean the processor's cache
 	tlbflush();
 
 	return E_OK;
@@ -82,7 +64,7 @@ int create_page_table(
  *
  * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
- * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_OK
+ * @return E_ADDRESS_NOT_ALIGNED, E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_OK
  */
 int delete_page_table(
 	uint directoryBase,
@@ -113,7 +95,7 @@ int delete_page_table(
 		pageTable[i].p = 0;
 	}
 
-	// Limpiamos la cache del procesador
+	// Clean the processor's cache
 	tlbflush();
 
 	return E_OK;
@@ -128,8 +110,9 @@ int delete_page_table(
  * @param tableEntry page index within the page table
  * @param physicalAddress in-memory location of the page table, 4K aligned
  * @param readWrite whether the page should have write permission
- * @param userSupervisor whether the page protection level should be supervisor
- * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_PAGE_PRESENT, E_OK
+ * @param supervisorUser whether the page protection level should be supervisor
+ * @return E_ADDRESS_NOT_ALIGNED, E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING,
+ * 	       E_PAGE_PRESENT, E_OK
  */
 int create_page(
 	uint directoryBase,
@@ -180,7 +163,7 @@ int create_page(
 			(uint) physicalAddress >> 12
 		};
 
-	// Limpiamos la cache del procesador
+	// Clean the processor's cache
 	tlbflush();
 
 	return E_OK;
@@ -188,12 +171,13 @@ int create_page(
 
 
 /**
- * Deletes the specified page.
+ * Deletes the specified page
  *
  * @param directoryBase page directory address, 4K aligned
  * @param directoryEntry table index within the page directory
  * @param tableEntry page index within the page table
- * @ret E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING, E_PAGE_MISSING, E_OK
+ * @return E_ADDRESS_NOT_ALIGNED, E_OUT_OF_BOUNDS, E_PAGE_TABLE_MISSING,
+ *         E_PAGE_MISSING, E_OK
  */
 int delete_page(
 	uint directoryBase,
@@ -223,7 +207,7 @@ int delete_page(
 
 	pageTable[tableEntry].p = 0;
 
-	// Limpiamos la cache del procesador
+	// Clean the processor's cache
 	tlbflush();
 
 	return E_OK;
@@ -241,6 +225,16 @@ int delete_page(
  */
 uint pageTableLastAddress = DIRECTORY_TABLE_PHYS - PAGE_TABLE_SIZE;
 
+/**
+ * Maps a virtual address to a physical address within some table directory.
+ *
+ * @param virtualAddress address to assign the physical address to
+ * @param physicalAddress in-memory location of the page table, 4K aligned
+ * @param directoryBase page directory address, 4K aligned
+ * @param readWrite whether the page should have write permission
+ * @param supervisorUser whether the page protection level should be supervisor
+ * @return E_ADDRESS_NOT_ALIGNED, E_INVALID_ADDRESS, E_OK
+ */
 int mmap(
 	uint virtualAddress,
 	uint physicalAddress,
@@ -291,7 +285,7 @@ int mmap(
  *
  * @param directoryBase page directory address, 4K aligned
  * @param virtualAddress address to remove from pagination
- * @ret E_INVALID_ADDRESS, E_OK
+ * @return E_INVALID_ADDRESS, E_OK
  */
 int munmap(
 	uint directoryBase,
@@ -313,6 +307,15 @@ int munmap(
 	}
 }
 
+/**
+ * Changes the map from virtual address to a specified physical address within
+ * some table directory.
+ *
+ * @param directoryBase page directory address, 4K aligned
+ * @param virtualAddress address to assign the physical address to
+ * @param physicalAddress in-memory location of the page table, 4K aligned
+ * @return E_ADDRESS_NOT_ALIGNED, E_PAGE_TABLE_MISSING, E_PAGE_MISSING, E_OK
+ */
 int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
@@ -340,30 +343,13 @@ int remap(uint directoryBase, uint virtualAddress, uint physicalAddress) {
 	return E_OK;
 }
 
-uint getPhysVirt(uint directoryBase, uint virtualAddress) {
-	if (directoryBase != ALIGN(directoryBase)) {
-		return E_ADDRESS_NOT_ALIGNED;
-	}
-
-	uint directoryEntry = virtualAddress >> 22;
-	uint tableEntry = (virtualAddress >> 12) & 0x3FF;
-
-	page_entry *pageDirectory = (page_entry *)directoryBase;
-
-	if (pageDirectory[directoryEntry].p == 0) {
-		return E_PAGE_TABLE_MISSING;
-	}
-
-	uint pageTableAddress = pageDirectory[directoryEntry].offset << 12;
-	page_entry *pageTable = (page_entry *)pageTableAddress;
-
-	if (pageTable[tableEntry].p == 0) {
-		return E_PAGE_MISSING;
-	}
-
-	return (pageTable[tableEntry].offset << 12) | (virtualAddress & 0x00000FFF);
-}
-
+/**
+ * Checks if the virtual address is mapped within the specified table directory.
+ *
+ * @param directoryBase page directory address, 4K aligned
+ * @param virtualAddress address to assign the physical address to
+ * @return E_ADDRESS_NOT_ALIGNED, true, false
+ */
 int isMapped(uint directoryBase, uint virtualAddress) {
 	if (directoryBase != ALIGN(directoryBase)) {
 		return E_ADDRESS_NOT_ALIGNED;
@@ -390,7 +376,6 @@ void mmu_inicializar_dir_kernel() {
 	uint offset = 0;
 	long long x;
 
-	// x/1024wx 0x28000
 	for (x = 0; x < 1024; ++x) {
 		create_page(KERNEL_DIR_TABLE, 0, x, offset, 1, 0);
 		offset += PAGE_SIZE;
@@ -398,7 +383,7 @@ void mmu_inicializar_dir_kernel() {
 
 	for (x = 0; x < MAPA_ANCHO; ++x) {
 		uint y;
-		
+
 		for (y = 0; y < MAPA_ALTO; ++y) {
 			uint offset = game_xy2addressPhys(x, y);
 			mmap(offset, offset, KERNEL_DIR_TABLE, 1, 0);
@@ -412,6 +397,7 @@ void mmu_inicializar_dir_kernel() {
  * @param directoryBase page directory address, 4K aligned
  * @param pirateCodeBaseSrc virtual address of the pirate code
  * @param pirateCodeBaseDst physical address to map the address CODIGO_BASE to
+ * @return E_ADDRESS_NOT_ALIGNED, E_OK
  */
 int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst) {
 	if (directoryBase != ALIGN(directoryBase)) {
@@ -424,18 +410,13 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 
 	for (x = 0; x < 1024; ++x) {
 		// La memoria del kernel la ponemos como user y en read
-		uint code = mmap(offset, offset, directoryBase, 0, 1);
-
-		if (code != E_OK) {
-			break;
-		}
-
+		mmap(offset, offset, directoryBase, 0, 1);
 		offset += PAGE_SIZE;
 	}
 
 	// Mapeamos el codigo del pirata
 	uint code = mmap(CODIGO_BASE, pirateCodeBaseDst, directoryBase, 1, 1);
-	
+
 	if (code != E_OK) {
 		remap(directoryBase, CODIGO_BASE, pirateCodeBaseDst);
 	}
@@ -447,9 +428,12 @@ int mmu_inicializar_dir_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint 
 }
 
 /**
+ * Copies 1 page of memory from the source to the destionation
+ *
  * @param directoryBase page directory address, 4K aligned
  * @param codeBaseSrc source virtual address
  * @param codeBaseDstVirt destination virtual address
+ * @return E_ADDRESS_NOT_ALIGNED, E_INVALID_ADDRESS, E_OK
  */
 int mmu_move_codepage(uint directoryBase, uint codeBaseSrc, uint codeBaseDst) {
 	if (directoryBase != ALIGN(directoryBase)) {
@@ -467,7 +451,7 @@ int mmu_move_codepage(uint directoryBase, uint codeBaseSrc, uint codeBaseDst) {
 	int *src = (int *)codeBaseSrc;
 	int *dst = (int *)codeBaseDst;
 
-	for (y = 0; y < 1024; ++y) {
+	for (y = 0; y < (PAGE_SIZE/4); ++y) {
 		*dst = *src;
 		++src;
 		++dst;

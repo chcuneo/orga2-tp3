@@ -7,12 +7,8 @@
 
 #include "gdt.h"
 
-/* Definicion de la GDT */
-/* -------------------------------------------------------------------------- */
-
 gdt_entry gdt[GDT_COUNT] = {
-    /* Descriptor nulo*/
-    /* Offset = 0x00 */
+    // NULL segment
     [GDT_IDX_NULL_DESC] = (gdt_entry) {
         (ushort)    0x0000,         /* limit[0:15]  */
         (ushort)    0x0000,         /* base[0:15]   */
@@ -97,8 +93,7 @@ gdt_entry gdt[GDT_COUNT] = {
         (uchar)     0x00,           /* base[31:24]  */
     },
 
-    // DECISION DE DISEÑO: 
-    // Data segment para protección 0
+    // Video segment para protección 0
     [GDT_IDX_VIDEO_DESC] = (gdt_entry) {
         (ushort)    0xFFFF,         /* limit[0:15]  */
         (ushort)    0x0000,         /* base[0:15]   */

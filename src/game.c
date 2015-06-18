@@ -40,14 +40,54 @@ jugador_t jugadorB;
 uint timerEnd = 0;
 uint lastScores = 0;
 
-inline uint game_xy2lineal (uint x, uint y) {
+/**
+ * @param x posicion horizontal en el mapa
+ * @param y posicion vertical en el mapa
+ * @return offset de la posición en el mapa
+ */
+inline uint game_xy2lineal(uint x, uint y) {
 	return (y * MAPA_ANCHO + x);
 }
 
+/**
+ * @param x posicion horizontal en el mapa
+ * @param y posicion vertical en el mapa
+ * @return true sii la posición es valida
+ */
 inline uint game_posicion_valida(int x, int y) {
 	return (x >= 0 && y >= 0 && x < MAPA_ANCHO && y < MAPA_ALTO);
 }
 
+/**
+ * @param x posicion horizontal en el mapa
+ * @param y posicion vertical en el mapa
+ * @return address virtual de la posición en el mapa
+ */
+inline uint game_xy2addressVirt(int x, int y) {
+    return MAPA_BASE_VIRTUAL + (game_xy2lineal(x, y) * PAGE_SIZE);
+}
+
+/**
+ * @param x posicion horizontal en el mapa
+ * @param y posicion vertical en el mapa
+ * @return address físico de la posición en el mapa
+ */
+inline uint game_xy2addressPhys(int x, int y) {
+    return MAPA_BASE_FISICA + (game_xy2lineal(x, y) * PAGE_SIZE);
+}
+
+/**
+ * @param id número de pirata
+ * @return address del directory table correspondiente
+ */
+inline uint game_pirateIdtoDirectoryAddress(uint id) {
+    return DIRECTORY_TABLE_PHYS + id * PAGE_SIZE;
+}
+
+/**
+ * @param id número de pirata
+ * @return puntero a la estructura del pirata
+ */
 pirata_t* id_pirata2pirata(uint pirate_id) {
     uint player = pirate_id / MAX_CANT_PIRATAS_VIVOS;
     uint pirate = pirate_id - player*MAX_CANT_PIRATAS_VIVOS;
@@ -73,6 +113,11 @@ pirata_t* id_pirata2pirata(uint pirate_id) {
     return NULL;
 }
 
+/**
+ * @param dir dirección de movimiento
+ * @param x puntero a dónde poner el delta de desplazamiento en el eje horizontal
+ * @param x puntero a dónde poner el delta de desplazamiento en el eje vertical
+ */
 uint game_dir2xy(direccion dir, int *x, int *y) {
 	switch (dir) {
 		case IZQ: *x = -1; *y =  0; break;
@@ -85,18 +130,11 @@ uint game_dir2xy(direccion dir, int *x, int *y) {
 	return 0;
 }
 
-inline uint game_xy2addressVirt(int x, int y){
-	return MAPA_BASE_VIRTUAL + (game_xy2lineal(x, y) * PAGE_SIZE);
-}
-
-inline uint game_xy2addressPhys(int x, int y){
-	return MAPA_BASE_FISICA + (game_xy2lineal(x, y) * PAGE_SIZE);
-}
-
-inline uint game_pirateIdtoDirectoryAddress(uint id){
-	return DIRECTORY_TABLE_PHYS + id * PAGE_SIZE;
-}
-
+/**
+ * @param x posicion horizontal en el mapa
+ * @param y posicion vertical en el mapa
+ * @return cantidad de monedas en la posición determinada
+ */
 uint game_valor_tesoro(uint x, uint y) {
 	int i;
 
@@ -113,6 +151,7 @@ void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
+
 	if (val == 1){
 		j->map[charInBMArray] = BIT_SET(j->map[charInBMArray], offsetInChar);
 	} else {
@@ -120,16 +159,17 @@ void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	}
 }
 
-char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y){
+char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y) {
 	uint pos = game_xy2lineal(x,y);
 	uint charInBMArray = pos / 8;
 	uint offsetInChar = pos % 8;
 	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
 }
 
-void game_inicializar(){
+void game_inicializar() {
 	game_jugador_inicializar(&jugadorA, 0, POS_INIT_A_X, POS_INIT_A_Y);
 	game_jugador_inicializar(&jugadorB, 1, POS_INIT_B_X, POS_INIT_B_Y);
+
 	int x;
 	for (x = 0; x < MAX_CANT_PIRATAS_VIVOS * 2; x++) game_tick(GDT_IDX_START_TSKS + x);
 }
@@ -160,7 +200,7 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 	int x, y;
 	int xstart = MAX(c-1, 0);
 	int ystart = MAX(f-1, 0);
-	
+
 	int xend = MIN(c+1, MAPA_ANCHO - 1);
 	int yend = MIN(f+1, MAPA_ALTO - 1);
 
@@ -178,7 +218,7 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 
 				if (game_valor_tesoro(x, y)) {
 					game_jugador_lanzar_pirata(jugador, MINERO, x, y);
-					screen_changechar('o', x, y + 1 ); 
+					screen_changechar('o', x, y + 1 );
 				}
 
 			}
@@ -188,10 +228,18 @@ void game_explorar_posicion(jugador_t *jugador, int c, int f){
 }
 
 int game_jugador_taskAdress(jugador_t *j, pirata_t *p){
-	if (j->index == 0){
-		if (p->type == EXPLORADOR){ return 0x10000; } else { return 0x11000; }
+	if (j->index == 0) {
+		if (p->type == EXPLORADOR) {
+            return 0x10000;
+        } else {
+            return 0x11000;
+        }
 	} else {
-		if (p->type == EXPLORADOR){ return 0x12000; } else { return 0x13000; }
+		if (p->type == EXPLORADOR) {
+            return 0x12000;
+        } else {
+            return 0x13000;
+        }
 	}
 }
 
@@ -223,7 +271,7 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 	pirate->exists = 1;
 	pirate->type = tipo;
 	pirate->clock = 0;
-	
+
 	uint x, y;
 
 	for (x = 0; x < MAPA_ANCHO; ++x) {
@@ -251,9 +299,8 @@ int game_jugador_lanzar_pirata(jugador_t *j, uint tipo, uint x_target, uint y_ta
 		game_pirateIdtoDirectoryAddress(pirate->id),
 		game_jugador_taskAdress(j, pirate),
 		game_xy2addressPhys(j->port_coord_x, j->port_coord_y));
-	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);	
+	game_updateScreen(pirate, pirate->jugador, pirate->coord_x, pirate->coord_y);
 
-	// pasar parametros por pila
 	uint oldCr3 = rcr3();
 	lcr3(KERNEL_DIR_TABLE);
 
@@ -273,8 +320,9 @@ void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 	int xc = x;
 	int yc = y + TOP_MARGIN;
 	uchar color;
-	if (p){
-		if (p->exists == 0) { 
+
+	if (p) {
+		if (p->exists == 0) {
 			if (j->index == 0){
 				color = C_BG_BLACK | C_FG_LIGHT_RED;
 			} else {
@@ -287,13 +335,14 @@ void game_updateScreen(pirata_t *p, jugador_t *j, int x, int y){
 				color = C_BG_BLUE | C_FG_WHITE;
 			}
 		}
-		if (p->type == MINERO) { 
-			screen_pintar('M', color, yc, xc ); 
-		} else { 
-			screen_pintar('E', color, yc, xc ); 
+
+		if (p->type == MINERO) {
+			screen_pintar('M', color, yc, xc );
+		} else {
+			screen_pintar('E', color, yc, xc );
 		}
 	} else {
-		if (j->index == 0){
+		if (j->index == 0) {
 			color = C_BG_GREEN;
 		} else {
 			color = C_BG_CYAN;
@@ -336,9 +385,8 @@ int game_syscall_pirata_mover(uint id, direccion dir){
 	}
 }
 
-uint treasuresLeft = BOTINES_CANTIDAD;
-
 int game_syscall_cavar(uint pirateId) {
+    static uint treasuresLeft = BOTINES_CANTIDAD;
     pirata_t *p = id_pirata2pirata(pirateId);
 
     if (p->type == EXPLORADOR) {
@@ -365,7 +413,6 @@ int game_syscall_cavar(uint pirateId) {
     }
 
     if (treasuresLeft == 0) {
-        // TODO: asegurarse que esto ande
         game_terminar();
     }
 
@@ -419,13 +466,14 @@ void game_tick(uint taskid){
 	uint playerindex = pirateid / 8;
 	uint pirateindex = pirateid % 8;
 	int scoresNow = jugadorA.score + jugadorB.score;
-	
+
 	if (scoresNow != lastScores){
 		lastScores = scoresNow;
 		timerEnd = 0;
 	} else {
 		timerEnd++;
 	}
+
 	if (timerEnd > TIMER_LIMIT) game_terminar();
 
 	if (playerindex == 0){
@@ -450,11 +498,13 @@ void game_tick(uint taskid){
 void game_terminar() {
 	deshabilitar_pic();
 	jugador_t *j;
-	if (jugadorA.score < jugadorB.score){ 
+
+	if (jugadorA.score < jugadorB.score){
 		j = &jugadorB;
 	} else {
 		j = &jugadorA;
 	}
+
 	screen_stop_game_show_winner(j);
 }
 

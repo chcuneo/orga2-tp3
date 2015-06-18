@@ -16,7 +16,7 @@ void task(int x_target, int y_target) {
 
     int x = pos & 0xFF;
     int y = pos >> 8;
-    
+
     int i;
     for(i = x; i < x_target; i++)
         syscall_mover(DER);
@@ -26,5 +26,5 @@ void task(int x_target, int y_target) {
 
     while(1) {syscall_cavar();}
 
-  while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
+    while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
 }

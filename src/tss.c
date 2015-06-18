@@ -99,7 +99,6 @@ tss tss_inicial = (tss) {
 tss tss_jugadorA[MAX_CANT_PIRATAS_VIVOS];
 tss tss_jugadorB[MAX_CANT_PIRATAS_VIVOS];
 
-// TODO: ver el tema de inicializar p en 0 o 1
 int tss_gdt_inicializar(uint tssBaseAddress) {
 	static uint lastUninitializedGDTEntry = GDT_IDX_TASKI_DESC + 1;
 
@@ -187,9 +186,6 @@ int tss_inicializar() {
 
 	return code;
 }
-
-
-#define TSS_STACKS_PHYS 0x100000
 
 int tss_reset_StateSegment(uint index){
 	int pirateId = index % 8;
