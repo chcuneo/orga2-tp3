@@ -14,8 +14,7 @@ void task(int x, int y) {
     int restantex = MAPA_ANCHO-3;
     int restantey = MAPA_ALTO-3;
 
-    while(1)
-    {
+    while(1) {
         int i;
         for (i = 0; i < restantex; i++)
             syscall_mover(DER);

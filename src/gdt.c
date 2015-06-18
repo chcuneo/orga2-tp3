@@ -10,104 +10,104 @@
 gdt_entry gdt[GDT_COUNT] = {
     // NULL segment
     [GDT_IDX_NULL_DESC] = (gdt_entry) {
-        (ushort)    0x0000,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x00,           /* type         */
-        (uchar)     0x00,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x00,           /* p            */
-        (uchar)     0x00,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x00,           /* db           */
-        (uchar)     0x00,           /* g            */
-        (uchar)     0x00,           /* base[31:24]  */
+        (ushort)    0x0000, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x00  , /* base[23:16]  */
+        (uchar)     0x00  , /* type         */
+        (uchar)     0x00  , /* s            */
+        (uchar)     0x00  , /* dpl          */
+        (uchar)     0x00  , /* p            */
+        (uchar)     0x00  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x00  , /* db           */
+        (uchar)     0x00  , /* g            */
+        (uchar)     0x00  , /* base[31:24]  */
     },
 
     // Code segment para protección 0
     [GDT_IDX_CODE0_DESC] = (gdt_entry) {
-        (ushort)    0xF3FF,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x0A,           /* type         */
-        (uchar)     0x01,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x01,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x01,           /* db           */
-        (uchar)     0x01,           /* g            */
-        (uchar)     0x00,           /* base[31:24]  */
+        (ushort)    0xF3FF, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x00  , /* base[23:16]  */
+        (uchar)     0x0A  , /* type         */
+        (uchar)     0x01  , /* s            */
+        (uchar)     0x00  , /* dpl          */
+        (uchar)     0x01  , /* p            */
+        (uchar)     0x01  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x01  , /* db           */
+        (uchar)     0x01  , /* g            */
+        (uchar)     0x00  , /* base[31:24]  */
     },
 
     // Data segment para protección 0
     [GDT_IDX_DATA0_DESC] = (gdt_entry) {
-        (ushort)    0xF3FF,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x02,           /* type         */
-        (uchar)     0x01,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x01,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x01,           /* db           */
-        (uchar)     0x01,           /* g            */
-        (uchar)     0x00,           /* base[31:24]  */
+        (ushort)    0xF3FF, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x00  , /* base[23:16]  */
+        (uchar)     0x02  , /* type         */
+        (uchar)     0x01  , /* s            */
+        (uchar)     0x00  , /* dpl          */
+        (uchar)     0x01  , /* p            */
+        (uchar)     0x01  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x01  , /* db           */
+        (uchar)     0x01  , /* g            */
+        (uchar)     0x00  , /* base[31:24]  */
     },
 
     // Code segment para protección 3
     [GDT_IDX_CODE3_DESC] = (gdt_entry) {
-        (ushort)    0xF3FF,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x0A,           /* type         */
-        (uchar)     0x01,           /* s            */
-        (uchar)     0x03,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x01,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x01,           /* db           */
-        (uchar)     0x01,           /* g            */
-        (uchar)     0x00,           /* base[31:24]  */
+        (ushort)    0xF3FF, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x00  , /* base[23:16]  */
+        (uchar)     0x0A  , /* type         */
+        (uchar)     0x01  , /* s            */
+        (uchar)     0x03  , /* dpl          */
+        (uchar)     0x01  , /* p            */
+        (uchar)     0x01  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x01  , /* db           */
+        (uchar)     0x01  , /* g            */
+        (uchar)     0x00  , /* base[31:24]  */
     },
 
     // Data segment para protección 3
     [GDT_IDX_DATA3_DESC] = (gdt_entry) {
-        (ushort)    0xF3FF,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x00,           /* base[23:16]  */
-        (uchar)     0x02,           /* type         */
-        (uchar)     0x01,           /* s            */
-        (uchar)     0x03,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x01,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x01,           /* db           */
-        (uchar)     0x01,           /* g            */
-        (uchar)     0x00,           /* base[31:24]  */
+        (ushort)    0xF3FF, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x00  , /* base[23:16]  */
+        (uchar)     0x02  , /* type         */
+        (uchar)     0x01  , /* s            */
+        (uchar)     0x03  , /* dpl          */
+        (uchar)     0x01  , /* p            */
+        (uchar)     0x01  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x01  , /* db           */
+        (uchar)     0x01  , /* g            */
+        (uchar)     0x00  , /* base[31:24]  */
     },
 
     // Video segment para protección 0
     [GDT_IDX_VIDEO_DESC] = (gdt_entry) {
-        (ushort)    0xFFFF,         /* limit[0:15]  */
-        (ushort)    0x0000,         /* base[0:15]   */
-        (uchar)     0x0A,           /* base[23:16]  */
-        (uchar)     0x02,           /* type         */
-        (uchar)     0x01,           /* s            */
-        (uchar)     0x00,           /* dpl          */
-        (uchar)     0x01,           /* p            */
-        (uchar)     0x02,           /* limit[16:19] */
-        (uchar)     0x00,           /* avl          */
-        (uchar)     0x00,           /* l            */
-        (uchar)     0x01,           /* db           */
-        (uchar)     0x01,           /* g            */
-        (uchar)     0x0A,           /* base[31:24]  */
+        (ushort)    0xFFFF, /* limit[0:15]  */
+        (ushort)    0x0000, /* base[0:15]   */
+        (uchar)     0x0A  , /* base[23:16]  */
+        (uchar)     0x02  , /* type         */
+        (uchar)     0x01  , /* s            */
+        (uchar)     0x00  , /* dpl          */
+        (uchar)     0x01  , /* p            */
+        (uchar)     0x02  , /* limit[16:19] */
+        (uchar)     0x00  , /* avl          */
+        (uchar)     0x00  , /* l            */
+        (uchar)     0x01  , /* db           */
+        (uchar)     0x01  , /* g            */
+        (uchar)     0x0A  , /* base[31:24]  */
     }
 
     // Desde el indice GDT_IDX_VIDEO_DESC + 1 en adelante esta todo reservado para tasks

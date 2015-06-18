@@ -15,8 +15,7 @@ void task(int x, int y) {
     int alto  = 2;
 
 
-    while(1)
-    {
+    while(1) {
         int i;
         syscall_mover(IZQ);
         ancho = ancho + 1;
@@ -37,5 +36,5 @@ void task(int x, int y) {
             syscall_mover(ABA);
     }
 
-  while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
+    while(1) { __asm __volatile("mov $2, %%eax":::"eax"); }
 }
