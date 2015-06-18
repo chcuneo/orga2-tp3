@@ -1,24 +1,8 @@
 \section{Tierra Pirata}
 
-\subsection{Manejo de memoria}
+\subsection{Mapa y manejo de memoria}
 
-Para facilitar el manejo y armado de estructuras de paginación, creamos varias funciones en C. Como sabemos, cada directorio de paginas tiene 1024 entradas de descriptores de 4 bytes. Lo mismo sucede con los directorios de paginas, que también tienen 1024 entradas con descriptores de 4 bytes. El procesador, al buscar estas estructuras en memoria RAM, requiere que las mismas estén alineadas a 4 kB, dado que es el tamaño de pagina que carga en memoria cache. A continuación, una breve explicación de qué hacen las funciones exportadas al usuario (cabe destacar, hay numerosos comentarios en el código explicando las particularidades):
-
-\begin{itemize}
-\item \fun{int mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, uchar supervisorUser)}: mapea la página donde se encuentra el address virtual a la página donde se encuentra el address físico, indicando permisos de escritura o de usuario según se indique por parámetro.
-
-\item \fun{int munmap(uint directoryBase, uint virtualAddress)}: desmapea la página donde se encuentra el address virtual.
-
-\item \fun{int remap(uint directoryBase, uint virtualAddress, uint physicalAddress)}: Remapea la página donde se encuentra el address virtual a la página donde se encuentra el address físico.
-
-\item \fun{int isMapped(uint directoryBase, uint virtualAddress)}: Devuelve true si, y solo si, la página donde se encuentra el address virtual está presente, es decir, si el address virtual es accesible.
-
-\item \fun{int mmu\_move\_codepage(uint directoryBase, uint codeBaseSrc, uint codeBaseDst)}: Copia 1 página de memoria (4 KB) desde el primer address virtual hacia le segundo address virtual. Es importante tener en cuenta los page boundaries, porque el código va a generar un page fault si no hay suficiente espacio.
-\end{itemize}
-
-No es necesario inicializar ninguna estructura particular fuera de estar a nivel kernel para utilizar estas funciones. Es importante marcar que por el esquema de memoria que armamos, estas funciones pueden actuar sobre cualquier directorio de tablas de página, aun sin ser el propio. Es decir, no es necesario cambiar el \reg{cr3} para manipular la paginación de una tarea, sino que basta con tener acceso de escritura al directorio y tablas de páginas correspondientes.
-
-Además, escribimos funciones de inicialización tanto para la memoria del kernel como para la memoria de los piratas, las siguientes funciones deben ser llamadas en el proceso de inicialización de ambos:
+Escribimos funciones de inicialización tanto para la memoria del kernel como para la memoria de los piratas, las siguientes funciones deben ser llamadas en el proceso de inicialización de ambos:
 
 \begin{itemize}
 \item \fun{void mmu\_inicializar\_dir\_kernel()}: se ocupa de hacer el identity mapping de 4MB del kernel. Además, le mapea todo el mapa en modo escritura, lo que nos permitirá a futuro manejar todo el movimiento de los piratas.
@@ -26,7 +10,8 @@ Además, escribimos funciones de inicialización tanto para la memoria del kerne
 \item \fun{int mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: se ocupa de mapear el código del pirata a la dirección correspondiente, así como de copiar el código del pirata.
 \end{itemize}
 
-\subsection{Interrupciones}
+
+\subsection{Manejo de interrupciones}
 
 \subsubsection{Reloj}
 
@@ -74,30 +59,6 @@ El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cu
 \subsection{Estructuras}
 
 Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al mover un jugador podemos fácilmente identificar que paginas deben ser mappeadas.
-
-%\pagebreak
-
-
-%\subsection{Funciones Auxiliares}
-%Para facilitar la programación del juego, utilizamos las siguientes funciones auxiliares:
-
-%\begin{enumerate}
-%\item \fun{void game\_pirata\_erigir(pirata\_t *pirata, jugador\_t *j, uint tipo)}: 
-%\item \fun{void game\_pirata\_habilitar\_posicion(jugador\_t *j, pirata\_t *pirata, int x, int y)}: 
-%\item \fun{void game\_pirata\_exploto(uint id)}: 
-%\item \fun{void game\_jugador\_setBitMapPos(jugador\_t *j, uint x, uint y, uchar val)}: 
-%\item \fun{char game\_jugador\_getBitMapPos(jugador\_t *j, uint x, uint y)}: 
-%\item \fun{void game\_pirata\_paginarPosMapa (pirata\_t *p, int x, int y)}: 
-%\item \fun{void game\_jugador\_paginarPosMapa\_piratasExistentes (jugador\_t *j, int x, int y)}: 
-%\item \fun{uint game\_xy2addressPhys(int x, int y)}: 
-%\item \fun{uint game\_xy2addressVirt(int x, int y)}: 
-%\item \fun{uint game\_posicion\_valida(int x, int y)}: 
-%\item \fun{int game\_jugador\_taskAdress(jugador\_t *j, pirata\_t *p)}: 
-%\item \fun{void game\_updateScreen(pirata\_t * p, jugador\_t * j, int x, int y)}: 
-%\item \fun{uint game\_pirateIdtoDirectoryAddress(uint id)}: 
-%\item \fun{pirata\_t* id\_pirata2pirata(uint pirate\_id)}: 
-%\item \fun{uint game\_dir2xy(direccion dir, int *x, int *y)}: 
-%\end{enumerate}
 
 \subsection{Tareas}
 
