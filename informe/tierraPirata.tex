@@ -52,6 +52,11 @@ La función \fun{isr\_keyboard} luego le asigna diferentes funciones a las tecla
 El sistema provee un servicio a las diferentes tareas mediante la interrupción \hex{0x46}. La misma le permite a las tareas usar de forma indirecta las siguientes funciones.
 \begin{enumerate}
 \item \fun{game\_syscall\_pirata\_mover}: Mueve al pirata de una posición a otra. Si el pirata que llamo a esta función es un minero, requiere que la pagina a la que  se quiere mover ya este paginada. Al moverse el pirata, también se mueve su código, y se debe también remappear la dirección \addr{0x400000} a la nueva dirección física donde el código se ha movido.
+
+Si un pirata explorador al moverse encuentra un tesoro, se lanza un pirata minero automáticamente. Al mismo se le debe pasar la posición del tesoro por parámetro. Utilizando la convención C y el stack correspondiente a la nueva tarea, escribimos los parámetros en el stack de la dirección física de su respectivo codigo.
+
+Cuando programamos esto tuvimos el siguiente problema. La interrupcion al mover causaba un escalamiento de privilegios, pero seguiamos manteniendo el \reg{cr3} de la tarea que encontró el tesoro. Por esta razon no podiamos escribir en el stack de la nueva tarea y teniamos un \#GP Fault. Esto se debe a que las tareas tienen paginadas la memoria en solo lectura. Para resolver esto, simplemente cambiamos el \reg{cr3} por el del kernel antes de escribir en el stack y luego lo restauramos.
+
 \item \fun{game\_syscall\_cavar}: Actualiza los puntajes y los atributos del tesoro correspondiente cuando un pirata minero cava. En caso de que se acaben las monedas del tesoro, el pirata se desaloja con la función \fun{game\_pirata\_exploto}
 \item \fun{game\_syscall\_pirata\_posicion}: Devuelve la posición del pirata. La misma se codifica como y $<<$ 8 $|$ x en un entero.
 \end{enumerate}
@@ -72,33 +77,35 @@ El Scheduler es una función en C que es llamada por la interrupción de teclado
 
 Mantiene un contador para saber por cuantos ciclos de clock se ha ejecutado la tarea actual. A su vez, mantiene un flag para identificar a que jugador pertenece la ultima tarea que ha sido ejecutada. Para identificar que tarea ejecutar, itera sobre los piratas del jugador a partir del actual. Una tarea es ejecutada a lo sumo \texttt{SCHEDULER\_TASK\_TICKS} ciclos de clock. Esto esta definido en \texttt{defines.h}.
 
+El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cuando se desaloja a un pirata lo maneja la rutina de assembler en \texttt{isr.asm}. El Scheduler simplemente reemplaza la tarea actual por la próxima a ejecutar.
+
 \subsection{Estructuras}
 
 Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al mover un jugador podemos fácilmente identificar que paginas deben ser mappeadas.
 
-\pagebreak
+%\pagebreak
 
-\subsection{Funciones Auxiliares}
-Para facilitar la programación del juego, utilizamos las siguientes funciones auxiliares:
 
-\begin{enumerate}
-\item \fun{void game\_pirata\_inicializar(pirata\_t *pirata, jugador\_t *jugador, uint index, uint id)}: 
-\item \fun{void game\_pirata\_erigir(pirata\_t *pirata, jugador\_t *j, uint tipo)}: 
-\item \fun{void game\_pirata\_habilitar\_posicion(jugador\_t *j, pirata\_t *pirata, int x, int y)}: 
-\item \fun{void game\_pirata\_exploto(uint id)}: 
-\item \fun{void game\_jugador\_setBitMapPos(jugador\_t *j, uint x, uint y, uchar val)}: 
-\item \fun{char game\_jugador\_getBitMapPos(jugador\_t *j, uint x, uint y)}: 
-\item \fun{void game\_pirata\_paginarPosMapa (pirata\_t *p, int x, int y)}: 
-\item \fun{void game\_jugador\_paginarPosMapa\_piratasExistentes (jugador\_t *j, int x, int y)}: 
-\item \fun{uint game\_xy2addressPhys(int x, int y)}: 
-\item \fun{uint game\_xy2addressVirt(int x, int y)}: 
-\item \fun{uint game\_posicion\_valida(int x, int y)}: 
-\item \fun{int game\_jugador\_taskAdress(jugador\_t *j, pirata\_t *p)}: 
-\item \fun{void game\_updateScreen(pirata\_t * p, jugador\_t * j, int x, int y)}: 
-\item \fun{uint game\_pirateIdtoDirectoryAddress(uint id)}: 
-\item \fun{pirata\_t* id\_pirata2pirata(uint pirate\_id)}: 
-\item \fun{uint game\_dir2xy(direccion dir, int *x, int *y)}: 
-\end{enumerate}
+%\subsection{Funciones Auxiliares}
+%Para facilitar la programación del juego, utilizamos las siguientes funciones auxiliares:
+
+%\begin{enumerate}
+%\item \fun{void game\_pirata\_erigir(pirata\_t *pirata, jugador\_t *j, uint tipo)}: 
+%\item \fun{void game\_pirata\_habilitar\_posicion(jugador\_t *j, pirata\_t *pirata, int x, int y)}: 
+%\item \fun{void game\_pirata\_exploto(uint id)}: 
+%\item \fun{void game\_jugador\_setBitMapPos(jugador\_t *j, uint x, uint y, uchar val)}: 
+%\item \fun{char game\_jugador\_getBitMapPos(jugador\_t *j, uint x, uint y)}: 
+%\item \fun{void game\_pirata\_paginarPosMapa (pirata\_t *p, int x, int y)}: 
+%\item \fun{void game\_jugador\_paginarPosMapa\_piratasExistentes (jugador\_t *j, int x, int y)}: 
+%\item \fun{uint game\_xy2addressPhys(int x, int y)}: 
+%\item \fun{uint game\_xy2addressVirt(int x, int y)}: 
+%\item \fun{uint game\_posicion\_valida(int x, int y)}: 
+%\item \fun{int game\_jugador\_taskAdress(jugador\_t *j, pirata\_t *p)}: 
+%\item \fun{void game\_updateScreen(pirata\_t * p, jugador\_t * j, int x, int y)}: 
+%\item \fun{uint game\_pirateIdtoDirectoryAddress(uint id)}: 
+%\item \fun{pirata\_t* id\_pirata2pirata(uint pirate\_id)}: 
+%\item \fun{uint game\_dir2xy(direccion dir, int *x, int *y)}: 
+%\end{enumerate}
 
 \subsection{Tareas}
 
@@ -106,4 +113,4 @@ Para facilitar la programación del juego, utilizamos las siguientes funciones a
 La tarea Idle simplemente tiene un contador que sirve  para actualizar el reloj del juego.
 
 \subsubsection{Explorador y Minero}
-Estas tareas simplemente usan los syscalls para moverse por el mapa. No tocamos el código original de la cátedra.
+Estas tareas simplemente usan los syscalls para moverse por el mapa. No tocamos el código original de la cátedra. Utilizamos el código del minero del jugador A en el minero del jugador B.
