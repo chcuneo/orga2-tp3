@@ -4,7 +4,7 @@ El objetivo del presente trabajo practico es aprender y aplicar diferentes conce
 
 \subsection{Inicialización}
 
-Al prender la computadora, comienza la inicializacion del \texttt{POST} (Power-On Self-Test), un programa de diagnostico de hardware que verifica que todos los dispositivos se han inicializado de manera correcta. Una vez terminado el \texttt{POST}, el \texttt{BIOS} se encarga de identificar el primer dispositivo de boooteo, ya sea un CD, un disco rígido o un diskette. En este trabajo, inicializaremos el sistema a partir de un diskette.
+Al prender la computadora, comienza la inicialización del \texttt{POST} (Power-On Self-Test), un programa de diagnostico de hardware que verifica que todos los dispositivos se han inicializado de manera correcta. Una vez terminado el \texttt{POST}, el \texttt{BIOS} se encarga de identificar el primer dispositivo de booteo, ya sea un CD, un disco rígido o un diskette. En este trabajo, inicializaremos el sistema a partir de un diskette.
 
-El \texttt{BIOS} (Basic Input-Output System) copia de memoria \texttt{RAM} los primeros 512 bytes del sector a partir de la direccion \addr{0x7c00} de un diskette. Esto se copia comenzando en la direccion \addr{0x1200} y luego se ejecuta el boot-sector a partir de allí. El boot-sector encuentra en el floppy el archivo \file{kernel.bin}, y luego lo copia en memoria a partir de la direccion \addr{0x1200}, ejecutando a partir de la misma.
+El \texttt{BIOS} (Basic Input-Output System) copia de memoria \texttt{RAM} los primeros 512 bytes del sector a partir de la dirección \addr{0x7c00} de un diskette. Esto se copia comenzando en la dirección \addr{0x1200} y luego se ejecuta el boot-sector a partir de allí. El boot-sector encuentra en el floppy el archivo \file{kernel.bin}, y luego lo copia en memoria a partir de la dirección \addr{0x1200}, ejecutando a partir de la misma.
 
