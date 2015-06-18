@@ -39,38 +39,13 @@ typedef unsigned int   uint;
 #define KERNEL                  0x00001200 /* direccion fisica de comienzo del kernel */
 
 /*******************************************************************************
- * GDT CONFIG
+ * GAME CONFIG
  ******************************************************************************/
 
 /**
- * Number of entries in the GDT
+ * Maximum tasks per player
  */
-#define GDT_COUNT 32
-
-/**
- * Indices of segments within the GDT
- */
-#define GDT_IDX_NULL_DESC           0
-#define GDT_IDX_CODE0_DESC			8
-#define GDT_IDX_DATA0_DESC			9
-#define GDT_IDX_CODE3_DESC			10
-#define GDT_IDX_DATA3_DESC			11
-#define GDT_IDX_VIDEO_DESC			12
-#define GDT_IDX_TASKB_DESC			13
-#define GDT_IDX_TASKI_DESC			14
-#define GDT_IDX_START_TSKS			15
-
-/**
- * Offsets of segments within the GDT, 0 based.
- */
-#define GDT_OFF_NULL_DESC           (GDT_IDX_NULL_DESC      << 3)
-#define GDT_OFF_CODE0_DESC			(GDT_IDX_CODE0_DESC 	<< 3)
-#define GDT_OFF_DATA0_DESC			(GDT_IDX_DATA0_DESC		<< 3)
-#define GDT_OFF_CODE3_DESC			(GDT_IDX_CODE3_DESC 	<< 3)
-#define GDT_OFF_DATA3_DESC			(GDT_IDX_DATA3_DESC		<< 3)
-#define GDT_OFF_VIDEO_DESC			(GDT_IDX_VIDEO_DESC		<< 3)
-#define GDT_OFF_TASKB_DESC          (GDT_IDX_TASKB_DESC     << 3)
-#define GDT_OFF_TASKI_DESC          (GDT_IDX_TASKI_DESC     << 3)
+#define MAX_CANT_PIRATAS_VIVOS           8
 
 /*******************************************************************************
  * MEMORY LAYOUT CONFIG
@@ -112,10 +87,39 @@ typedef unsigned int   uint;
  */
 #define TSS_STACKS_PHYS 0x100000
 
+/*******************************************************************************
+ * GDT CONFIG
+ ******************************************************************************/
+
 /**
- * Maximum tasks per player
+ * Number of entries in the GDT
  */
-#define MAX_CANT_PIRATAS_VIVOS           8
+#define GDT_COUNT (9 + 5 + MAX_CANT_PIRATAS_VIVOS*2 + 1)
+
+/**
+ * Indices of segments within the GDT
+ */
+#define GDT_IDX_NULL_DESC           0
+#define GDT_IDX_CODE0_DESC          8
+#define GDT_IDX_DATA0_DESC          9
+#define GDT_IDX_CODE3_DESC          10
+#define GDT_IDX_DATA3_DESC          11
+#define GDT_IDX_VIDEO_DESC          12
+#define GDT_IDX_TASKB_DESC          13
+#define GDT_IDX_TASKI_DESC          14
+#define GDT_IDX_START_TSKS          15
+
+/**
+ * Offsets of segments within the GDT, 0 based.
+ */
+#define GDT_OFF_NULL_DESC           (GDT_IDX_NULL_DESC      << 3)
+#define GDT_OFF_CODE0_DESC          (GDT_IDX_CODE0_DESC     << 3)
+#define GDT_OFF_DATA0_DESC          (GDT_IDX_DATA0_DESC     << 3)
+#define GDT_OFF_CODE3_DESC          (GDT_IDX_CODE3_DESC     << 3)
+#define GDT_OFF_DATA3_DESC          (GDT_IDX_DATA3_DESC     << 3)
+#define GDT_OFF_VIDEO_DESC          (GDT_IDX_VIDEO_DESC     << 3)
+#define GDT_OFF_TASKB_DESC          (GDT_IDX_TASKB_DESC     << 3)
+#define GDT_OFF_TASKI_DESC          (GDT_IDX_TASKI_DESC     << 3)
 
 /*******************************************************************************
  * USEFUL MACROS

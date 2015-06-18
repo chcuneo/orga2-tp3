@@ -12,8 +12,6 @@
 
 typedef enum direccion_e { ARR = 0x4, ABA = 0x7, DER = 0xA, IZQ = 0xD} direccion;
 
-#define MAX_CANT_PIRATAS_VIVOS           8
-
 #define JUGADOR_A                         0
 #define JUGADOR_B                         1
 

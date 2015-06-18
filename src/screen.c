@@ -5,6 +5,7 @@ TRABAJO PRACTICO 3 - System Programming - ORGANIZACION DE COMPUTADOR II - FCEN
 definicion de funciones del scheduler
 */
 
+#include "defines.h"
 #include "screen.h"
 #include "game.h"
 #include "error.h"
@@ -158,10 +159,10 @@ void screen_inicializar() {
     screen_pintar_puntajes();
 
     uint i;
-    for (i = 1; i <= 8; i++)
+    for (i = 1; i <= MAX_CANT_PIRATAS_VIVOS; i++)
 		print_dec(i, 1, VIDEO_FILS - 4, 4 + (i-1)*2, C_BG_BLACK | C_FG_WHITE);
 
-    for (i = 1; i <= 8; i++)
+    for (i = 1; i <= MAX_CANT_PIRATAS_VIVOS; i++)
     	print_dec(i, 1, VIDEO_FILS - 4, 59 + (i-1)*2, C_BG_BLACK | C_FG_WHITE);
 }
 
@@ -191,48 +192,48 @@ void screen_show_debug(uint exception, const char *message, const tss *registers
 
     print("eax", fila + 3, col + 2, attrLabels);
     print_hex(registers->eax, 8, col + 6, fila + 3, attrData);
-    print("ebx", fila + 5, col + 2, attrLabels); 
+    print("ebx", fila + 5, col + 2, attrLabels);
     print_hex(registers->ebx, 8, col + 6, fila + 5, attrData);
-    print("ecx", fila + 7, col + 2, attrLabels); 
+    print("ecx", fila + 7, col + 2, attrLabels);
     print_hex(registers->ecx, 8, col + 6, fila + 7, attrData);
-    print("edx", fila + 9, col + 2, attrLabels); 
+    print("edx", fila + 9, col + 2, attrLabels);
     print_hex(registers->edx, 8, col + 6, fila + 9, attrData);
-    print("esi", fila + 11, col + 2, attrLabels); 
+    print("esi", fila + 11, col + 2, attrLabels);
     print_hex(registers->esi, 8, col + 6, fila + 11, attrData);
-    print("edi", fila + 13, col + 2, attrLabels); 
+    print("edi", fila + 13, col + 2, attrLabels);
     print_hex(registers->edi, 8, col + 6, fila + 13, attrData);
-    print("ebp", fila + 15, col + 2, attrLabels); 
+    print("ebp", fila + 15, col + 2, attrLabels);
     print_hex(registers->ebp, 8, col + 6, fila + 15, attrData);
-    print("esp", fila + 17, col + 2, attrLabels); 
+    print("esp", fila + 17, col + 2, attrLabels);
     print_hex(registers->esp, 8, col + 6, fila + 17, attrData);
 
-    print("eip", fila + 19, col + 2, attrLabels); 
+    print("eip", fila + 19, col + 2, attrLabels);
     print_hex(registers->eip, 8, col + 6, fila + 19, attrData);
-    print("cs", fila + 21, col + 3, attrLabels); 
+    print("cs", fila + 21, col + 3, attrLabels);
     print_hex(registers->cs, 4, col + 6, fila + 21, attrData);
-    print("ds", fila + 23, col + 3, attrLabels); 
+    print("ds", fila + 23, col + 3, attrLabels);
     print_hex(registers->ds, 4, col + 6, fila + 23, attrData);
-    print("es", fila + 25, col + 3, attrLabels); 
+    print("es", fila + 25, col + 3, attrLabels);
     print_hex(registers->es, 4, col + 6, fila + 25, attrData);
-    print("fs", fila + 27, col + 3, attrLabels); 
+    print("fs", fila + 27, col + 3, attrLabels);
     print_hex(registers->fs, 4, col + 6, fila + 27, attrData);
-    print("gs", fila + 29, col + 3, attrLabels); 
+    print("gs", fila + 29, col + 3, attrLabels);
     print_hex(registers->gs, 4, col + 6, fila + 29, attrData);
-    print("ss", fila + 31, col + 3, attrLabels); 
+    print("ss", fila + 31, col + 3, attrLabels);
     print_hex(registers->ss, 4, col + 6, fila + 31, attrData);
-    print("eflags", fila + 33, col + 3, attrLabels); 
-    print_hex(registers->eflags, 8, col + 9, fila + 33, attrData); 
+    print("eflags", fila + 33, col + 3, attrLabels);
+    print_hex(registers->eflags, 8, col + 9, fila + 33, attrData);
 
-    print("cr0", fila + 3, col + 16, attrLabels); 
+    print("cr0", fila + 3, col + 16, attrLabels);
     print_hex(registers->esp0, 8, col + 20, fila + 3, attrData);
-    print("cr2", fila + 5, col + 16, attrLabels);  
+    print("cr2", fila + 5, col + 16, attrLabels);
     print_hex(registers->esp1, 8, col + 20, fila + 5, attrData);
-    print("cr3", fila + 7, col + 16, attrLabels);  
+    print("cr3", fila + 7, col + 16, attrLabels);
     print_hex(registers->cr3, 8, col + 20, fila + 7, attrData);
-    print("cr4", fila + 9, col + 16, attrLabels);  
+    print("cr4", fila + 9, col + 16, attrLabels);
     print_hex(registers->esp2, 8, col + 20, fila + 9, attrData);
 
-    print("stack", fila + 20, col + 16, attrLabels); 
+    print("stack", fila + 20, col + 16, attrLabels);
     int stackElementsRow = fila + 21;
     int i;
 

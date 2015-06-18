@@ -7,11 +7,8 @@
 
 #include "defines.h"
 #include "tss.h"
-#include "game.h"
 #include "error.h"
 #include "gdt.h"
-
-#include "screen.h"
 #include "i386.h"
 
 tss tss_idle = (tss) {
@@ -188,15 +185,15 @@ int tss_inicializar() {
 }
 
 int tss_reset_StateSegment(uint index){
-	int pirateId = index % 8;
-	int playerId = index / 8;
+	int pirateId = index % MAX_CANT_PIRATAS_VIVOS;
+	int playerId = index / MAX_CANT_PIRATAS_VIVOS;
 	tss *ts;
 
 	if (playerId > 1) {
 		return E_OUT_OF_BOUNDS;
 	}
 
-	if (index < 8) {
+	if (index < MAX_CANT_PIRATAS_VIVOS) {
 		ts = &(tss_jugadorA[pirateId]);
 	} else {
 		ts = &(tss_jugadorB[pirateId]);

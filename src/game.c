@@ -90,7 +90,8 @@ inline uint game_pirateIdtoDirectoryAddress(uint id) {
  */
 pirata_t* id_pirata2pirata(uint pirate_id) {
     uint player = pirate_id / MAX_CANT_PIRATAS_VIVOS;
-    uint pirate = pirate_id - player*MAX_CANT_PIRATAS_VIVOS;
+    uint pirate = pirate_id % MAX_CANT_PIRATAS_VIVOS;
+
     if (pirate_id < (MAX_CANT_PIRATAS_VIVOS << 1)) {
         jugador_t *p;
 
@@ -110,6 +111,7 @@ pirata_t* id_pirata2pirata(uint pirate_id) {
             return &(p->piratas[pirate]);
     	}
 	}
+
     return NULL;
 }
 
@@ -149,8 +151,8 @@ uint game_valor_tesoro(uint x, uint y) {
 
 void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 	uint pos = game_xy2lineal(x,y);
-	uint charInBMArray = pos / 8;
-	uint offsetInChar = pos % 8;
+	uint charInBMArray = pos / MAX_CANT_PIRATAS_VIVOS;
+	uint offsetInChar = pos % MAX_CANT_PIRATAS_VIVOS;
 
 	if (val == 1){
 		j->map[charInBMArray] = BIT_SET(j->map[charInBMArray], offsetInChar);
@@ -161,8 +163,9 @@ void game_jugador_setBitMapPos(jugador_t *j, uint x, uint y, uchar val){
 
 char game_jugador_getBitMapPos(jugador_t *j, uint x, uint y) {
 	uint pos = game_xy2lineal(x,y);
-	uint charInBMArray = pos / 8;
-	uint offsetInChar = pos % 8;
+	uint charInBMArray = pos / MAX_CANT_PIRATAS_VIVOS;
+	uint offsetInChar = pos % MAX_CANT_PIRATAS_VIVOS;
+
 	return BIT_ISSET(j->map[charInBMArray], offsetInChar);
 }
 
@@ -463,8 +466,8 @@ void game_jugador_anotar_punto(jugador_t *j) {
 
 void game_tick(uint taskid){
 	uint pirateid = taskid - GDT_IDX_START_TSKS;
-	uint playerindex = pirateid / 8;
-	uint pirateindex = pirateid % 8;
+	uint playerindex = pirateid / MAX_CANT_PIRATAS_VIVOS;
+	uint pirateindex = pirateid % MAX_CANT_PIRATAS_VIVOS;
 	int scoresNow = jugadorA.score + jugadorB.score;
 
 	if (scoresNow != lastScores){
