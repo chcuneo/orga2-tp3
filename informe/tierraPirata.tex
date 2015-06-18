@@ -1,46 +1,21 @@
 \section{Tierra Pirata}
 
-\subsection{Memory Management Functions}
-Para facilitar el manejo del armado de estructuras para la paginación, se crearon las siguientes funciones en C. Antes de explicar que hace cada función, un comentario. Cada directorio de paginas tiene 1024 entradas de descriptores de 4 bytes. Lo mismo sucede con los directorios de paginas, que también tienen 1024 entradas con descriptores de 4 bytes. El procesador, al buscar estas estructuras en memoria RAM, requiere que las mismas estén alineadas a 4kb, dado que es el tamaño de pagina que carga en memoria cache.
+\subsection{Mapa y manejo de memoria}
 
-\begin{enumerate}
-\item \fun{create\_page\_table(uint directoryBase, uint directoryEntry, uint physicalAddress, uchar readWrite, uchar userSupervisor)}: Asigna una \texttt{page\_table} a una tabla de directorios con los atributos pasados por parametro. Al final de la función, se limpia la memoria cache para garantizar que cuando el procesador busca esta pagina, la misma se encuentra actualizada.
+Escribimos funciones de inicialización tanto para la memoria del kernel como para la memoria de los piratas, las siguientes funciones deben ser llamadas en el proceso de inicialización de ambos:
 
-\item \fun{delete\_page\_table(uint directoryBase, uint directoryEntry)}: Borra una tabla de paginas de un directorio de paginas. Esto lo hace simplemente setteando el bit P (present) en cada pagina en 0.
+\begin{itemize}
+\item \fun{void mmu\_inicializar\_dir\_kernel()}: se ocupa de hacer el identity mapping de 4MB del kernel. Además, le mapea todo el mapa en modo escritura, lo que nos permitirá a futuro manejar todo el movimiento de los piratas.
 
-\item \fun{create\_page(uint directoryBase, uint directoryEntry, uint tableEntry, uint physicalAddress, \\ uchar readWrite, uchar userSupervisor)}: Crea una pagina en la tabla de paginas de algún directorio.
+\item \fun{int mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: se ocupa de mapear el código del pirata a la dirección correspondiente, así como de copiar el código del pirata.
+\end{itemize}
 
-\item \fun{delete\_page(uint directoryBase, uint directoryEntry, uint tableEntry)}: Borra una pagina en la tabla de paginas de algún directorio. Esto lo hace setteando el bit P en 0.
 
-\item \fun{mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, \\ uchar userSupervisor)}: Mappea una dirección virtual en una direccion fisica. Para esto, primero se busca la tabla de paginas y la pagina correspondiente a la dirección virtual. Luego se le asigna a esa pagina la dirección física. Esto se hace de la siguiente forma:
-	\begin{enumerate}
-	\item A partir de la dirección virtual, se busca la entrada de directorio correspondiente a la misma. Esto se hace dividiendo el virtualAdress por el tamaño direccionable por cada page\_directory.$virtualAdress / 1024*4kb$. Esto es equivalente a $virtualAdress >> 22$.
-	\item Buscamos el indice en la entrada de paginas. Esto se calcula dividiendo por el tamaño de pagina e ignorando los bits correspondientes a la entrada de directorio $virtualAdress / 4kb$ $\&$ $0x3FF$, que es equivalente a $virtualAdress >> 12$ $\&$ $0x3FF$.
-	\end{enumerate}
-
-\item \fun{munmap(uint directoryBase, uint virtualAddress)}: Desmappea la pagina correspondiente a una dirección virtual. Calcula todos los indices necesarios de la misma manera que \fun{mmap}
-
-\item \fun{remap(uint directoryBase, uint virtualAddress, uint physicalAddress)}: Remappea la pagina dada por el $virtualAddress$ a la dirección $physicalAddress$.
-
-\item \fun{getPhysVirt(uint directoryBase, uint virtualAddress)}: A partir de un $virtualAddress$, devuelve el $physicalAddress$.
-
-\item \fun{isMapped(uint directoryBase, uint virtualAddress)}: Devuelve si la dirección virtual esta mappeada en memoria.
-
-\item \fun{mmu\_inicializar\_dir\_kernel()}: Inicializa el directorio del kernel. Para ello, hacemos memory mapping sobre el kernel y le asignamos un area libre, todo desde \addr{0x00000000} a \addr{0x003FFFF}.
-
-\item \fun{mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: Esta función inicializa el directorio de un pirata. Al igual que el Kernel, hacemos memory mapping, aunque en modo user y en read only. A su vez, mappeamos la pagina donde vamos a poner el codigo del pirata, y copiamos el código del pirata que se encuentra en el Kernel en esta pagina.
-
-\item \fun{mmu\_move\_codepage(uint src, uint dst, pirata\_t *p)}: Mueve la pagina de codigo del pirata desde $src$ a $dst$.
-
-No implementamos la funcion \texttt{mmu\_inicializar} dado que todo el trabajo lo hace \texttt{mmu\_inicializar\_dir\_kernel}.
-
-\end{enumerate}
-
-\subsection{Interrupciones}
+\subsection{Manejo de interrupciones}
 
 \subsubsection{Reloj}
 
-La interrupción de reloj comienza llamando la función \fun{scheduler\_tick}, que se ocupa de devolver el indice de la tarea en la \texttt{GDT} al que se debe ir. En caso de que se tenga que intercambiar de tarea, la rutina de atención de esta interrupción hace un \texttt{jump far} a la nueva tarea.
+La interrupción de reloj comienza llamando la función \fun{scheduler\_tick}, que se ocupa de devolver el índice de la tarea en la \texttt{GDT} al que se debe ir. En caso de que se tenga que intercambiar de tarea, la rutina de atención de esta interrupción hace un \texttt{jump far} a la nueva tarea.
 
 \subsubsection{Teclado}
 
@@ -55,15 +30,13 @@ El sistema provee un servicio a las diferentes tareas mediante la interrupción 
 
 Si un pirata explorador al moverse encuentra un tesoro, se lanza un pirata minero automáticamente. Al mismo se le debe pasar la posición del tesoro por parámetro. Utilizando la convención C y el stack correspondiente a la nueva tarea, escribimos los parámetros en el stack de la dirección física de su respectivo codigo.
 
-Cuando programamos esto tuvimos el siguiente problema. La interrupcion al mover causaba un escalamiento de privilegios, pero seguiamos manteniendo el \reg{cr3} de la tarea que encontró el tesoro. Por esta razon no podiamos escribir en el stack de la nueva tarea y teniamos un \#GP Fault. Esto se debe a que las tareas tienen paginadas la memoria en solo lectura. Para resolver esto, simplemente cambiamos el \reg{cr3} por el del kernel antes de escribir en el stack y luego lo restauramos.
+Cuando programamos esto tuvimos el siguiente problema. La interrupción al mover causaba un escalamiento de privilegios, pero seguíamos manteniendo el \reg{cr3} de la tarea que encontró el tesoro. Por esta razón no podíamos escribir en el stack de la nueva tarea y teníamos un \#GP Fault. Esto se debe a que las tareas tienen paginadas la memoria en solo lectura. Para resolver esto, simplemente cambiamos el \reg{cr3} por el del kernel antes de escribir en el stack y luego lo restauramos.
 
 \item \fun{game\_syscall\_cavar}: Actualiza los puntajes y los atributos del tesoro correspondiente cuando un pirata minero cava. En caso de que se acaben las monedas del tesoro, el pirata se desaloja con la función \fun{game\_pirata\_exploto}
 \item \fun{game\_syscall\_pirata\_posicion}: Devuelve la posición del pirata. La misma se codifica como y $<<$ 8 $|$ x en un entero.
 \end{enumerate}
 
 El Syscall se llama indirectamente a través de \texttt{inline asm}, que se ocupa de pasar los parámetros y llamar a la respectiva función. Al ejecutar esta interrupción hay un escalamiento de privilegios a nivel 0, lo que permite manipular la memoria y ejecutar funciones que no se podrían ejecutar desde una tarea (user), como por ejemplo manipular los directorios de pagina.
-
-\pagebreak
 
 \subsection{Scheduler}
 
@@ -75,42 +48,10 @@ El Scheduler es una función en C que es llamada por la interrupción de teclado
   \caption{Diagrama de Tareas}
 \end{figure}
 
-Mantiene un contador para saber por cuantos ciclos de clock se ha ejecutado la tarea actual. A su vez, mantiene un flag para identificar a que jugador pertenece la ultima tarea que ha sido ejecutada. Para identificar que tarea ejecutar, itera sobre los piratas del jugador a partir del actual. Una tarea es ejecutada a lo sumo \texttt{SCHEDULER\_TASK\_TICKS} ciclos de clock. Esto esta definido en \texttt{defines.h}.
+El algorítmo de scheduling funciona, a grosso modo (en el código fuente hay comentarios explicandolo más en detalle) manteniendo en todo momento el índice del próximo pirata que debería jugar (tanto para el jugador A como el B), el índice del próximo jugador a ejecutarse, y la cantidad de ticks de timer que lleva (estos ticks se resetean cada \texttt{SCHEDULER\_TASK\_TICKS} interrupciones, y se incrementa cada vez que el timer interrumpe). Entonces, cuando los ticks del timer se vuelven 0, recorre para el jugador correspondiente todas las tareas empezando del índice denotado, hasta alcanzar de vuelta este valor. Si encuentra una tarea existente, la ejecuta, en caso contrario, intenta con el otro jugador. Suponiendo que no encuentre ninguna tarea a ejecutar, termina haciendo el switch a la Idle. Es importante notar que no hacemos task switch si la próxima tarea a ejecutar es igual a la que se está ejecutando, o si el valor de retorno del scheduler no es -1 (esto va a suceder siempre que el contador de ticks no esté en el estado inicial).
 
-El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cuando se desaloja a un pirata lo maneja la rutina de assembler en \texttt{isr.asm}. El Scheduler simplemente reemplaza la tarea actual por la próxima a ejecutar.
+Además, cada vez que tenemos una interrupción por software terminamos saltando a la Idle por el resto del quantum de tiempo que le corresponde a la tarea.
 
 \subsection{Estructuras}
 
-Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al mover un jugador podemos fácilmente identificar que paginas deben ser mappeadas.
-
-%\pagebreak
-
-
-%\subsection{Funciones Auxiliares}
-%Para facilitar la programación del juego, utilizamos las siguientes funciones auxiliares:
-
-%\begin{enumerate}
-%\item \fun{void game\_pirata\_erigir(pirata\_t *pirata, jugador\_t *j, uint tipo)}: 
-%\item \fun{void game\_pirata\_habilitar\_posicion(jugador\_t *j, pirata\_t *pirata, int x, int y)}: 
-%\item \fun{void game\_pirata\_exploto(uint id)}: 
-%\item \fun{void game\_jugador\_setBitMapPos(jugador\_t *j, uint x, uint y, uchar val)}: 
-%\item \fun{char game\_jugador\_getBitMapPos(jugador\_t *j, uint x, uint y)}: 
-%\item \fun{void game\_pirata\_paginarPosMapa (pirata\_t *p, int x, int y)}: 
-%\item \fun{void game\_jugador\_paginarPosMapa\_piratasExistentes (jugador\_t *j, int x, int y)}: 
-%\item \fun{uint game\_xy2addressPhys(int x, int y)}: 
-%\item \fun{uint game\_xy2addressVirt(int x, int y)}: 
-%\item \fun{uint game\_posicion\_valida(int x, int y)}: 
-%\item \fun{int game\_jugador\_taskAdress(jugador\_t *j, pirata\_t *p)}: 
-%\item \fun{void game\_updateScreen(pirata\_t * p, jugador\_t * j, int x, int y)}: 
-%\item \fun{uint game\_pirateIdtoDirectoryAddress(uint id)}: 
-%\item \fun{pirata\_t* id\_pirata2pirata(uint pirate\_id)}: 
-%\item \fun{uint game\_dir2xy(direccion dir, int *x, int *y)}: 
-%\end{enumerate}
-
-\subsection{Tareas}
-
-\subsubsection{Idle}
-La tarea Idle simplemente tiene un contador que sirve  para actualizar el reloj del juego.
-
-\subsubsection{Explorador y Minero}
-Estas tareas simplemente usan los syscalls para moverse por el mapa. No tocamos el código original de la cátedra. Utilizamos el código del minero del jugador A en el minero del jugador B.
+Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al lanzar un pirata podemos saber muy fácilmente qué páginas le debemos mapear.
