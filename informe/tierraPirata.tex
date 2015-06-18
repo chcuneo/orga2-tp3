@@ -2,14 +2,43 @@
 
 \subsection{Mapa y manejo de memoria}
 
-Escribimos funciones de inicialización tanto para la memoria del kernel como para la memoria de los piratas, las siguientes funciones deben ser llamadas en el proceso de inicialización de ambos:
+La memoria se va a distribuir la siguiente manera:
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=0.45]{images/MemoriaVirtual.png}
+		\caption{Organización de la Memoria.}
+		\label{fig:memoria}
+	\end{center}
+\end{figure}
+
+La Directory Table del kernel tendrá paginado todo lo útil de la memoria en identity mapping.
+
+Luego cada tarea pirata va a tener su propia Directory Table donde se van a paginar los primeros 4MB de memoria en modo supervisor, luego el código de la tarea, que se encontrara en una posición del mapa, sera mapeado a la dirección virtual 0x400000 en modo user y con derechos de escritura; por ultimo se mapeara el mapa a la posición 0x800000, solo paginando las posiciones ya exploradas por el jugador en modo user con derechos de solo lectura.
+
+Las Directory Tables de las tareas se localizaran dentro del área libre de la memoria, como se ve en la figura 12.
+
+Escribimos funciones de inicialización tanto para la memoria virtual del kernel como para la memoria virtual de los piratas, las siguientes funciones deben ser llamadas en el proceso de inicialización de ambos:
 
 \begin{itemize}
 \item \fun{void mmu\_inicializar\_dir\_kernel()}: se ocupa de hacer el identity mapping de 4MB del kernel. Además, le mapea todo el mapa en modo escritura, lo que nos permitirá a futuro manejar todo el movimiento de los piratas.
 
-\item \fun{int mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: se ocupa de mapear el código del pirata a la dirección correspondiente, así como de copiar el código del pirata.
+\item \fun{int mmu\_inicializar\_dir\_pirata(uint directoryBase, uint pirateCodeBaseSrc, uint pirateCodeBaseDst)}: Se encarga de realizar el identity mapping de los primeros 4MB de memoria física, los cuales incluyen 
 \end{itemize}
 
+Hay que tener en cuenta que para poder hacer el correcto funcionamiento del sistema hay que tener lugar asignado para las pilas, tanto de nivel usuario como de nivel 0, ya que al estar ejecutando una tarea, si se recibe una interrupción tanto interna, de software o externa, el estado del sistema pasara a nivel 0, por lo tanto se necesitara una pila separada de nivel 0.
+
+Por lo tanto la decisión que tomamos tener una pagina (dentro del área libre) por cada tarea pirata, donde colocaremos la pila de nivel 0. Y la pila de nivel usuario se colocara al final de la pagina donde se encuentra su código. En la figura 12 se ve la localización de las pilas de nivel 0 de las tareas pirata.
+
+Con respecto a la necesidad de tener que pedir espacio paginas memoria donde ir colocando las Page Tables para todo el sistema de paginación, ya sean tareas piratas o kernel, vamos a asignándolas en el área libre a medida que sean pedidas, organizándolas como muestra la figura 12.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=0.45]{images/AreaLibre.png}
+		\caption{Organización del área libre.}
+		\label{fig:arealibre}
+	\end{center}
+\end{figure}
 
 \subsection{Manejo de interrupciones}
 
@@ -38,8 +67,6 @@ Cuando programamos esto tuvimos el siguiente problema. La interrupción al mover
 
 El Syscall se llama indirectamente a través de \texttt{inline asm}, que se ocupa de pasar los parámetros y llamar a la respectiva función. Al ejecutar esta interrupción hay un escalamiento de privilegios a nivel 0, lo que permite manipular la memoria y ejecutar funciones que no se podrían ejecutar desde una tarea (user), como por ejemplo manipular los directorios de pagina.
 
-\pagebreak
-
 \subsection{Scheduler}
 
 El Scheduler es una función en C que es llamada por la interrupción de teclado. La misma de identificar la tarea que se debe ejecutar actualmente para respetar el siguiente diagrama:
@@ -50,20 +77,11 @@ El Scheduler es una función en C que es llamada por la interrupción de teclado
   \caption{Diagrama de Tareas}
 \end{figure}
 
-Mantiene un contador para saber por cuantos ciclos de clock se ha ejecutado la tarea actual. A su vez, mantiene un flag para identificar a que jugador pertenece la ultima tarea que ha sido ejecutada. Para identificar que tarea ejecutar, itera sobre los piratas del jugador a partir del actual. Una tarea es ejecutada a lo sumo \texttt{SCHEDULER\_TASK\_TICKS} ciclos de clock. Esto esta definido en \texttt{defines.h}.
+El algorítmo de scheduling funciona, a grosso modo (en el código fuente hay comentarios explicandolo más en detalle) manteniendo en todo momento el índice del próximo pirata que debería jugar (tanto para el jugador A como el B), el índice del próximo jugador a ejecutarse, y la cantidad de ticks de timer que lleva (estos ticks se resetean cada \texttt{SCHEDULER\_TASK\_TICKS} interrupciones, y se incrementa cada vez que el timer interrumpe). Entonces, cuando los ticks del timer se vuelven 0, recorre para el jugador correspondiente todas las tareas empezando del índice denotado, hasta alcanzar de vuelta este valor. Si encuentra una tarea existente, la ejecuta, en caso contrario, intenta con el otro jugador. Suponiendo que no encuentre ninguna tarea a ejecutar, termina haciendo el switch a la Idle. Es importante notar que no hacemos task switch si la próxima tarea a ejecutar es igual a la que se está ejecutando, o si el valor de retorno del scheduler no es -1 (esto va a suceder siempre que el contador de ticks no esté en el estado inicial).
 
-Cuando el contador alcanza el limite, el scheduler simplemente devuelve el indice en la GDT correspondiente a la TSS de la tarea que debe ser ejecutada. En caso de que no se deba cambiar de tarea, devuelve $-1$. La rutina de atención del reloj a partir de la salida de nuestro scheduler luego decide si debe hacer un \texttt{jump far}.
-
-El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cuando se desaloja a un pirata lo maneja la rutinas de assembler de los syscalls o de los handlers de interrupción en \texttt{isr.asm}.
+Además, cada vez que tenemos una interrupción por software terminamos saltando a la Idle por el resto del quantum de tiempo que le corresponde a la tarea.
 
 \subsection{Estructuras}
 
-Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al mover un jugador podemos fácilmente identificar que paginas deben ser mappeadas.
-
-\subsection{Tareas}
-
-\subsubsection{Idle}
-La tarea Idle simplemente tiene un contador que sirve  para actualizar el reloj del juego.
-
-\subsubsection{Explorador y Minero}
-Estas tareas simplemente usan los syscalls para moverse por el mapa. No tocamos el código original de la cátedra. Utilizamos el código del minero del jugador A en el minero del jugador B.
+Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al lanzar un pirata podemos saber muy fácilmente qué páginas le debemos mapear.
+ de la 
