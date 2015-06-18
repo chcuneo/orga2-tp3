@@ -27,6 +27,6 @@ Luego de haber configurado la GDT, la instrucción \command{lgdt} nos permite ca
 
 \subsection{Pasaje a Modo Protegido}
 
-Una vez armada la GDT y habilitado la puerta A20, debemos habilitar Modo Protegido. El modo de protección esta definido por el bit menos significativo del registro \reg{CR0}. Usando un \& con \addr{0x1}, habilitamos este bit.
+Una vez armada la GDT y habilitado la puerta A20, debemos habilitar Modo Protegido. El modo de protección esta definido por el bit menos significativo del registro \reg{CR0}. Usando un OR con \addr{0x1}, habilitamos este bit.
 
 Una vez que tenemos todas las estructuras necesarias armadas, hay que hacer un \command{jmp far} al segmento de código de nivel 0 en la \texttt{GDT}. De esta forma finalmente habilitamos la protección por hardware y pasamos a Modo Protegido. A partir de aquí es fundamental poner los selectores de segmentos correspondientes a los datos y video, habilitándonos efectivamente para el uso de memoria y el frame buffer. Cabe destacar, además, que no necesariamente tenemos una pila que podamos utilizar, por lo que es importante poner los registros correspondientes en valores que nos sean útiles.
