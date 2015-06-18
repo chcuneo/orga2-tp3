@@ -76,9 +76,9 @@ No es necesario inicializar ninguna estructura particular fuera de estar a nivel
 Una interrupción es una señal que le indica a la CPU que debe interrumpir la ejecución actual de instrucciones. El rol de la \texttt{IDT} (Interrupt Descriptor Table) es contener los diferentes descriptores de interrupción y asociar las diferentes interrupciones a sus respectivas rutinas de atención de interrupción. Existen tres fuentes de interrupciones:
 
 \begin{enumerate}
-\item Hardware
-\item Software
-\item Internas
+\item Hardware: donde la interrupción proviene de un dispositivo conectado directamente al procesador, como por ejemplo el timer, o el teclado.
+\item Software: en las que el mismo software llama al sistema, esto se utiliza para poder hacer cambios de nivel de privilegio, permitiendo al kernel exponer un conjunto de servicios común a todos los programas corriendo en la máquina.
+\item Internas: que pertenecen estrictamente al procesador y ocurren, por ejemplo, cuando hay errores graves. La excepción de división por 0 es uno de estos casos.
 \end{enumerate}
 
 A su vez, la \texttt{IDT} puede contener tres tipos de descriptores:
@@ -147,7 +147,7 @@ Este descriptor apunta a un segmento con la siguiente estructura:
   \caption{Task State Segment}
 \end{figure}
 
-Estas estructuras deben ser inicializadas con cuidado, con sus respectivos \reg{EIP}, \reg{ESP}, \reg{EBP}, \reg{CR3} e \reg{EFLAGS} entre otros. Por ejemplo, para que las interrupciones esten habilitadas \reg{EFLAGS} debe tener el valor \hex{0x202}.
+Estas estructuras deben ser inicializadas con cuidado: es muy importante que cada tarea tenga una pila de nivel 0 bien configurada, así como su propia pila. las \reg{EFLAGS} en $0x202$ nos permiten tener interrupciones habilitadas,
 
 Ademas, el selector de segmento de la tarea que se
 esta ejecutando actualmente se debe encontrar en el registro \reg{TR} (Task Register). Este selector tiene 16 bits. Ademas, este registro tiene una parte oculta que cachea el descriptor de segmento correspondiente al selector. Las instrucciones \texttt{LTR} y \texttt{STR} nos permiten cargar y guardar el Task Register solo si tenemos \texttt{CPL} 0.
