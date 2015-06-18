@@ -67,7 +67,9 @@ El Scheduler es una función en C que es llamada por la interrupción de teclado
 
 Mantiene un contador para saber por cuantos ciclos de clock se ha ejecutado la tarea actual. A su vez, mantiene un flag para identificar a que jugador pertenece la ultima tarea que ha sido ejecutada. Para identificar que tarea ejecutar, itera sobre los piratas del jugador a partir del actual. Una tarea es ejecutada a lo sumo \texttt{SCHEDULER\_TASK\_TICKS} ciclos de clock. Esto esta definido en \texttt{defines.h}.
 
-El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cuando se desaloja a un pirata lo maneja la rutina de assembler en \texttt{isr.asm}. El Scheduler simplemente reemplaza la tarea actual por la próxima a ejecutar.
+Cuando el contador alcanza el limite, el scheduler simplemente devuelve el indice en la GDT correspondiente a la TSS de la tarea que debe ser ejecutada. En caso de que no se deba cambiar de tarea, devuelve $-1$. La rutina de atención del reloj a partir de la salida de nuestro scheduler luego decide si debe hacer un \texttt{jump far}.
+
+El intercambio con la tarea \texttt{Idle} cuando sucede un \texttt{Syscall} o cuando se desaloja a un pirata lo maneja la rutinas de assembler de los syscalls o de los handlers de interrupción en \texttt{isr.asm}.
 
 \subsection{Estructuras}
 
