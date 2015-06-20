@@ -84,4 +84,3 @@ Además, cada vez que tenemos una interrupción por software terminamos saltando
 \subsection{Estructuras}
 
 Para mantener cuenta del estado del juego y de cada uno de los jugadores, creamos algunas estructuras definidas en \texttt{game.h}. Para saber que posiciones del mapa ya han sido paginadas, cada jugador mantiene un \texttt{bit\_map} con (\texttt{MAPA\_ALTO} * \texttt{MAPA\_ANCHO} / 8) chars. Cada bit corresponde a una pagina del mapa. De esta manera, al lanzar un pirata podemos saber muy fácilmente qué páginas le debemos mapear.
- de la 

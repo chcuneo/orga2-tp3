@@ -56,7 +56,21 @@ Para activar la paginación, en primer lugar debemos inicializar el directorio d
 
 Luego activamos la paginación con el ultimo bit del registro \reg{cr0}. Una vez activada, la dirección lineal comienza a pasar luego por la unidad de paginación. La unidad de paginación se encarga de ir desde la dirección lineal a la dirección física en memoria. En caso de que la dirección lineal no este paginada, el procesador tiene una Page Fault Exception (\#PF).
 
-Para facilitar el manejo y armado de estructuras de paginación, creamos varias funciones en C. Como sabemos, cada directorio de paginas tiene 1024 entradas de descriptores de 4 bytes. Lo mismo sucede con los directorios de paginas, que también tienen 1024 entradas con descriptores de 4 bytes. El procesador, al buscar estas estructuras en memoria RAM, requiere que las mismas estén alineadas a 4 kB, dado que es el tamaño de pagina que carga en memoria cache. A continuación, una breve explicación de qué hacen las funciones exportadas al usuario (cabe destacar, hay numerosos comentarios en el código explicando las particularidades):
+Para facilitar el manejo y armado de estructuras de paginación, creamos varias funciones en C. Como sabemos, cada directorio de paginas tiene 1024 entradas de descriptores de 4 bytes. Lo mismo sucede con los directorios de paginas, que también tienen 1024 entradas con descriptores de 4 bytes.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.8\textwidth]{images/page_directory_entry}
+  \caption{Page Directory Entry}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.8\textwidth]{images/page_table_entry}
+  \caption{Page Table Entry}
+\end{figure}
+
+El procesador, al buscar estas estructuras en memoria RAM, requiere que las mismas estén alineadas a 4 kB, dado que es el tamaño de pagina que carga en memoria cache. A continuación, una breve explicación de qué hacen las funciones exportadas al usuario (cabe destacar, hay numerosos comentarios en el código explicando las particularidades):
 
 \begin{itemize}
 \item \fun{int mmap(uint virtualAddress, uint physicalAddress, uint directoryBase, uchar readWrite, uchar supervisorUser)}: mapea la página donde se encuentra el address virtual a la página donde se encuentra el address físico, indicando permisos de escritura o de usuario según se indique por parámetro.
