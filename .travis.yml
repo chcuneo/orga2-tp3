@@ -1,5 +1,0 @@
-language: c
-script: make
-branches:
-    only:
-        - master
